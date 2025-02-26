@@ -17,6 +17,7 @@ const upload = multer({ storage }).single('logo');
 const addOwner = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
+      console.error('Multer Error:', err); // Log multer-specific errors
       return res.status(400).json({ message: 'Error uploading file', error: err.message });
     }
 
@@ -37,6 +38,21 @@ const addOwner = async (req, res) => {
 
       const logoPath = req.file ? req.file.path : null;
 
+      console.log('Received Data:', {
+        companyName,
+        ownerName,
+        contactNumber,
+        emailAddress,
+        website,
+        businessRegistration,
+        companyType,
+        employeeSize,
+        panNumber,
+        documentType,
+        documentNumber,
+        logoPath,
+      });
+
       const newOwner = new Owner({
         logo: logoPath,
         companyName,
@@ -56,12 +72,11 @@ const addOwner = async (req, res) => {
       await newOwner.save();
       res.status(201).json({ message: 'Owner added successfully', data: newOwner, datafilled: true });
     } catch (error) {
-      console.error('Backend Error:', error);
+      console.error('Backend Error:', error); // Log the full error
       res.status(400).json({ message: 'Error adding owner', error: error.message });
     }
   });
 };
-
 // const addOwner = async (req, res) => {
 //   try {
 //     const { 

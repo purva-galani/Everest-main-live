@@ -61,6 +61,7 @@ const NewProfile: React.FC = () => {
     setIsSubmitting(true);
     const formData = new FormData();
   
+    // Append form values to FormData
     Object.keys(values).forEach((key) => {
       const value = values[key as keyof typeof values];
       if (value instanceof File) {
@@ -70,7 +71,10 @@ const NewProfile: React.FC = () => {
       }
     });
   
-    console.log([...formData.entries()]); // Log FormData entries
+    // Log FormData entries for debugging
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
   
     try {
       const response = await fetch('http://localhost:8000/api/v1/owner/addOwner', {
