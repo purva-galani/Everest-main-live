@@ -15,7 +15,6 @@ const calandarRouts=require("./calender.routes")
 const notificationRoutes = require("./notification.routes")
 const usersdRoutes = require("./users.routs")
 const ownerRoutes=require("./Owner.routes")
-const profileRoutes=require('./profile.routs')
 const dealRoutes = require("./deal.routes")
 const accountRoutes = require("./account.routes")
 // router.use("/user",userRouts)
@@ -29,7 +28,6 @@ router.use("/calender",calandarRouts)
 router.use("/notification", notificationRoutes);
 router.use("/user", usersdRoutes);
 router.use("/owner",ownerRoutes);
-router.use('/profile',profileRoutes);
 router.use('/deal',dealRoutes);
 router.use('/account',accountRoutes);
 module.exports=router
