@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const ownerSchema = new mongoose.Schema(
   {
     logo: {
-      type: file, // Store the file path or URL of the logo
+      type: String,
     },
     companyName: {
       type: String,

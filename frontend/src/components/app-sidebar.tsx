@@ -61,8 +61,8 @@ const data = {
       url: "#",
       icon: CirclePlay,
       items: [
-        { title: "Create", url: "/invoice" },
-        { title: "List", url: "/invoice/list" },
+        { title: "Create", url: "/invoice/invoiceForm" },
+        { title: "List", url: "/invoice" },
         { title: "Graph", url: "/Invoice-chart" },
         { title: "Drag & Drop", url: "/invoice/invoiceDrop" }
       ],

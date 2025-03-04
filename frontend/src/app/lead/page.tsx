@@ -156,6 +156,10 @@ export default function LeadPage() {
     });
     const [page, setPage] = useState(1);
 
+    useEffect(() => {
+        localStorage.setItem("rowsPerPage", String(rowsPerPage));
+    }, [rowsPerPage]);
+
     // Form setup
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),

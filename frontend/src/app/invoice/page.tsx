@@ -26,9 +26,10 @@ import { cn } from "@/lib/utils"
 import axios from "axios";
 import { Chip, DatePicker, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip, User } from "@heroui/react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import SearchBar from '@/components/globalSearch'
+// import SearchBar from '@/components/ui/globalSearch'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { SortDescriptor } from "@nextui-org/react"
+import { Selection } from "@nextui-org/react";
 
 interface Invoice {
     _id: string;
@@ -148,22 +149,22 @@ export default function InvoicePage() {
 
     const [isAddNewOpen, setIsAddNewOpen] = useState(false);
     const [filterValue, setFilterValue] = useState("");
-    const [selectedKeys, setSelectedKeys] = useState(new Set([]));
+    const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set());
     const [visibleColumns, setVisibleColumns] = useState(new Set(INITIAL_VISIBLE_COLUMNS));
     const [statusFilter, setStatusFilter] = useState("all");
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
-    const [sortDescriptor, setSortDescriptor] = useState({
-        column: "companyName",
-        direction: "ascending",
+    const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
+        column: "name", // Default column
+        direction: "ascending", // Default sorting order
     });
     const [page, setPage] = useState(1);
 
-const onRowsPerPageChange = (event) => {
-    const newRowsPerPage = parseInt(event.target.value, 10);
-    setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1); // Reset to first page to prevent out-of-range issues
-};
+    const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+        setRowsPerPage(Number(e.target.value));
+        setPage(1);
+    }, []);
+     
     // Form setup
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -629,7 +630,7 @@ const onRowsPerPageChange = (event) => {
                     </Breadcrumb>
                     <div className="flex-1 flex justify-end space-x-4 mr-10">
                         <div className="w-52">
-                            <SearchBar />
+                            {/* <SearchBar /> */}
                         </div>
                     </div>
                 </header>
@@ -648,7 +649,11 @@ const onRowsPerPageChange = (event) => {
                         sortDescriptor={sortDescriptor}
                         topContent={topContent}
                         topContentPlacement="outside"
-                        onSelectionChange={setSelectedKeys}
+                        onSelectionChange={(keys) => {
+                            // Convert `SharedSelection` to `Set<string>`
+                            const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
+                            setVisibleColumns(newKeys);
+                        }}
                         onSortChange={(descriptor) => {
                             setSortDescriptor({
                                 column: descriptor.column as string,

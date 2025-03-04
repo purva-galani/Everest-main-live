@@ -1,20 +1,25 @@
-// components/GlobalSearch.js
+"use client";
 import { useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation"
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
-export  function GlobalSearch() {
+const SearchBar = () => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState({ users: [], customers: [], deals: [], suggestions: [] });
+  const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
-  const handleSearch = async () => {
-    if (!query) return;
+  const handleSearch = async (e) => {
+    setQuery(e.target.value);
+    if (e.target.value.length < 2) {
+      setResults(null);
+      return;
+    }
     setLoading(true);
 
     try {
-      const { data } = await axios.get(`http://localhost:8000/api/v1/search?q=${query}`);
+      const { data } = await axios.get(`http://localhost:8000/api/v1/search?q=${e.target.value}`);
       setResults(data);
     } catch (error) {
       console.error("Search error:", error);
@@ -24,57 +29,34 @@ export  function GlobalSearch() {
   };
 
   return (
-    <div className="p-4">
-      <input
+    <div className="relative w-full max-w-lg lg:max-w-md">
+      <Input
         type="text"
         placeholder="Search..."
-        className="border p-2 rounded w-full"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+        onChange={handleSearch}
+        className="w-full p-2 border rounded-md shadow-sm focus:ring focus:ring-blue-300"
       />
-      
-      {loading && <p>Loading...</p>}
-
-      <div className="mt-4">
-        {/* Search Results */}
-        {results.users.length > 0 && (
-          <div>
-            <h3 className="font-bold">Users</h3>
-            <ul>
-              {results.users.map((user) => (
-                <li key={user._id}>{user.name} - {user.email}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-
-        {results.deals.length > 0 && (
-          <div>
-            <h3 className="font-bold">Deals</h3>
-            <ul>
-              {results.deals.map((deal) => (
-                <li key={deal._id}>{deal.title}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Page Suggestions */}
-        {results.suggestions.length > 0 && (
-          <div className="mt-4">
-            <h3 className="font-bold">Found in:</h3>
-            <ul>
-              {results.suggestions.map((suggestion, index) => (
-                <li key={index} className="cursor-pointer text-blue-500" onClick={() => router.push(suggestion.path)}>
-                  {suggestion.page} Page
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
+      {loading && <p className="text-sm text-gray-500 mt-2">Searching...</p>}
+      {results && (
+        <div className="absolute w-full bg-white border mt-2 rounded-lg shadow-lg z-50">
+          <Card className="p-2">
+            <CardContent className="space-y-2">
+              {results.suggestions.length === 0 ? (
+                <p className="text-gray-500 text-sm">No results found.</p>
+              ) : (
+                results.suggestions.map((item, index) => (
+                  <Link key={index} href={item.path} className="block p-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded">
+                    {item.page}
+                  </Link>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default SearchBar;
