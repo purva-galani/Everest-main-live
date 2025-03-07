@@ -49,6 +49,8 @@ const NewProfile: React.FC = () => {
     },
   });
 
+
+
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
@@ -92,7 +94,7 @@ const NewProfile: React.FC = () => {
         title: 'Profile Created',
         description: `Your profile has been created successfully.`,
       });
-      router.push('/');
+      router.push('/dashboard');
     } catch (error) {
       toast({
         title: 'Error',
@@ -117,9 +119,9 @@ const NewProfile: React.FC = () => {
                 Logo
                 <br />
                 <img
-                  src={logoPreview || 'https://via.placeholder.com/80'}
-                  style={{ width: '80px', height: '80px', borderRadius: '50%', border: '1px solid #ccc' }}
-                  alt="Logo Preview"
+                 src={logoPreview || 'https://via.placeholder.com/80'}
+                 style={{ width: '80px', height: '80px', borderRadius: '50%', border: '1px solid #ccc' }}
+                 alt="Logo Preview"
                 />
               </label>
               <input

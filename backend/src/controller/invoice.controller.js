@@ -13,7 +13,6 @@ const cron = require('node-cron');
 //     try {
 //         // Fetch all unpaid invoices
 //         const invoices = await Invoice.find({
-//             date: { $gte: todayIST }, // Fetch events happening today or later
 //             status: "Unpaid", // Only unpaid invoices
 //         });
 
@@ -36,6 +35,7 @@ const cron = require('node-cron');
 //             const oneDayBefore = new Date(dueDate);
 //             oneDayBefore.setDate(oneDayBefore.getDate() - 1);
 
+//             // Check if today matches any of the reminder dates
 //             const reminderDateType = todayIST === threeDaysBefore.toISOString().split('T')[0]
 //                 ? "3 Days Before"
 //                 : todayIST === oneDayBefore.toISOString().split('T')[0]
@@ -57,7 +57,7 @@ const cron = require('node-cron');
 //                     reminderType: reminderDateType,
 //                 });
 //                 console.log(`Reminder (${reminderDateType}) emitted for:`, invoice.customerName);
-             
+
 //                 // Example of emitting a notification event from backend
 //                 io.emit('notification', {
 //                     _id: "invoice._id",
@@ -65,8 +65,8 @@ const cron = require('node-cron');
 //                     message: `Customer ${invoice.customerName} has an unpaid invoice of ₹${invoice.remainingAmount} for the product "${invoice.productName}". The due date is ${dueDate.toISOString().split('T')[0]}.`,
 //                     type: 'reminder',
 //                     createdAt: new Date().toISOString(),
-
 //                 });
+
 //                 // Store notification in MongoDB
 //                 const notificationData = {
 //                     title: `Invoice Reminder (${reminderDateType}): Unpaid Invoice for ${invoice.companyName}`,
@@ -93,8 +93,10 @@ const cron = require('node-cron');
 //     }
 // };
 
-// Schedule the cron job to run daily at midnight (IST)
-// cron.schedule('0 * * * *', remindEvent); // Runs at midnight IST (18:30 UTC)
+// // Schedule the cron job to run every midnight (12:00 AM)
+// cron.schedule('* * * * *', remindEvent, {
+//     // timezone: "Asia/Kolkata", // Set the timezone to IST
+// });
 
 const invoiceAdd = async (req, res) => {
     try {

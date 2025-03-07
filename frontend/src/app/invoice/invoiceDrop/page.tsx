@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { ModeToggle } from "@/components/ModeToggle"
 import { Meteors } from "@/components/ui/meteors";
-
+import SearchBar from '@/components/globalSearch';
+import Notification from '@/components/notification';
 
 interface Invoice {
   _id: string;
@@ -146,26 +147,36 @@ export default function App() {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <div className="flex flex-col w-full">
-        <SidebarInset>
-        <header className="flex h-14 md:h-12 items-center px-4 w-full border-b shadow-sm">
-        <SidebarTrigger className="mr-2" />
-          <ModeToggle/>
-            <Separator orientation="vertical" className="h-6 mx-2" />
-            <Breadcrumb>
-              <BreadcrumbList className="flex items-center space-x-2">
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Drag & Drop</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </header>
-        </SidebarInset>
+    <AppSidebar />
+    <SidebarInset>
+      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
+          <ModeToggle />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/dashboard">
+                  Dashboard
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Data</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+        <div className="flex items-center space-x-4 ml-auto mr-4">
+        <div  >
+                <SearchBar/>
+            </div>
+            <div>
+              <Notification/>
+            </div>
+        </div>
+      </header>
 
         <div className="p-6 ">
           {error && <p className="text-red-500 text-center">{error}</p>}
@@ -260,7 +271,7 @@ export default function App() {
             </div>
           )}
         </div>
-      </div>
+      </SidebarInset>
     </SidebarProvider>
   );
 } 

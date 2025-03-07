@@ -15,64 +15,7 @@ const { storeNotification } = require('./controller/notification.controller');
 connectDB();
 
 const app = express();
-// const transporter = nodemailer.createTransport({
-//     service: "gmail",
-//     auth: {
-//         user: "purvagalani@gmail.com",
-//         pass: "tefl tsvl dxuo toch",
-//     },
-// });
-
-// app.post('/api/v1/complaint/sendEmailComplaint', upload.array('attachments[]'), async (req, res) => {
-//   console.log(req.files);  // Check if files are received correctly
-//   console.log(req.body);   // Check the email details
-
-//   const { to, subject, message } = req.body;
-//   const attachments = req.files; // Get uploaded files
-
-//   if (!to || !subject || !message) {
-//       return res.status(400).json({
-//           success: false,
-//           message: "All fields (to, subject, message) are required.",
-//       });
-//   }
-
-//   try {
-//       const mailOptions = {
-//           from: "purvagalani@gmail.com",
-//           to: to,
-//           subject: subject,
-//           text: message,
-//           attachments: attachments.map(file => ({
-//               filename: file.originalname,
-//               path: file.path
-//           }))
-//       };
-
-//       transporter.sendMail(mailOptions, (error, info) => {
-//           if (error) {
-//               console.error("Error sending email:", error.message);
-//               return res.status(500).json({
-//                   success: false,
-//                   message: "Error sending email: " + error.message,
-//               });
-//           }
-
-//           console.log("Email sent successfully: " + info.response);
-//           res.status(200).json({
-//               success: true,
-//               message: `Email sent successfully to ${to}`,
-//               data: info.response,
-//           });
-//       });
-//   } catch (error) {
-//       console.error("Error sending email:", error.message);
-//       res.status(500).json({
-//           success: false,
-//           message: "Internal server error: " + error.message,
-//       });
-//   }
-// });
+app.use('/uploads', express.static(path.join(__dirname)));
 
 // Middleware setup
 app.use(cors());
@@ -99,7 +42,7 @@ app.use(passport.session());
 //   }
 // });
 
-// Multer file filter to allow only images
+// // Multer file filter to allow only images
 // const upload = multer({
 //   storage,
 //   fileFilter: (req, file, cb) => {

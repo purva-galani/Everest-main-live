@@ -7,6 +7,7 @@ import {
   Command,
   File,
   GalleryVerticalEnd,
+  LayoutDashboard,
   Settings,
 } from "lucide-react"
 
@@ -45,6 +46,12 @@ const data = {
     },
   ],
   navMain: [
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: LayoutDashboard,
+      isActive: window.location.pathname === "",
+    },
     {
       title: "Lead",
       url: "#",
@@ -164,14 +171,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     () =>
       data.navMain.map((item) => ({
         ...item,
-        isActive: isClient && activePath === item.items[0].url, // Check active path for the first item
-        items: item.items.map((subItem) => ({
+        isActive: isClient && activePath === item.url, // Check active path for the main item
+        items: item.items?.map((subItem) => ({
           ...subItem,
           isActive: isClient && activePath === subItem.url, // Check active path for sub-items
         })),
       })),
     [isClient, activePath]
-  )
+  );
 
   return (
     <Sidebar collapsible="icon" {...props}>

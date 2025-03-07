@@ -21,21 +21,37 @@ const register = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-        return res.status(400).json({ success: false, message: 'Missing required fields.' });
+        return res.status(400).json({ success: false, message: "Missing required fields." });
     }
 
     try {
-        const exists = await Users.findOne({ email });
-        if (exists) {
+        const normalizedEmail = email.toLowerCase(); // Normalize email
+
+        const existingUser = await Users.findOne({ email: normalizedEmail });
+        if (existingUser) {
+            if (!existingUser.isVerified) {
+                // Resend verification code
+                const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+                existingUser.verificationCode = verificationCode;
+                existingUser.verificationCodeExpires = Date.now() + 3600000; // 1 hour
+                await existingUser.save();
+
+                await sendVerificationCode(normalizedEmail, verificationCode);
+                return res.json({ success: false, message: "User already exists but is not verified. A new verification code has been sent." });
+            }
+
             return res.json({ success: false, message: "User Already Exists" });
         }
 
-        if (!validator.isEmail(email)) {
+        if (!validator.isEmail(normalizedEmail)) {
             return res.json({ success: false, message: "Please Enter a valid Email" });
         }
 
         // Strong password validation
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return res.json({ success: false, message: "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character." });
+        }
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
@@ -43,17 +59,24 @@ const register = async (req, res) => {
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
         const verificationCodeExpires = Date.now() + 3600000; // 1 hour
 
-        const user = new Users({ name, email, password: hashedPassword, verificationCode, verificationCodeExpires });
+        const user = new Users({
+            name,
+            email: normalizedEmail,
+            password: hashedPassword,
+            verificationCode,
+            verificationCodeExpires,
+            isVerified: false, // Ensure the field exists
+        });
+
         await user.save();
 
-        await sendVerificationCode(email, verificationCode);
+        await sendVerificationCode(normalizedEmail, verificationCode);
 
-        res.json({ success: true, message: 'Registration successful. Please verify your email.' });
+        res.json({ success: true, message: "Registration successful. Please verify your email." });
     } catch (error) {
-        res.status(400).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 };
-
 
 const login = async (req, res) => {
     const { email, password } = req.body;
@@ -98,7 +121,7 @@ const login = async (req, res) => {
             token: newToken,
             email:user.email,
             userId:user._id,
-            redirectTo: isFirstLogin ? "/Profile" : "/Dashboard"  // Return the page to redirect to
+            redirectTo: isFirstLogin ? "/Profile" : "/dashboard"  // Return the page to redirect to
         });
 
     } catch (error) {
