@@ -18,7 +18,6 @@ const Notification = () => {
   const [notifications, setNotifications] = useState<NotificationEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch notifications when the component mounts and periodically
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -30,21 +29,17 @@ const Notification = () => {
           const storedStarred = JSON.parse(
             localStorage.getItem("starredNotifications") || "{}"
           );
-
           const notificationsWithStars = data.data.map(
             (notification: NotificationEvent) => ({
               ...notification,
               starred: !!storedStarred[notification._id],
             })
           );
-
-          // Sort: show errors first, then newest first
           notificationsWithStars.sort((a: NotificationEvent, b: NotificationEvent) => {
             if (a.error && !b.error) return -1;
             if (!a.error && b.error) return 1;
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           });
-
           setNotifications(notificationsWithStars);
         } else {
           setError("Error fetching notifications. Please try again later.");
@@ -53,14 +48,11 @@ const Notification = () => {
         console.error("Error fetching notifications:", error);
       }
     };
-
-    fetchNotifications(); // Initial fetch
-    const interval = setInterval(fetchNotifications, 10000); // Fetch every 10 sec
-
-    return () => clearInterval(interval); // Cleanup on unmount
+    fetchNotifications(); 
+    const interval = setInterval(fetchNotifications, 10000); 
+    return () => clearInterval(interval); 
   }, []);
 
-  // Delete a single notification
   const handleDelete = async (id: string) => {
     try {
       const response = await fetch(
@@ -81,7 +73,6 @@ const Notification = () => {
     }
   };
 
-  // Clear all notifications
   const clearAllNotifications = async () => {
     try {
       const response = await fetch(
@@ -91,7 +82,6 @@ const Notification = () => {
         }
       );
       const data = await response.json();
-
       if (data.success) {
         setNotifications([]);
       } else {
@@ -103,7 +93,6 @@ const Notification = () => {
     }
   };
 
-  // Toggle starred notifications
   const toggleStar = (id: string) => {
     setNotifications((prev) => {
       const updatedNotifications = prev.map((notification) =>
@@ -111,24 +100,19 @@ const Notification = () => {
           ? { ...notification, starred: !notification.starred }
           : notification
       );
-
       const starredNotifications = updatedNotifications.reduce((acc, notification) => {
         acc[notification._id] = notification.starred || false;
         return acc;
       }, {} as Record<string, boolean>);
-
       localStorage.setItem("starredNotifications", JSON.stringify(starredNotifications));
-
       return updatedNotifications;
     });
   };
 
-  // Toggle notification panel
   const toggleNotificationPanel = () => {
     setNotificationVisible(!isNotificationVisible);
   };
 
-  // Count unread notifications
   const unreadNotificationCount = notifications.length;
 
   return (
@@ -143,7 +127,6 @@ const Notification = () => {
           )}
         </button>
       </div>
-
       {isNotificationVisible && (
         <div className="fixed top-0 right-0 w-full sm:w-96 h-full bg-gray-100 dark:bg-[#1a1a1a] shadow-lg border-l border-gray-200 dark:border-gray-700 z-50 p-4 overflow-y-auto hide-scrollbar">
           <div className="flex justify-between items-center mb-4">
@@ -181,7 +164,6 @@ const Notification = () => {
                       : notification.type === "calendar"
                       ? "/Calendar"
                       : "#";
-
                   return (
                     <li
                       key={notification._id}
@@ -189,9 +171,9 @@ const Notification = () => {
                         notification.starred
                           ? "bg-yellow-50 text-yellow-800 border-l-4 border-yellow-500 dark:bg-yellow-900 dark:text-yellow-100"
                           : notification.type === "reminder"
-                          ? "bg-blue-50 text-gray-800 border-l-4 border-gray-500 dark:bg-gray-900 dark:text-gray-100"
+                          ? "bg-gray-50 text-gray-800 border-l-4 border-gray-500 dark:bg-gray-900 dark:text-gray-100"
                           : notification.type === "calendar"
-                          ? "bg-red-50 text-red-800 border-l-4 border-red-500 dark:bg-red-900 dark:text-red-100"
+                          ? "bg-gray-50 text-gray-800 border-l-4 border-gray-500 dark:bg-gray-900 dark:text-gray-100"
                           : "bg-gray-50 text-gray-800 border-l-4 border-gray-400 dark:bg-gray-800 dark:text-gray-200"
                       }`}
                     >
@@ -214,7 +196,6 @@ const Notification = () => {
                         >
                           {notification.starred ? "★" : "☆"}
                         </button>
-                        {/* Tooltip */}
                         <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 hidden group-hover:block text-xs bg-gray-800 text-white px-2 py-1 rounded shadow-md">
                         Mark as Important
                         </span>

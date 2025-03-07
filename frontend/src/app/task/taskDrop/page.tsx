@@ -71,7 +71,7 @@ export default function App() {
         groupTasksByStatus(fetchedTasks);
       } catch (error) {
         if (error instanceof Error) {
-          setError(error.message); // TypeScript now recognizes 'message'
+          setError(error.message); 
         } else {
           setError("An unknown error occurred");
       }
@@ -220,26 +220,21 @@ export default function App() {
           {isModalOpen && selectedTask && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
               <div className="w-full max-w-lg relative">
-                {/* Meteor Effect Background */}
                 <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-blue-500 to-teal-500 transform scale-[0.80] rounded-full blur-3xl" />
 
-                {/* Modal Content */}
                 <div className="relative shadow-xl bg-gray-900 border border-gray-800 px-6 py-8 rounded-2xl">
-                  {/* Close Button */}
                   <div
                     className="absolute top-3 right-3 h-8 w-8 rounded-full border border-gray-500 flex items-center justify-center cursor-pointer"
                     onClick={() => {
-                      setIsModalOpen(false); // Close Modal
+                      setIsModalOpen(false); 
                     }}
                   >
                     <MdCancel className="text-white text-2xl"/>
                       
                   </div>
 
-                  {/* Title */}
                   <h1 className="font-bold text-2xl text-white mb-6 text-center">Lead Details</h1>
 
-                  {/* Lead Details in Two Columns */}
                   <div className="grid grid-cols-2 gap-4 text-white">
                     {Object.entries(selectedTask)
                       .filter(([key]) => !["_id", "isActive", "createdAt", "updatedAt"].includes(key))
@@ -253,7 +248,6 @@ export default function App() {
                       ))}
                   </div>
 
-                  {/* Meteor Effect */}
                   <Meteors number={20} />
                 </div>
               </div>

@@ -65,7 +65,7 @@ export default function App() {
         groupLeadsByStatus(fetchedLeads);
       } catch (error) {
         if (error instanceof Error) {
-          setError(error.message); // TypeScript now recognizes 'message'
+          setError(error.message); 
         } else {
           setError("An unknown error occurred");
       }
@@ -246,7 +246,7 @@ export default function App() {
                 .filter(
                   ([key]) =>
                     !["_id", "isActive", "createdAt", "updatedAt"].includes(key)
-                ) // Exclude _id, isActive, createdAt, updatedAt
+                ) 
                 .map(([key, value]) => (
                   <p key={key} className="mb-4">
                     <strong>

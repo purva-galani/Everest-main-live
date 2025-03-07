@@ -18,6 +18,8 @@ const ownerRoutes=require("./Owner.routes")
 const dealRoutes = require("./deal.routes")
 const accountRoutes = require("./account.routes")
 const globalRoutes =  require('./search.routes')
+const fileFolderRoutes = require("./fileFolder.routes");
+
 // router.use("/user",userRouts)
 router.use("/invoice",invoiceRouts)
 router.use("/lead",leadRouts)
@@ -31,5 +33,7 @@ router.use("/user", usersdRoutes);
 router.use("/owner",ownerRoutes);
 router.use('/deal',dealRoutes);
 router.use('/account',accountRoutes);
-router.use('/search',globalRoutes)
+router.use('/search',globalRoutes);
+router.use("/file-folder", fileFolderRoutes);
+
 module.exports=router

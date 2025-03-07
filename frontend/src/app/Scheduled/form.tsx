@@ -14,7 +14,6 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Textarea } from "@/components/ui/textarea";
 
-// Define validation schema using Zod
 const eventSchema = z.object({
   subject: z.string().min(2, { message: "Subject is required." }),
   assignedUser: z.string().min(2, { message: "Assigned user is required." }),
@@ -31,7 +30,6 @@ const eventSchema = z.object({
 export default function ScheduledEventForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize the form
   const form = useForm<z.infer<typeof eventSchema>>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
@@ -68,7 +66,6 @@ export default function ScheduledEventForm() {
         description: "Your scheduled event has been created successfully.",
       });
 
-      // You can redirect or reset the form here if needed
     } catch (error) {
       toast({
         title: "Error",
@@ -228,7 +225,7 @@ export default function ScheduledEventForm() {
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? new Date(field.value) : undefined} // Convert string to Date
+                      selected={field.value ? new Date(field.value) : undefined} 
                       onSelect={field.onChange}
                       disabled={(date) => date > new Date()}
                       initialFocus

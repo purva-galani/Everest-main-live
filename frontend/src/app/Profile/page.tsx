@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
-// Define the form schema using Zod
 const formSchema = z.object({
   companyName: z.string().min(2, { message: 'Company name is required.' }),
   ownerName: z.string().min(2, { message: 'Owner name must be at least 2 characters.' }),
@@ -63,7 +62,6 @@ const NewProfile: React.FC = () => {
     setIsSubmitting(true);
     const formData = new FormData();
   
-    // Append form values to FormData
     Object.keys(values).forEach((key) => {
       const value = values[key as keyof typeof values];
       if (value instanceof File) {
@@ -73,7 +71,6 @@ const NewProfile: React.FC = () => {
       }
     });
   
-    // Log FormData entries for debugging
     for (const [key, value] of formData.entries()) {
       console.log(key, value);
     }

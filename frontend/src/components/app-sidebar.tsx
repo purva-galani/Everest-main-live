@@ -3,12 +3,22 @@
 import * as React from "react"
 import {
   AudioWaveform,
+  BellMinus,
+  BookCheck,
+  CalendarSync,
   CirclePlay,
   Command,
   File,
   GalleryVerticalEnd,
+  HandCoins,
+  Handshake,
   LayoutDashboard,
+  ReceiptText,
+  ScrollText,
   Settings,
+  SquareUser,
+  Target,
+  UserX,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -21,6 +31,9 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { title } from "process"
+import { url } from "inspector"
+
 
 const data = {
   user: {
@@ -48,14 +61,18 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "#",
       icon: LayoutDashboard,
       isActive: window.location.pathname === "",
+      items: [
+      {  title: "Dashboard", url: "/dashboard",}
+      ]
     },
     {
       title: "Lead",
       url: "#",
-      icon: CirclePlay,
+      icon: Target,
+      isActive: window.location.pathname === "",
       items: [
         { title: "Create", url: "/lead/leadForm" },
         { title: "List", url: "/lead" },
@@ -66,7 +83,8 @@ const data = {
     {
       title: "Invoice",
       url: "#",
-      icon: CirclePlay,
+      icon: ReceiptText,
+      isActive: window.location.pathname === "",
       items: [
         { title: "Create", url: "/invoice/invoiceForm" },
         { title: "List", url: "/invoice" },
@@ -77,7 +95,8 @@ const data = {
     {
       title: "Reminder",
       url: "#",
-      icon: CirclePlay,
+      icon: BellMinus,
+      isActive: window.location.pathname === "",
       items: [
         { title: "List", url: "/reminder/list" },
         { title: "Email", url: "/reminder/reminderEmail" },
@@ -87,7 +106,8 @@ const data = {
     {
       title: "Deal",
       url: "#",
-      icon: CirclePlay,
+      icon: Handshake,
+      isActive: window.location.pathname === "",
       items: [
         { title: "Create", url: "/deal" },
         { title: "List", url: "/deal/list" },
@@ -98,7 +118,8 @@ const data = {
     {
       title: "Task",
       url: "#",
-      icon: CirclePlay,
+      icon: BookCheck,
+      isActive: window.location.pathname === "",
       items: [
         { title: "Create", url: "/task" },
         { title: "List", url: "/task/list" },
@@ -108,7 +129,8 @@ const data = {
     {
       title: "Complaint",
       url: "#",
-      icon: CirclePlay,
+      icon: UserX,
+      isActive: window.location.pathname === "",
       items: [
         { title: "Create", url: "/complaint" },
         { title: "List", url: "/complaint/list" },
@@ -118,7 +140,8 @@ const data = {
     {
       title: "Contact",
       url: "#",
-      icon: CirclePlay,
+      icon: SquareUser,
+      isActive: window.location.pathname === "",
       items: [
         { title: "Create", url: "/contact" },
         { title: "List", url: "/contact/list" },
@@ -128,7 +151,8 @@ const data = {
     {
       title: "Account",
       url: "#",
-      icon: CirclePlay,
+      icon: HandCoins,
+      isActive: window.location.pathname === "",
       items: [
         { title: "Create", url: "/Account" },
         { title: "List", url: "/account/list" }
@@ -137,7 +161,8 @@ const data = {
     {
       title: "Documents",
       url: "#",
-      icon: CirclePlay,
+      icon: ScrollText,
+      isActive: window.location.pathname === "",
       items: [
         { title: "Photos", url: "/document" },
         { title: "Videos", url: "/video" },
@@ -147,10 +172,20 @@ const data = {
     {
       title: "Schedule",
       url: "#",
-      icon: CirclePlay,
+      icon: CalendarSync,
+      isActive: window.location.pathname === "",
       items: [
         { title: "Create", url: "/Scheduled" },
         { title: "List", url: "/scheduled/list" }
+      ],
+    },
+    {
+      title: "Calendar",
+      url: "#",
+      icon: CirclePlay,
+      isActive: window.location.pathname === "",
+      items: [
+        { title: "Calendar", url: "/calendar"},
       ],
     },
   ],
@@ -160,21 +195,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [isClient, setIsClient] = React.useState(false)
   const [activePath, setActivePath] = React.useState("")
 
-  // Update active state on the client side
   React.useEffect(() => {
-    setIsClient(true) // Ensure this runs only on the client side
+    setIsClient(true) 
     setActivePath(window.location.pathname)
   }, [])
 
-  // Modify navMain items based on the current active path
   const updatedNavMain = React.useMemo(
     () =>
       data.navMain.map((item) => ({
         ...item,
-        isActive: isClient && activePath === item.url, // Check active path for the main item
+        isActive: isClient && activePath === item.url, 
         items: item.items?.map((subItem) => ({
           ...subItem,
-          isActive: isClient && activePath === subItem.url, // Check active path for sub-items
+          isActive: isClient && activePath === subItem.url, 
         })),
       })),
     [isClient, activePath]

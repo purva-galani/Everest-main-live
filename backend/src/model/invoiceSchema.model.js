@@ -16,6 +16,7 @@ const invoiceSchema = new mongoose.Schema(
     gstRate: { type: Number},
     status: { type: String },
     date: { type: Date},
+    endDate:{type:Date},
     totalWithoutGst: { type: Number},
     totalWithGst: { type: Number},
     paidAmount: { type: Number, default: 0 },

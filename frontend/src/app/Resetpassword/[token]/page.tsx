@@ -31,7 +31,6 @@ export default function ResetPassword() {
         });       return;
     }
 
-    // Check if the password meets the strong password criteria
     if (!isPasswordStrong(password)) {
         toast({
             title: "Error",

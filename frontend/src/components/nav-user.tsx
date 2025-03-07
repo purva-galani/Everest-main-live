@@ -49,11 +49,11 @@ export function NavUser() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false); // State for delete modal
-  const [isDeleting, setIsDeleting] = useState(false); // State to handle deleting state
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false); 
+  const [isDeleting, setIsDeleting] = useState(false); 
 
   const [hover, setHover] = useState(false);
-  const storageValue = 33; // Your progress value
+  const storageValue = 33; 
 
   const form = useForm<Owner>({
     defaultValues: {
@@ -100,8 +100,8 @@ export function NavUser() {
   const handleEditClick = (owner: Owner) => {
     setEditOwner(owner);
     setIsEditing(true);
-    setOpen(false); // Close the dialog when editing starts
-    form.reset(owner); // Reset form with owner data
+    setOpen(false); 
+    form.reset(owner); 
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,7 +126,6 @@ export function NavUser() {
       let ownerDeleted = false;
       let userDeleted = false;
 
-      // Delete Owner if ownerId exists
       if (ownerId) {
         const ownerResponse = await axios.delete(`http://localhost:8000/api/v1/owner/deleteOwner/${ownerId}`, {
           headers: {
@@ -142,7 +141,6 @@ export function NavUser() {
         }
       }
 
-      // Delete User if userId exists
       if (userId) {
         const userResponse = await fetch("http://localhost:8000/api/v1/user/delete-account", {
           method: "DELETE",
@@ -163,7 +161,6 @@ export function NavUser() {
         }
       }
 
-      // If either owner or user was deleted, log out and redirect
       if (ownerDeleted || userDeleted) {
         localStorage.clear();
         router.push("/");
@@ -184,7 +181,6 @@ export function NavUser() {
     try {
       const formData = new FormData();
   
-      // Append all fields to formData
       Object.keys(data).forEach((key) => {
         if (key !== 'logo') {
           const value = data[key as keyof Owner];
@@ -194,13 +190,11 @@ export function NavUser() {
         }
       });
   
-      // Append the logo file if it exists
       if (logoPreview && logoPreview.startsWith('data:image')) {
         const blob = await fetch(logoPreview).then((res) => res.blob());
         formData.append('logo', blob, 'logo.png');
       }
   
-      // Log FormData for debugging
       for (const [key, value] of formData.entries()) {
         console.log(key, value);
       }
@@ -238,7 +232,6 @@ export function NavUser() {
         <span className="font-medium">Google Storage</span>
       </div>
 
-      {/* Progress Bar with Tooltip on Hover */}
       <div
         className="relative group"
         onMouseEnter={() => setHover(true)}
@@ -246,7 +239,6 @@ export function NavUser() {
       >
         <Progress value={storageValue} className="h-1" />
 
-        {/* Tooltip */}
         {hover && (
           <div className="absolute left-1/2 -top-6 -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-800 px-2 py-1 text-xs text-white shadow-md">
             {storageValue}% Used

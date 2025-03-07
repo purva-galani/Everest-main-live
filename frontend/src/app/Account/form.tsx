@@ -13,7 +13,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-// Define validation schema using Zod
 const accountSchema = z.object({
   accountName: z.string().min(2, { message: "Account name is required." }),
   contactName: z.string().min(2, { message: "Contact name is required." }),
@@ -41,7 +40,6 @@ const accountSchema = z.object({
 export default function AccountForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize the form
   const form = useForm<z.infer<typeof accountSchema>>({
     resolver: zodResolver(accountSchema),
     defaultValues: {
@@ -102,7 +100,6 @@ export default function AccountForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Account Name and Contact Name */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <FormField
             control={form.control}
@@ -132,7 +129,6 @@ export default function AccountForm() {
           />
         </div>
 
-        {/* Contact Number and Email */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <FormField
             control={form.control}
@@ -162,7 +158,6 @@ export default function AccountForm() {
           />
         </div>
 
-        {/* Account Type and Industry */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <FormField
             control={form.control}
@@ -199,7 +194,6 @@ export default function AccountForm() {
           />
         </div>
 
-        {/* Status and Account Manager */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <FormField
             control={form.control}
@@ -235,7 +229,6 @@ export default function AccountForm() {
           />
         </div>
 
-        {/* Start Date and Due Date */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <FormField
             control={form.control}
@@ -303,8 +296,6 @@ export default function AccountForm() {
                         )}
                     />
         </div>
-
-        {/* Address */}
         <FormField
           control={form.control}
           name="address"
@@ -318,8 +309,6 @@ export default function AccountForm() {
             </FormItem>
           )}
         />
-
-        {/* Description */}
         <FormField
           control={form.control}
           name="description"
@@ -333,8 +322,6 @@ export default function AccountForm() {
             </FormItem>
           )}
         />
-
-        {/* Company Name */}
         <FormField
           control={form.control}
           name="companyName"
@@ -348,8 +335,6 @@ export default function AccountForm() {
             </FormItem>
           )}
         />
-
-        {/* Bank Details */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <FormField
             control={form.control}
@@ -427,7 +412,6 @@ export default function AccountForm() {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="bankDetails.swiftCode"
@@ -441,8 +425,6 @@ export default function AccountForm() {
             </FormItem>
           )}
         />
-
-        {/* Submit Button */}
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? (
             <>

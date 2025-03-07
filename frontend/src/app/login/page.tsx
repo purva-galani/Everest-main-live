@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react"; // Import useEffect
+import React, { useState, useEffect } from "react"; 
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
 import axios from "axios";
@@ -20,7 +20,7 @@ interface User {
 }
 
 export default function Page() {
-  const [loading, setLoading] = useState<boolean>(true); // Added loading state
+  const [loading, setLoading] = useState<boolean>(true); 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [showVerification, setShowVerification] = useState<boolean>(false);
@@ -40,12 +40,10 @@ export default function Page() {
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [passwordMessage, setPasswordMessage] = useState<string>("");
 
-  // Simulate loading effect on initial render
   useEffect(() => {
-    setTimeout(() => setLoading(false), 1000); // Simulated delay
+    setTimeout(() => setLoading(false), 1000); 
   }, []);
 
-  // Load last selected form type on mount
   useEffect(() => {
     const savedFormState = localStorage.getItem("formState");
     if (savedFormState) {
@@ -57,7 +55,6 @@ export default function Page() {
     }
   }, []);
 
-    // Save current form state whenever it changes
     useEffect(() => {
       localStorage.setItem(
         "formState",
@@ -107,7 +104,7 @@ export default function Page() {
       );
 
       if (response.data.success) {
-        setEmailSent(true); // Show confirmation message
+        setEmailSent(true); 
       } else {
         toast({
           title: "Invoice Submitted",
@@ -128,7 +125,6 @@ export default function Page() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Check if passwords match during registration
     if (formData.password !== formData.confirmPassword && !isLogin) {
       toast({
         title: "Error",
@@ -148,24 +144,21 @@ export default function Page() {
         if (response.data.success) {
             const { email, token, userId, redirectTo } = response.data;
 
-            // Store user information
             if (token) localStorage.setItem("authToken", token);
             if (userId) localStorage.setItem("userId", userId);
             if (email) localStorage.setItem("userEmail", email);
 
             if (!isLogin) {
-                // Show verification screen after registration
                 setShowVerification(true);
                 toast({
                   title: "Verification Required",
                   description: "A verification code has been sent to your email.",
               });
             } else {
-                // Redirect after login
                 if (redirectTo) {
-                    router.push(redirectTo);  // Dynamic redirect
+                    router.push(redirectTo);  
                 } else {
-                    router.push("/dashboard");  // Fallback redirect
+                    router.push("/dashboard");  
                     toast({
                       title: "Success",
                       description: "Logged in successfully!",
@@ -173,7 +166,6 @@ export default function Page() {
                 }
             }
 
-            // Reset form fields
             setFormData({
                 email: "",
                 password: "",
@@ -208,15 +200,15 @@ export default function Page() {
 
     try {
       const response = await axios.post('http://localhost:8000/api/v1/user/verify-email', {
-        verificationCode, // Send only the code
+        verificationCode, 
       });
 
       if (response.data.success) {
         toast({
           title: "Email Verified",
           description: "Your email has been verified successfully.",
-      });        setIsLogin(true); // Switch to login after successful verification
-        setShowVerification(false); // Hide the verification form
+      });        setIsLogin(true); 
+        setShowVerification(false); 
       } else {
         toast({
           title: "Error",
@@ -244,7 +236,6 @@ export default function Page() {
       <div className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-8 md:p-8 shadow-input bg-white dark:bg-black border border-gray-300 dark:border-gray-700">
           {isForgotPassword ? (
           emailSent ? (
-            // Show email sent confirmation
             <div className="text-center">
               <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">
                 Check your email
@@ -263,7 +254,6 @@ export default function Page() {
               </p>
             </div>
           ) : (
-            // Show Forgot Password form
             <>
               <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">
                 Forgot Password
@@ -334,8 +324,8 @@ export default function Page() {
               <p
                 className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                 onClick={() => {
-                  setShowVerification(false); // Hide verification form
-                  setIsLogin(false); // Switch to Sign Up form
+                  setShowVerification(false); 
+                  setIsLogin(false); 
                 }}
               >
                 Back to Sign Up

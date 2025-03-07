@@ -34,7 +34,7 @@ import { CalendarIcon, Loader2 } from "lucide-react"
 const formSchema = z.object({
     companyName: z.string().min(2, { message: "Company name is required." }),
     customerName: z.string().min(2, { message: "Customer name must be at least 2 characters." }),
-    contactNumber: z.string().optional(), // Optional field
+    contactNumber: z.string().optional(), 
     emailAddress: z.string().email({ message: "Invalid email address" }),
     address: z.string().min(2, { message: "Address is required." }),
     productName: z.string().min(2, { message: "Product name is required." }),
@@ -88,7 +88,7 @@ export default function LeadForm() {
                 title: "Lead Submitted",
                 description: `Your lead has been successfully submitted. ID: ${data.id}`,
             })
-            router.push(`/lead/${data.id}`) // Redirect to the lead details page
+            router.push(`/lead/${data.id}`) 
         } catch (error) {
             toast({
                 title: "Error",
@@ -187,9 +187,8 @@ export default function LeadForm() {
                             type="number"
                             {...field}
                             onChange={(e) => {
-                                // Convert the string value to a number
-                                const value = e.target.valueAsNumber || 0; // Use `valueAsNumber` to get a number
-                                field.onChange(value); // Pass the number to the form
+                                const value = e.target.valueAsNumber || 0; 
+                                field.onChange(value); 
                             }}
                             />
                         </FormControl>
@@ -275,10 +274,8 @@ export default function LeadForm() {
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0" align="start">
                                         <Calendar
-                                            // mode="single"
                                             selected={field.value}
                                             onSelect={field.onChange}
-                                            // disabled={(date) => date > new Date()}
                                             initialFocus
                                         />
                                     </PopoverContent>

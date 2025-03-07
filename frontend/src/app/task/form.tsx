@@ -48,9 +48,8 @@ export default function Task() {
   const onSubmit = async (values: z.infer<typeof taskSchema>) => {
     setIsSubmitting(true);
     try {
-      // API call to create or update task
       const response = await fetch("http://localhost:8000/api/v1/task/createTask", {
-        method: "POST", // or PUT if updating
+        method: "POST", 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
@@ -66,7 +65,6 @@ export default function Task() {
         description: `Your task has been created successfully.`,
       });
 
-      // Redirect or reset form, depending on your requirements
     } catch (error) {
       toast({
         title: "Error",

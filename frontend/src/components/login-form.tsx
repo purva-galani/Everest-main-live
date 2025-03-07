@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react"; // Import useEffect
+import React, { useState, useEffect } from "react"; 
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
 import axios from "axios";
@@ -54,37 +54,11 @@ export default function Page() {
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [passwordMessage, setPasswordMessage] = useState<string>("");
 
-  // Retrieve states from localStorage on component mount
   useEffect(() => {
-    // const savedIsLogin = localStorage.getItem("isLogin");
-    // const savedIsForgotPassword = localStorage.getItem("isForgotPassword");
-    // const savedShowVerification = localStorage.getItem("showVerification");
 
-    // if (savedIsLogin !== null) {
-    //   setIsLogin(savedIsLogin === "true");
-    // }
-    // if (savedIsForgotPassword !== null) {
-    //   setIsForgotPassword(savedIsForgotPassword === "true");
-    // }
-    // if (savedShowVerification !== null) {
-    //   setShowVerification(savedShowVerification === "true");
-    // }
-    setIsLoading(false); // Once states are set, remove loading
+    setIsLoading(false); 
   }, []);
-  if (isLoading) return null; // Prevent render until states are restored
-
-  // // Save states to localStorage whenever they change
-  // useEffect(() => {
-  //   localStorage.setItem("isLogin", isLogin.toString());
-  // }, [isLogin]);
-
-  // useEffect(() => {
-  //   localStorage.setItem("isForgotPassword", isForgotPassword.toString());
-  // }, [isForgotPassword]);
-
-  // useEffect(() => {
-  //   localStorage.setItem("showVerification", showVerification.toString());
-  // }, [showVerification]);
+  if (isLoading) return null; 
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -128,7 +102,7 @@ export default function Page() {
       );
 
       if (response.data.success) {
-        setEmailSent(true); // Show confirmation message
+        setEmailSent(true); 
       } else {
         toast({
           title: "Invoice Submitted",
@@ -139,7 +113,8 @@ export default function Page() {
         title: "Error",
         description: error instanceof Error ? error.message : "There was an error submitting the invoice.",
         variant: "destructive",
-      });    } finally {
+      });    
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -148,7 +123,6 @@ export default function Page() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Check if passwords match during registration
     if (formData.password !== formData.confirmPassword && !isLogin) {
         toast({
             title: "Error",
@@ -187,7 +161,6 @@ export default function Page() {
                 }
             }
 
-            // Reset form fields
             setFormData({
                 email: "",
                 password: "",
@@ -214,7 +187,7 @@ export default function Page() {
 };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8000/auth/google"; // Backend Google auth route
+    window.location.href = "http://localhost:8000/auth/google"; 
   };
  
 
@@ -224,7 +197,7 @@ export default function Page() {
 
     try {
         const response = await axios.post('http://localhost:8000/api/v1/user/verify-email', {
-            verificationCode, // Send only the code
+            verificationCode,
         });
 
         if (response.data.success) {
@@ -232,8 +205,8 @@ export default function Page() {
                 title: "Email Verified",
                 description: "Your email has been verified successfully.",
             });
-            setIsLogin(true); // Switch to login after successful verification
-            setShowVerification(false); // Hide the verification form
+            setIsLogin(true); 
+            setShowVerification(false); 
         } else {
             toast({
                 title: "Error",
@@ -254,10 +227,8 @@ export default function Page() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-8 md:p-8 shadow-input bg-white dark:bg-black">
-      {/* // <div className="max-w-md w-full mx-auto my-12 rounded-none md:rounded-2xl p-8 md:p-8 shadow-input bg-white dark:bg-black"> */}
         {isForgotPassword ? (
           emailSent ? (
-            // Show email sent confirmation
             <div className="text-center">
               <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">
                 Check your email
@@ -276,7 +247,6 @@ export default function Page() {
               </p>
             </div>
           ) : (
-            // Show Forgot Password form
             <>
               <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">
                 Forgot Password
@@ -347,8 +317,8 @@ export default function Page() {
               <p
                 className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                 onClick={() => {
-                  setShowVerification(false); // Hide verification form
-                  setIsLogin(false); // Switch to Sign Up form
+                  setShowVerification(false); 
+                  setIsLogin(false); 
                 }}
               >
                 Back to Sign Up

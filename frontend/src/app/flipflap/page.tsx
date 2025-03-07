@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import CardLineChart from "../flipflap/card"
+import GoogleDriveClone from "../flipflap/card"
 
 import {
     SidebarInset,
@@ -44,17 +44,17 @@ export default function CertificatePage() {
                     </div>
                 </header>
                 <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 ">
-                    <Card className="max-w-5xl mx-h-10xl">
+                    
                         <CardHeader>
-                            <CardTitle className="text-3xl font-bold text-center">Files </CardTitle>
+                            <CardTitle className="text-3xl font-bold text-center"> </CardTitle>
                             <CardDescription className="text-center">
                                 
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <CardLineChart/>
+                            <GoogleDriveClone/>
                         </CardContent>
-                    </Card>
+                    
                 </div>
             </SidebarInset>
         </SidebarProvider>

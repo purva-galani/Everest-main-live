@@ -51,14 +51,13 @@ const EmailInput: React.FC = () => {
     };
 
     const handleSendEmail = async () => {
-        const message = messageRef.current?.innerText || ""; // Get the message from the contentEditable div
+        const message = messageRef.current?.innerText || ""; 
 
         const formData = new FormData();
         formData.append("to", to);
         formData.append("subject", subject);
         formData.append("message", message);
 
-        // Append each file with unique keys
         attachments.forEach((file) => {
             formData.append("attachments[]", file);
         });
@@ -89,7 +88,7 @@ const EmailInput: React.FC = () => {
         const range = selection.getRangeAt(0);
         const selectedText = range.toString();
 
-        if (!selectedText) return; // No text selected, so do nothing
+        if (!selectedText) return;
 
         const span = document.createElement("span");
 
@@ -152,18 +151,16 @@ const EmailInput: React.FC = () => {
         const range = selection.getRangeAt(0);
         const span = document.createElement("span");
 
-        // Apply styles dynamically
         if (property === "fontFamily") {
             span.style.fontFamily = value;
         } else if (property === "fontSize") {
-            span.style.fontSize = `${value}px`; // Ensure the value has "px" for proper styling
+            span.style.fontSize = `${value}px`;
         }
 
-        span.appendChild(range.extractContents()); // Wrap selected text
+        span.appendChild(range.extractContents()); 
         range.insertNode(span);
     };
 
-    {/* Insert Table Function */ }
     const insertTable = () => {
         const messageDiv = messageRef.current;
         if (!messageDiv) return;
@@ -181,7 +178,6 @@ const EmailInput: React.FC = () => {
         tableHTML += "</table><br/>";
         messageDiv.innerHTML += tableHTML;
 
-        // Close Table Picker
         setShowTablePicker(false);
     };
 
@@ -189,7 +185,7 @@ const EmailInput: React.FC = () => {
         const messageDiv = messageRef.current;
         if (messageDiv) {
             const hr = document.createElement("hr");
-            hr.style.margin = "10px 0"; // Add spacing
+            hr.style.margin = "10px 0"; 
             messageDiv.appendChild(hr);
         }
     };
@@ -227,16 +223,15 @@ const EmailInput: React.FC = () => {
                     </div>
                 </div>
             </header>
-                {/* Table Picker UI */}
-                {/* Table Picker (Centered Modal) */}
+
                 {showTablePicker && (
                     <div
                         className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-                        onClick={() => setShowTablePicker(false)} // Click outside to close
+                        onClick={() => setShowTablePicker(false)} 
                     >
                         <div
                             className="bg-white shadow-md p-4 border rounded-md"
-                            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+                            onClick={(e) => e.stopPropagation()} 
                         >
                             <div className="grid grid-cols-6 gap-1">
                                 {[...Array(6)].map((_, row) =>
@@ -283,7 +278,7 @@ const EmailInput: React.FC = () => {
                                     value={subject}
                                     onChange={(e) => setSubject(e.target.value)}
                                 />
-                            </div>   {/* Message Editor */}
+                            </div>   
                             <div
                                 ref={messageRef}
                                 className="border border-gray-300 rounded-md h-40 p-2 overflow-y-auto"
@@ -291,8 +286,6 @@ const EmailInput: React.FC = () => {
                                 style={{ maxHeight: "200px", minHeight: "100px", whiteSpace: "pre-wrap" }}
                             />
 
-
-                            {/* Text Formatting Toolbar */}
                             <div className="flex flex-wrap items-center gap-2 border border-gray-300 p-2 rounded-md">
                                 <IoMdAttach className="text-xl cursor-pointer hover:text-gray-500" onClick={handleFileClick} />
 
@@ -341,12 +334,7 @@ const EmailInput: React.FC = () => {
                                 </Button>
 
                             </div>
-
-
-                            {/* File Picker */}
                             <input type="file" ref={fileInputRef} hidden onChange={handleFileChange} />
-
-                            {/* Send Button */}
                             <Button className="flex items-center space-x-2" onClick={handleSendEmail}>
                                 <IoIosSend className="text-lg" />
                                 <span>Send</span>

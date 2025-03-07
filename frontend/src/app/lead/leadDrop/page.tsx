@@ -11,7 +11,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Meteors } from "@/components/ui/meteors";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRouter } from "next/navigation"; 
 import { ModeToggle } from "@/components/ModeToggle"
 import SearchBar from '@/components/globalSearch';
 import Notification from '@/components/notification';
@@ -49,7 +49,7 @@ export default function App() {
   const [draggedOver, setDraggedOver] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = React.useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const router = useRouter(); // Initialize router
+  const router = useRouter(); 
 
   const handleLeadClick = (lead: Lead) => {
     setSelectedLead(lead);
@@ -68,7 +68,7 @@ export default function App() {
         groupLeadsByStatus(fetchedLeads);
       } catch (error) {
         if (error instanceof Error) {
-          setError(error.message); // TypeScript now recognizes 'message'
+          setError(error.message); 
         } else {
           setError("An unknown error occurred");
       }
@@ -97,10 +97,10 @@ export default function App() {
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   if (isNaN(date.getTime())) {
-    console.warn(`Invalid date: ${dateString}`); // Log invalid dates for debugging
-    return "Invalid Date"; // Return a fallback value
+    console.warn(`Invalid date: ${dateString}`); 
+    return "Invalid Date"; 
   }
-  return date.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+  return date.toISOString().split("T")[0]; 
 };
 
   const handleDragStart = (e: React.DragEvent, lead: Lead, fromStatus: string) => {
@@ -123,7 +123,7 @@ const formatDate = (dateString: string): string => {
     setGroupedLeads((prev) => ({
       ...prev,
       [fromStatus]: prev[fromStatus]?.filter((l) => l._id !== lead._id) || [],
-      [toStatus]: [...(prev[toStatus] || []), updatedLead as Lead], // Explicitly cast updatedLead
+      [toStatus]: [...(prev[toStatus] || []), updatedLead as Lead],
     }));
     
 
@@ -232,26 +232,22 @@ const formatDate = (dateString: string): string => {
           {isModalOpen && selectedLead && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
               <div className="w-full max-w-lg relative">
-                {/* Meteor Effect Background */}
                 <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-blue-500 to-teal-500 transform scale-[0.80] rounded-full blur-3xl" />
 
-                {/* Modal Content */}
                 <div className="relative shadow-xl bg-gray-900 border border-gray-800 px-6 py-8 rounded-2xl">
-                  {/* Close Button */}
                   <div
                     className="absolute top-3 right-3 h-8 w-8 rounded-full border border-gray-500 flex items-center justify-center cursor-pointer"
                     onClick={() => {
-                      setIsModalOpen(false); // Close Modal
+                      setIsModalOpen(false); 
                     }}
                   >
                     <MdCancel className="text-white text-2xl"/>
                       
                   </div>
 
-                  {/* Title */}
+                 
                   <h1 className="font-bold text-2xl text-white mb-6 text-center">Lead Details</h1>
 
-                  {/* Lead Details in Two Columns */}
                   <div className="grid grid-cols-2 gap-4 text-white">
                     {Object.entries(selectedLead)
                       .filter(([key]) => !["_id", "isActive", "createdAt", "updatedAt"].includes(key))
@@ -265,7 +261,6 @@ const formatDate = (dateString: string): string => {
                       ))}
                   </div>
 
-                  {/* Meteor Effect */}
                   <Meteors number={20} />
                 </div>
               </div>

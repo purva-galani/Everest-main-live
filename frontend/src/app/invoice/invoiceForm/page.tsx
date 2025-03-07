@@ -26,7 +26,7 @@ const formSchema = z.object({
   amount: z.number().positive({ message: "Amount must be positive." }),
   discount: z.number().optional(),
   gstRate: z.number().optional(),
-  status: z.enum(["Pending", "Unpaid", "Paid"]),
+  status: z.enum(["Unpaid", "Paid", "Pending"]),
   date: z.date().optional(),
   totalWithoutGst: z.number().optional(),
   totalWithGst: z.number().optional(),
@@ -322,9 +322,9 @@ export default function InvoiceForm() {
                     {...field}
                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="Pending">Pending</option>
                     <option value="Unpaid">Unpaid</option>
                     <option value="Paid">Paid</option>
+                    <option value="Pending">Pending</option>
                   </select>
                 </FormControl>
                 <FormMessage />
@@ -332,7 +332,7 @@ export default function InvoiceForm() {
             )}
           />
 
-          <FormField
+<FormField
             control={form.control}
             name="date"
             render={({ field }) => (
@@ -374,7 +374,11 @@ export default function InvoiceForm() {
               <FormItem>
                 <FormLabel>Paid Amount</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter paid amount" type="number" {...field} onChange={(e) => { const value = e.target.valueAsNumber || 0; field.onChange(value); }}/>
+                  <Input placeholder="Enter paid amount" type="number" {...field}                     onChange={(e) => {
+                      // Convert the string value to a number
+                      const value = e.target.valueAsNumber || 0; // Use `valueAsNumber` to get a number
+                      field.onChange(value); // Pass the number to the form
+                    }}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>

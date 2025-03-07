@@ -23,7 +23,7 @@ export default function BaseData() {
     };
 
     const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault(); // Prevent page reload
+        event.preventDefault(); 
 
         try {
             const response = await fetch("/api/turso", {
