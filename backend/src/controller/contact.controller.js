@@ -18,8 +18,8 @@ const sendSMS = async (req, res) => {
 const transporter = nodemailer.createTransport({
     service: "gmail",  // Or another service like SendGrid
     auth: {
-        user: "markwatson010190@gmail.com",  // Replace with your Gmail ID
-        pass: "vken yuvn yisr wwpw",  // Replace with your Gmail App Password
+        user: process.env.EMAIL_USER,  // Get email from .env
+        pass: process.env.EMAIL_PASS,  // Get password from .env
     },
 });
 
