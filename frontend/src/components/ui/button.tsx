@@ -37,7 +37,7 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
-  endContent?: React.ReactNode; // Add support for endContent
+  endContent?: React.ReactNode; 
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -50,7 +50,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {children}
-        {endContent && <span className="ml-2">{endContent}</span>} {/* Render endContent */}
+        {endContent && <span className="ml-2">{endContent}</span>} 
       </Comp>
     );
   }

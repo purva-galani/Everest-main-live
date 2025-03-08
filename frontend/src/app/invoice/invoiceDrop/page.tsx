@@ -255,7 +255,6 @@ export default function App() {
                         </p>
                       ))}
                   </div>
-
                   <Meteors number={20} />
                 </div>
               </div>

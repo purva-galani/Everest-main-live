@@ -250,7 +250,6 @@ export default function LeadForm() {
                             </FormItem>
                         )}
                     />
-
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -337,7 +336,6 @@ export default function LeadForm() {
                         )}
                     />
                 
-
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? (
                         <>

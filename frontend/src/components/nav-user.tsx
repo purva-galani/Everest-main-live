@@ -228,17 +228,15 @@ export function NavUser() {
         <SidebarMenuItem>
         <div className="px-4 py-3 space-y-1">
       <div className="flex items-center gap-2 text-sm text-gray-600">
-        <Cloud className="size-4 text-gray-500" />
+        <Cloud className="size-4 text-gray-500"/>
         <span className="font-medium">Google Storage</span>
       </div>
-
       <div
         className="relative group"
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
       >
-        <Progress value={storageValue} className="h-1" />
-
+        <Progress value={storageValue} className="h-1"/>
         {hover && (
           <div className="absolute left-1/2 -top-6 -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-800 px-2 py-1 text-xs text-white shadow-md">
             {storageValue}% Used
@@ -250,7 +248,7 @@ export function NavUser() {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={`http://localhost:8000/uploads/${currentOwner.logo}`} alt={currentOwner?.ownerName || "User"} />
+                  <AvatarImage src={`http://localhost:8000/uploads/${currentOwner.logo}`} alt={currentOwner?.ownerName || "User"}/>
                   <AvatarFallback className="rounded-lg">
                     {currentOwner?.ownerName?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
@@ -259,26 +257,26 @@ export function NavUser() {
                   <span className="truncate font-semibold">{currentOwner?.ownerName || "User"}</span>
                   <span className="truncate text-xs">{currentOwner?.emailAddress || "No Email"}</span>
                 </div>
-                <ChevronsUpDown className="ml-auto size-4" />
+                <ChevronsUpDown className="ml-auto size-4"/>
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg" side={isMobile ? "bottom" : "right"} align="end" sideOffset={4}>
             <DropdownMenuItem>
-                <LogOut />
+                <LogOut/>
                 <Link href="/login">Log out</Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setDeleteModalOpen(true)} className="text-red-500">
-                <Trash2 className="size-4 mr-2" />
+                <Trash2 className="size-4 mr-2"/>
                 <span>Delete Account</span>
               </DropdownMenuItem>
 
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator/>
             
               <button onClick={() => setOpen(true)} className="w-full text-left">
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={`http://localhost:8000/uploads/${currentOwner.logo}`} alt={currentOwner?.ownerName || "User"} />
+                      <AvatarImage src={`http://localhost:8000/uploads/${currentOwner.logo}`} alt={currentOwner?.ownerName || "User"}/>
                       <AvatarFallback className="rounded-lg">
                         {currentOwner?.ownerName?.charAt(0).toUpperCase() || "U"}
                       </AvatarFallback>
@@ -316,17 +314,15 @@ export function NavUser() {
       <DialogTitle className="text-xl md:text-2xl font-bold text-center text-gray-800 dark:text-white">
         Profile Details
       </DialogTitle>
-      <hr className="my-3 border-gray-300 dark:border-gray-700" /> {/* Dark mode support */}
-      <DialogDescription>
-        {loading ? (
+      <hr className="my-3 border-gray-300 dark:border-gray-700"/> 
+    </DialogHeader>
+    {loading ? (
           <div className="text-center text-gray-600 dark:text-gray-400 text-lg">Loading...</div>
         ) : error ? (
           <div className="text-center text-red-600 text-lg">{error}</div>
         ) : currentOwner ? (
           <div className="relative h-full">
             <div className="flex flex-col md:flex-row items-center md:items-start md:space-x-8">
-              
-              {/* Left Column: Logo + Owner Info */}
               <div className="w-full md:w-1/3 flex flex-col items-center mt-4 md:mt-6">
                 <div className="w-32 h-32 md:w-44 md:h-44 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800 mb-6 md:mb-8">
                   {currentOwner.logo ? (
@@ -340,7 +336,6 @@ export function NavUser() {
                   )}
                 </div>
 
-                {/* Owner Name & Email Below Logo */}
                 <div className="mt-2 text-center">
                   <div className="text-lg md:text-xl font-bold font-serif text-gray-800 dark:text-white">
                     {currentOwner.ownerName}
@@ -351,7 +346,6 @@ export function NavUser() {
                 </div>
               </div>
 
-              {/* Right Column: Owner Details */}
               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4 text-gray-700 dark:text-gray-300 py-4 md:py-6 text-base md:text-sm">
                 <div>
                   <span className="font-bold">Owner Name:</span>
@@ -403,7 +397,6 @@ export function NavUser() {
                   <span className="block">{currentOwner.employeeSize}</span>
                 </div>
 
-                {/* Website moved to last row */}
                 {currentOwner.website && (
                   <div className="col-span-1 md:col-span-2">
                     <span className="font-bold">Website:</span>
@@ -420,7 +413,6 @@ export function NavUser() {
               </div>
             </div>
 
-            {/* Edit Button */}
             <div className="flex justify-center md:justify-end mt-6">
               <button
                 className="bg-blue-500 text-white px-5 py-2 text-base md:text-lg rounded-lg hover:bg-blue-600"
@@ -433,23 +425,21 @@ export function NavUser() {
         ) : (
           <div className="text-center text-gray-600 dark:text-gray-400 text-lg">No owners found.</div>
         )}
-      </DialogDescription>
-    </DialogHeader>
   </DialogContent>
 </Dialog>
 
 
-      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+  <Dialog open={isEditing} onOpenChange={setIsEditing}>
   <DialogContent>
     <DialogHeader>
       <DialogTitle>Edit Profile</DialogTitle>
-      <DialogDescription>
-        <Form {...form}>
+    </DialogHeader>
+    <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
              <div>
               <label htmlFor="logo">
                 Logo
-                <br />
+                <br/>
                 <img
                  src={logoPreview || `http://localhost:8000/uploads/${currentOwner.logo}`}
                  style={{ width: '80px', height: '80px', borderRadius: '50%', border: '1px solid #ccc' }}
@@ -466,7 +456,6 @@ export function NavUser() {
             </div>  
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
            
-              {/* Company Name */}
               <div style={{ flex: '1 1 45%' }}>
                 <FormField
                   control={form.control}
@@ -475,15 +464,14 @@ export function NavUser() {
                     <FormItem>
                       <FormLabel>Company Name</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field}/>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Owner Name */}
               <div style={{ flex: '1 1 45%' }}>
                 <FormField
                   control={form.control}
@@ -492,15 +480,14 @@ export function NavUser() {
                     <FormItem>
                       <FormLabel>Owner Name</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field}/>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Contact Number */}
               <div style={{ flex: '1 1 45%' }}>
                 <FormField
                   control={form.control}
@@ -509,15 +496,14 @@ export function NavUser() {
                     <FormItem>
                       <FormLabel>Contact Number</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field}/>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Email Address */}
               <div style={{ flex: '1 1 45%' }}>
                 <FormField
                   control={form.control}
@@ -526,15 +512,14 @@ export function NavUser() {
                     <FormItem>
                       <FormLabel>Email Address</FormLabel>
                       <FormControl>
-                        <Input {...field}  className="cursor-not-allowed" />
+                        <Input {...field}  className="cursor-not-allowed"/>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Website */}
               <div style={{ flex: '1 1 45%' }}>
                 <FormField
                   control={form.control}
@@ -543,15 +528,14 @@ export function NavUser() {
                     <FormItem>
                       <FormLabel>Website</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field}/>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Business Registration */}
               <div style={{ flex: '1 1 45%' }}>
                 <FormField
                   control={form.control}
@@ -568,13 +552,12 @@ export function NavUser() {
                           <option value="Private Limited">Private Limited</option>
                         </select>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Company Type */}
               <div style={{ flex: '1 1 45%' }}>
                 <FormField
                   control={form.control}
@@ -583,15 +566,14 @@ export function NavUser() {
                     <FormItem>
                       <FormLabel>Company Type</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field}/>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Employee Size */}
               <div style={{ flex: '1 1 45%' }}>
                 <FormField
                   control={form.control}
@@ -608,13 +590,12 @@ export function NavUser() {
                           <option value=">100">&gt;100</option>
                         </select>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* PAN Number */}
               <div style={{ flex: '1 1 45%' }}>
                 <FormField
                   control={form.control}
@@ -623,15 +604,14 @@ export function NavUser() {
                     <FormItem>
                       <FormLabel>PAN Number</FormLabel>
                       <FormControl>
-                        <Input {...field} className="cursor-not-allowed" />
+                        <Input {...field} className="cursor-not-allowed"/>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Document Type */}
               <div style={{ flex: '1 1 45%' }}>
                 <FormField
                   control={form.control}
@@ -642,13 +622,12 @@ export function NavUser() {
                       <FormControl>
                         <Input {...field} className="cursor-not-allowed"/>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Document Number */}
               <div style={{ flex: '1 1 45%' }}>
                 <FormField
                   control={form.control}
@@ -659,26 +638,23 @@ export function NavUser() {
                       <FormControl>
                         <Input {...field} className="cursor-not-allowed"/>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               </div>
             </div>
 
-            {/* Buttons */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '24px' }}>
               <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="animate-spin" /> : "Save Changes"}
+                {isSubmitting ? <Loader2 className="animate-spin"/> : "Save Changes"}
               </Button>
             </div>
           </form>
         </Form>
-      </DialogDescription>
-    </DialogHeader>
   </DialogContent>
 </Dialog>
     </>

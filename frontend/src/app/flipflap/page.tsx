@@ -37,7 +37,6 @@ export default function CertificatePage() {
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>
-                        {/* Add button in the header */}
                         <div className="ml-auto">
                             <Button>Deal List</Button>
                         </div>

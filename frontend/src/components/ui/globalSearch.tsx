@@ -1,4 +1,3 @@
-// components/GlobalSearch.js
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation"
@@ -37,7 +36,6 @@ export  function GlobalSearch() {
       {loading && <p>Loading...</p>}
 
       <div className="mt-4">
-        {/* Search Results */}
         {results.users.length > 0 && (
           <div>
             <h3 className="font-bold">Users</h3>
@@ -61,7 +59,6 @@ export  function GlobalSearch() {
           </div>
         )}
 
-        {/* Page Suggestions */}
         {results.suggestions.length > 0 && (
           <div className="mt-4">
             <h3 className="font-bold">Found in:</h3>

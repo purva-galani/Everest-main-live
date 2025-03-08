@@ -1,7 +1,6 @@
 'use client';
 import React, { useState } from 'react';
 
-// Define a unified type for files and folders
 type File = {
   id: number;
   name: string;
@@ -23,9 +22,9 @@ const initialFolders: File[] = [
 ];
 
 const GoogleDriveClone = () => {
-  const [folders, setFolders] = useState<File[]>(initialFolders); // Initialize state with initial folders
-  const [currentFolderId, setCurrentFolderId] = useState<number | null>(null); // Initialize currentFolderId state
-  const [searchQuery, setSearchQuery] = useState<string>(''); // Initialize searchQuery state
+  const [folders, setFolders] = useState<File[]>(initialFolders); 
+  const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>(''); 
 
   const handleFolderClick = (folderId: number) => {
     setCurrentFolderId(folderId);
@@ -35,7 +34,6 @@ const GoogleDriveClone = () => {
     if (e.target.files) {
       const file = e.target.files[0];
 
-      // Check if there's a selected folder
       if (currentFolderId === null) {
         console.log('Please select a folder first');
         alert('Please select a folder to upload the file to.');
@@ -48,7 +46,7 @@ const GoogleDriveClone = () => {
       formData.append("file", file);
       formData.append("name", file.name);
       formData.append("type", "file");
-      formData.append("parentId", currentFolderId.toString()); // Ensure parentId is a string
+      formData.append("parentId", currentFolderId.toString()); 
 
       fetch("http://localhost:8000/api/v1/file-folder", {
         method: "POST",
@@ -63,12 +61,10 @@ const GoogleDriveClone = () => {
         .then((data) => {
           console.log('Upload Success:', data);
 
-          // After successful upload, you can update the folders or file list state
-          // For example, add the new file to the current folder state
           setFolders((prevFolders) => [
             ...prevFolders,
             {
-              ...data, // Assuming the API returns the newly uploaded file data
+              ...data, 
               type: 'file',
               parentId: currentFolderId,
             },
@@ -104,9 +100,7 @@ const GoogleDriveClone = () => {
 
   return (
     <div className="google-drive-clone flex h-screen">
-      {/* Sidebar */}
       <div className="sidebar w-64 p-4 bg-gray-800 text-white overflow-x-auto" style={{ maxHeight: '100vh' }}>
-        {/* Search Bar */}
         <input
           type="text"
           placeholder="Search"
@@ -114,8 +108,6 @@ const GoogleDriveClone = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="bg-gray-600 text-white p-2 rounded-md w-full mb-4"
         />
-
-        {/* Back Button */}
         <button
           onClick={() => setCurrentFolderId(null)}
           className="text-white py-2 px-4 rounded-md mb-4 hover:bg-gray-700 w-full text-left"
@@ -123,10 +115,7 @@ const GoogleDriveClone = () => {
           &#8592; My Drive
         </button>
 
-        {/* Folders Heading, only show at root level */}
         {currentFolderId === null && <h3 className="text-lg font-semibold mb-2">Folders</h3>}
-
-        {/* Folders */}
         {filteredFoldersAndFiles
           .filter((item) => item.type === 'folder')
           .map((folder: File) => (
@@ -140,7 +129,6 @@ const GoogleDriveClone = () => {
             </div>
           ))}
 
-        {/* Files Section */}
         <h3 className="text-lg font-semibold mb-2">Files</h3>
         {filteredFoldersAndFiles
           .filter((item) => item.type === 'file')
@@ -148,7 +136,7 @@ const GoogleDriveClone = () => {
             <div key={file.id} className="relative">
               <div
                 className="text-white mb-2 cursor-pointer hover:bg-gray-600"
-                onClick={() => handleFileOpen(file)} // Open file when clicked
+                onClick={() => handleFileOpen(file)} 
               >
                 {file.fileType === 'image' ? (
                   <img src={file.fileUrl} alt={file.name} className="w-32 h-32 object-cover mb-2" />
@@ -165,7 +153,7 @@ const GoogleDriveClone = () => {
                 )}
               </div>
               <button
-                onClick={() => handleFileDownload(file)} // Trigger download
+                onClick={() => handleFileDownload(file)} 
                 className="text-blue-500"
               >
                 Download
@@ -173,7 +161,6 @@ const GoogleDriveClone = () => {
             </div>
           ))}
 
-        {/* Hidden file input */}
         <input
           type="file"
           id="fileInput"
@@ -181,7 +168,6 @@ const GoogleDriveClone = () => {
           className="hidden"
         />
 
-        {/* Custom Upload Button */}
         <button
           onClick={() => document.getElementById('fileInput')?.click()}
           className="bg-blue-500 text-white py-2 px-4 rounded-md w-full mt-4 hover:bg-blue-700"
@@ -190,7 +176,6 @@ const GoogleDriveClone = () => {
         </button>
       </div>
 
-      {/* Main Content */}
       <div className="main-content flex-1 p-6 bg-gray-900 overflow-x-auto">
         <h2 className="text-white text-2xl font-semibold mb-4">
           {currentFolderId === null
@@ -199,7 +184,6 @@ const GoogleDriveClone = () => {
         </h2>
 
         <div className="files flex flex-wrap gap-4">
-          {/* Render Folders and Files in Main Content */}
           {filteredFoldersAndFiles.map((item: File) =>
             item.type === 'folder' ? (
               <div

@@ -331,9 +331,7 @@ const EmailInput: React.FC = () => {
                                 </Button>
 
                             </div>
-
                             <input type="file" ref={fileInputRef} hidden onChange={handleFileChange} />
-
                             <Button className="flex items-center space-x-2" onClick={handleSendEmail}>
                                 <IoIosSend className="text-lg" />
                                 <span>Send</span>

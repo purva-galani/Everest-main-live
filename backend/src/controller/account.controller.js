@@ -280,10 +280,10 @@ const getPaidInvoices = async (req, res) => {
 };
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",  // Or another service like SendGrid
+    service: "gmail",  
     auth: {
-        user: "purvagalani@gmail.com",  // Replace with your Gmail ID
-        pass: "tefl tsvl dxuo toch",  // Replace with your Gmail App Password
+        user: "purvagalani@gmail.com",
+        pass: "tefl tsvl dxuo toch",  
     },
 });
 

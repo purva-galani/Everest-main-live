@@ -245,7 +245,6 @@ const formatDate = (dateString: string): string => {
                       
                   </div>
 
-                 
                   <h1 className="font-bold text-2xl text-white mb-6 text-center">Lead Details</h1>
 
                   <div className="grid grid-cols-2 gap-4 text-white">

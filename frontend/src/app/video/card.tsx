@@ -45,7 +45,6 @@ export default function App() {
   return (
     <div className="gap-2 grid grid-cols-2 sm:grid-cols-4">
       {list.map((item, index) => (
-        /* eslint-disable no-console */
         <Card key={index} isPressable shadow="sm" onPress={() => console.log("item pressed")}>
           <CardBody className="overflow-visible p-0">
             <Image

@@ -32,11 +32,11 @@ const usersSchema = new mongoose.Schema(
             type:Boolean,
             default:true
         },
-        googleId: {
-            type: String,
-            // required: true, 
-            unique: true
-        },
+        // googleId: {
+        //     type: String,
+        //     // required: true, 
+        //     unique: true
+        // },
         // isProfileComplete: { type: Boolean, default: false } // New field
 
         // role: {

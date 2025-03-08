@@ -259,7 +259,6 @@ const EmailInput: React.FC = () => {
                             <h2 className="text-lg font-semibold">New Message</h2>
                             <Separator className="my-2 border-gray-300" />
 
-                            {/* Email Inputs */}
                             <div className="flex items-center space-x-4">
                                 <label className="text-sm font-medium w-20">To:</label>
                                 <Input

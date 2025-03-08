@@ -118,7 +118,6 @@ export default function ResetPassword() {
               Enter your new password below.
             </p>
             <form onSubmit={handleResetPassword} className="my-8">
-              {/* New Password */}
               <LabelInputContainer className="mb-4">
                 <Label htmlFor="password">New Password</Label>
                 <div className="relative">
@@ -147,7 +146,6 @@ export default function ResetPassword() {
                 )}
               </LabelInputContainer>
 
-              {/* Confirm Password */}
               <LabelInputContainer className="mb-8">
                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
                 <div className="relative">

@@ -36,7 +36,6 @@ import {
 import { Button, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Chip, Tooltip, ChipProps, Input } from "@heroui/react"
 import { Pencil, Trash2, Search } from "lucide-react";
 
-//Lead//
 const chartConfig = {
   visitors: {
     label: "Leads",
@@ -62,10 +61,7 @@ const chartConfig = {
     color: "hsl(var(--chart-5))",
   },
 } satisfies ChartConfig;
-//Lead//
 
-
-//Invoice//
 const chartConfigInvoice = {
   visitors: {
     label: "Invoice",
@@ -84,10 +80,7 @@ const chartConfigInvoice = {
   },
 
 } satisfies ChartConfig;
-//Invoice//
 
-
-//Deal//
 const chartConfigDeal = {
   visitors: {
     label: "Deals",
@@ -109,7 +102,6 @@ const chartConfigDeal = {
     color: "hsl(var(--chart-5))",
   },
 } satisfies ChartConfig;
-//Deal//
 
 interface Lead {
   _id: string;
@@ -127,7 +119,6 @@ interface Lead {
   notes: string;
   isActive: string;
 }
-
 interface Invoice {
   _id: string;
   companyName: string;
@@ -179,8 +170,6 @@ interface Task {
   isActive: boolean;
 }
 
-
-
 interface CategorizedLeads {
   [key: string]: Lead[];
 }
@@ -197,8 +186,6 @@ interface CategorizedTasks {
   [key: string]: Task[];
 }
 
-
-//lead//
 const columns = [
   { name: "COMPANY", uid: "companyName", sortable: true },
   { name: "CUSTOMER", uid: "customerName", sortable: true },
@@ -214,7 +201,6 @@ const columns = [
   { name: "ACTION", uid: "actions", sortable: true }
 ];
 
-//Invoice//
 const columnsInvoice = [
   { name: "COMPANY", uid: "companyName", sortable: true },
   { name: "CUSTOMER", uid: "customerName", sortable: true },
@@ -244,7 +230,6 @@ const INITIAL_VISIBLE_COLUMNS_DEAL = ["companyName", "customerName", "emailAddre
 
 const INITIAL_VISIBLE_COLUMNS_TASK = ["subject", "relatedTo", "name", "status"];
 
-//Lead//
 const chartData = {
   Proposal: "#2a9d90",
   New: "#e76e50",
@@ -252,25 +237,19 @@ const chartData = {
   Demo: "#e8c468",
   Decided: "#f4a462",
 };
-//Lead//
 
-
-//Invoice//
 const chartDataInvoice = {
   Pending: "#2a9d90",
   Unpaid: "#e76e50",
   Paid: "#274754",
 };
-//Invoice//
 
-//Deal//
 const chartDataDeal = {
   Proposal: "#2a9d90",
   Discussion: "#274754",
   Demo: "#e8c468",
   Decided: "#f4a462",
 };
-//Deal//
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: "#fff",
@@ -284,54 +263,45 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 const getChartDimensions = () => {
-  // Return responsive dimensions based on window width
   if (typeof window !== 'undefined') {
-    const width = Math.min(600, window.innerWidth - 40); // 40px for padding
+    const width = Math.min(600, window.innerWidth - 40); 
     const height = Math.min(400, width * 0.8);
     return { width, height };
   }
-  return { width: 600, height: 400 }; // Default dimensions
+  return { width: 600, height: 400 }; 
 };
 
 export default function Page() {
   const [selectedChart, setSelectedChart] = useState("Pie Chart");
   const [selectedChartInvoice, setSelectedChartInvoice] = useState("Pie Chart");
   const [selectedChartDeal, setSelectedChartDeal] = useState("Pie Chart");
-
-
   const [filterValue, setFilterValue] = useState("");
   const [filterValueInvoice, setFilterValueInvoice] = useState("");
   const [filterValueDeal, setFilterValueDeal] = useState("");
   const [filterValueTask, setFilterValueTask] = useState("");
-
   const [statusFilter, setStatusFilter] = useState("all");
   const [categorizedLeads, setCategorizedLeads] = useState<CategorizedLeads>({});
   const [categorizedInvoices, setCategorizedInvoices] = useState<CategorizedInvoices>({});
   const [categorizedDeals, setCategorizedDeals] = useState<CategorizedDeals>({});
   const [categorizedTasks, setCategorizedTasks] = useState<CategorizedTasks>({});
   const [loading, setLoading] = useState(true);
-
   const [page, setPage] = useState(1);
   const [pageInvoice, setPageInvoice] = useState(1);
   const [pageDeal, setPageDeal] = useState(1);
   const [pageTask, setPageTask] = useState(1);
-
   const [leads, setLeads] = useState<Lead[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
-
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const hasSearchFilter = Boolean(filterValue);
   const hasSearchFilterInvoice = Boolean(filterValueInvoice);
   const hasSearchFilterDeal = Boolean(filterValueDeal);
   const hasSearchFilterTask = Boolean(filterValueTask);
-
-    const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set());
+  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set());
   const [selectedKeysInvoice, setSelectedKeysInvoice] = useState(new Set([]));
   const [selectedKeysDeal, setSelectedKeysDeal] = useState(new Set([]));
   const [selectedKeysTask, setSelectedKeysTask] = useState(new Set([]));
-
   const [visibleColumns, setVisibleColumns] = useState(new Set(INITIAL_VISIBLE_COLUMNS));
   const [visibleColumnsInvoice, setVisibleColumnsInvoice] = useState(new Set(INITIAL_VISIBLE_COLUMNS_INVOICE));
   const [visibleColumnsDeal, setVisibleColumnsDeal] = useState(new Set(INITIAL_VISIBLE_COLUMNS_DEAL));
@@ -353,7 +323,6 @@ export default function Page() {
 
   const filteredItems = React.useMemo(() => {
     let filteredLeads = [...leads];
-
 
     if (hasSearchFilter) {
       filteredLeads = filteredLeads.filter((lead) => {
@@ -470,7 +439,7 @@ export default function Page() {
   }, [tasks, filterValueTask, statusFilter]);
 
   const headerColumns = React.useMemo(() => {
-    if (visibleColumns.size === columns.length) return columns; // Check if all columns are selected
+    if (visibleColumns.size === columns.length) return columns; 
     return columns.filter((column) => visibleColumns.has(column.uid));
   }, [visibleColumns]);
 
@@ -540,23 +509,19 @@ export default function Page() {
     });
   }, [sortDescriptorTask, itemsTask]);
 
-  //Lead//
   useEffect(() => {
     const fetchLeads = async () => {
       try {
         const response = await fetch('http://localhost:8000/api/v1/lead/getAllLeads');
         const result = await response.json();
 
-        // Check if result is an object with data property
         if (!result || !Array.isArray(result.data)) {
           console.error('Invalid data format received:', result);
           return;
         }
 
-        // Set the leads data for the table
         setLeads(result.data);
 
-        // Categorize leads by status
         const categorized = result.data.reduce((acc: CategorizedLeads, lead: Lead) => {
           if (!acc[lead.status]) {
             acc[lead.status] = [];
@@ -575,25 +540,18 @@ export default function Page() {
 
     fetchLeads();
   }, []);
-  //Lead//
 
-  //Invoice//
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
         const response = await fetch('http://localhost:8000/api/v1/invoice/getAllInvoices');
         const result = await response.json();
 
-        // Check if result is an object with data property
         if (!result || !Array.isArray(result.data)) {
           console.error('Invalid data format received:', result);
           return;
         }
-
-        // Set the invoices data for the table
         setInvoices(result.data);
-
-        // Categorize invoices by status
         const categorized = result.data.reduce((acc: CategorizedInvoices, invoice: Invoice) => {
           if (!acc[invoice.status]) {
             acc[invoice.status] = [];
@@ -612,25 +570,20 @@ export default function Page() {
 
     fetchInvoices();
   }, []);
-  //Invoice//
-
-  //Deal//
+  
   useEffect(() => {
     const fetchDeals = async () => {
       try {
         const response = await fetch('http://localhost:8000/api/v1/deal/getAllDeals');
         const result = await response.json();
 
-        // Check if result is an object with data property
         if (!result || !Array.isArray(result.data)) {
           console.error('Invalid data format received:', result);
           return;
         }
 
-        // Set the deals data for the table
         setDeals(result.data);
 
-        // Categorize deals by status
         const categorized = result.data.reduce((acc: CategorizedDeals, deal: Deal) => {
           if (!acc[deal.status]) {
             acc[deal.status] = [];
@@ -649,25 +602,20 @@ export default function Page() {
 
     fetchDeals();
   }, []);
-  //Deal//
 
-  //Task//
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         const response = await fetch('http://localhost:8000/api/v1/task/getAllTasks');
         const result = await response.json();
 
-        // Check if result is an object with data property
         if (!result || !Array.isArray(result.data)) {
           console.error('Invalid data format received:', result);
           return;
         }
 
-        // Set the tasks data for the table
         setTasks(result.data);
 
-        // Categorize tasks by status
         const categorized = result.data.reduce((acc: CategorizedTasks, task: Task) => {
           if (!acc[task.status]) {
             acc[task.status] = [];
@@ -698,9 +646,6 @@ export default function Page() {
     }
   }, [page]);
 
-
-
-  //Lead Chart//
   const dynamicChartData = useMemo(() => {
     return Object.entries(categorizedLeads).map(([status, leads]) => ({
       browser: status,
@@ -708,9 +653,7 @@ export default function Page() {
       fill: chartData[status] || "#ccc",
     }));
   }, [categorizedLeads]);
-  //Lead Chart//
-
-  //Invoice Chart//
+  
   const dynamicChartDataInvoice = useMemo(() => {
     return Object.entries(categorizedInvoices).map(([status, invoices]) => ({
       browser: status,
@@ -718,9 +661,7 @@ export default function Page() {
       fill: chartDataInvoice[status] || "#ccc",
     }));
   }, [categorizedInvoices]);
-  //Invoice Chart//
-
-  //Deal//
+  
   const dynamicChartDataDeal = useMemo(() => {
     return Object.entries(categorizedDeals).map(([status, deals]) => ({
       browser: status,
@@ -728,12 +669,7 @@ export default function Page() {
       fill: chartDataDeal[status] || "#ccc",
     }));
   }, [categorizedDeals]);
-  //Deal//
 
-
-
-
-  //Lead//
   const renderChartLead = () => {
     const { width, height } = getChartDimensions();
 
@@ -913,9 +849,7 @@ export default function Page() {
       );
     }
   };
-  //Lead//
 
-  //Invoice//
   const renderChartInvoice = () => {
     const { width, height } = getChartDimensions();
 
@@ -1095,9 +1029,7 @@ export default function Page() {
       );
     }
   };
-  //Invoice//
 
-  //Deal//
   const renderChartDeal = () => {
     const { width, height } = getChartDimensions();
 
@@ -1277,10 +1209,7 @@ export default function Page() {
       );
     }
   };
-  //Deal//
 
-
-  //lead//
   const bottomContent = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
@@ -1291,14 +1220,12 @@ export default function Page() {
         </span>
         <Pagination
           isCompact
-          // showControls
           showShadow
           color="success"
           page={page}
           total={pages}
           onChange={setPage}
           classNames={{
-            // base: "gap-2 rounded-2xl shadow-lg p-2 dark:bg-default-100",
             cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
             item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
           }}
@@ -1316,7 +1243,6 @@ export default function Page() {
     );
   }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
-  //Invoice//
   const bottomContentInvoice = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
@@ -1327,14 +1253,12 @@ export default function Page() {
         </span>
         <Pagination
           isCompact
-          // showControls
           showShadow
           color="success"
           page={pageInvoice}
           total={pagesInvoice}
           onChange={setPageInvoice}
           classNames={{
-            // base: "gap-2 rounded-2xl shadow-lg p-2 dark:bg-default-100",
             cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
             item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
           }}
@@ -1352,7 +1276,6 @@ export default function Page() {
     );
   }, [selectedKeysInvoice, itemsInvoice.length, pageInvoice, pagesInvoice, hasSearchFilterInvoice]);
 
-  //Deal//
   const bottomContentDeal = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
@@ -1386,7 +1309,6 @@ export default function Page() {
     );
   }, [selectedKeysDeal, deals.length, pageDeal, pagesDeal, hasSearchFilterDeal]);
 
-  //Task//
   const bottomContentTask = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
@@ -1602,9 +1524,6 @@ export default function Page() {
     }
   }, []);
 
-
-
-
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -1641,7 +1560,6 @@ export default function Page() {
           <h1 className="text-2xl font-semibold mb-8 mt-4" style={{ textAlign: "center" }}>Charts</h1>
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
 
-            {/* Lead */}
             <Grid item xs={12} md={6} lg={4}>
               <Item>
                 <div>
@@ -1659,14 +1577,11 @@ export default function Page() {
                     </Select>
                   </FormControl>
 
-                  {/* Render Selected Chart */}
                   <div className="mt-4">{renderChartLead()}</div>
                 </div>
               </Item>
             </Grid>
-            {/* End Lead */}
 
-            {/* Invoice */}
             <Grid item xs={12} md={6} lg={4}>
               <Item>
                 <div>
@@ -1684,14 +1599,11 @@ export default function Page() {
                     </Select>
                   </FormControl>
 
-                  {/* Render Selected Chart */}
                   <div className="mt-4">{renderChartInvoice()}</div>
                 </div>
               </Item>
             </Grid>
-            {/* End Invoice */}
 
-            {/* Deal */}
             <Grid item xs={12} md={6} lg={4}>
               <Item>
                 <div>
@@ -1709,14 +1621,11 @@ export default function Page() {
                     </Select>
                   </FormControl>
 
-                  {/* Render Selected Chart */}
                   <div className="mt-4">{renderChartDeal()}</div>
                 </div>
               </Item>
             </Grid>
-            {/* End Deal */}
 
-            {/* Lead Table */}
             <Grid item xs={12} lg={6}>
               <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Lead Table</h1>
               <Item>
@@ -1767,7 +1676,6 @@ export default function Page() {
               </Item>
             </Grid>
 
-            {/* Invoice Table */}
             <Grid item xs={12} sm={6} md={6} lg={6}>
               <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Invoice Table</h1>
               <Item>
@@ -1816,7 +1724,6 @@ export default function Page() {
               </Item>
             </Grid>
 
-            {/* Deal Table */}
             <Grid item xs={12} sm={6} md={6} lg={6}>
               <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Deal Table</h1>
               <Item>
@@ -1867,7 +1774,6 @@ export default function Page() {
               </Item>
             </Grid>
 
-            {/* Task Table */}
             <Grid item xs={12} sm={6} md={6} lg={6}>
               <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Task Table</h1>
               <Item>
@@ -1916,10 +1822,8 @@ export default function Page() {
                   </TableBody>
                 </Table>
               </Item>
-
             </Grid>
 
-            {/* Remainder Table */}
             <Grid item xs={12} sm={6} md={6} lg={6}>
               <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Remainder Table</h1>
               <Item>
@@ -1959,7 +1863,6 @@ export default function Page() {
               </Item>
             </Grid>
 
-            {/* Scedule Table */}
             <Grid item xs={12} sm={6} md={6} lg={6}>
               <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Scedule Table</h1>
               <Item>

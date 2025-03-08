@@ -360,7 +360,7 @@ const sendEmailReminder = async (req, res) => {
         const mailOptions = {
             from: "your-email@gmail.com", // Your email address
             to: invoice.emailAddress, // Recipient's email address from the database
-            subject: `Payment Reminder for Invoice #${invoice.id}`, // Subject of the email
+            subject: `Payment Reminder for Invoice`, // Subject of the email
             text: message, // The message the user wrote
         };
 

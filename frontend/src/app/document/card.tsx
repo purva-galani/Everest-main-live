@@ -55,7 +55,7 @@ export default function App() {
               className="w-full object-cover h-[140px]"
               radius="lg"
               shadow="sm"
-              src={item.img || 'images/default.jpg'}  // Fallback image in case img is missing
+              src={item.img || 'images/default.jpg'}  
               width="100%"
             />
           </CardBody>
