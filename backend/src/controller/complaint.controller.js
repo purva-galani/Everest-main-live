@@ -136,10 +136,10 @@ const deleteComplaint = async (req, res) => {
 };
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",  
+    service: "gmail",  // Or another service like SendGrid
     auth: {
-        user: "purvagalani@gmail.com",  
-        pass: "tefl tsvl dxuo toch",  
+        user: "markwatson010190@gmail.com",  // Replace with your Gmail ID
+        pass: "vken yuvn yisr wwpw",  // Replace with your Gmail App Password
     },
 });
 

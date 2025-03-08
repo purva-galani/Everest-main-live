@@ -28,7 +28,7 @@ export default function CalendarPage() {
     const getEvent = async () => {
       const response = await fetch('http://localhost:8000/api/v1/calender/getEvent');
       const data = await response.json();
-      setEvents(data);
+      setEvents(data.data); // Ensure the response matches the frontend expectation
     };
     getEvent();
   }, []);
@@ -57,18 +57,18 @@ export default function CalendarPage() {
   };
 
   const handleupdateEvent = async (newEvent) => {
-    const response = await fetch(`http://localhost:8000/api/v1/calender/updateEvent${newEvent.id}`, {
+    const response = await fetch(`http://localhost:8000/api/v1/calender/updateEvent/${newEvent.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newEvent),
     });
     const data = await response.json();
-    setEvents(event.map((event) => (event.id === newEvent.id ? data : event)));
+    setEvents(events.map((event) => (event.id === newEvent.id ? data.data : event)));
   };
 
 
   const handleDeleteEvent = async (eventId) => {
-    await fetch(`https://localhost:8000/api/v1/calender/deleteEvent${eventId}`, { method: 'DELETE' });
+    await fetch(`http://localhost:8000/api/v1/calender/deleteEvent/${eventId}`, { method: 'DELETE' });
     setEvents(events.filter((event) => event.id !== eventId));
   };
 
@@ -79,7 +79,7 @@ export default function CalendarPage() {
       body: JSON.stringify(newEvent),
     });
     const data = await response.json();
-    setEvents([...event, data]);
+    setEvents([...events, data.data]); // Ensure the response matches the frontend expectation
   };
 
   const renderCalendarDays = () => {
@@ -93,9 +93,11 @@ export default function CalendarPage() {
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
       const isToday = date.toDateString() === today.toDateString();
-      const dayEvents = events.filter(
-        (event) => event.date.toDateString() === date.toDateString()
-      );
+      const dayEvents = events.filter((event) => {
+        const eventDate = new Date(event.date); // Ensure it's a Date object
+        return eventDate.toDateString() === date.toDateString();
+      });
+      
 
       days.push(
         <div
@@ -108,8 +110,11 @@ export default function CalendarPage() {
           {dayEvents.map((event) => (
             <div
               key={event.id}
-              className={`${calendar.find((cal) => cal.id === event.calendarId).color} text-white p-1 mb-1 rounded cursor-pointer`}
-              onClick={() => handleupdateEvent(event)}
+              className={`${calendars.find((cal) => cal.id === event.calendarId)?.color} text-white p-1 mb-1 rounded cursor-pointer`}
+              onClick={() => {
+                setSelectedEvent(event);
+                setShowEventModal(true);
+              }}              
             >
               {event.title}
             </div>
@@ -217,7 +222,7 @@ export default function CalendarPage() {
           {showEventModal && (
             <EventModal
               event={selectedEvent}
-              onSave={handleAddEvent}
+              onSave={selectedEvent ? handleupdateEvent : handlecreateEvent} // Use correct function
               onClose={() => setShowEventModal(false)}
               onDelete={handleDeleteEvent}
               calendars={calendars}
@@ -231,13 +236,22 @@ export default function CalendarPage() {
 
 const EventModal = ({ event, onSave, onClose, onDelete, calendars }) => {
   const [title, setTitle] = useState(event ? event.title : '');
-  const [date, setDate] = useState(event ? event.date.toISOString().substr(0, 10) : '');
+  const [date, setDate] = useState(event ? new Date(event.date).toISOString().split('T')[0] : '');
   const [calendarId, setCalendarId] = useState(event ? event.calendarId : calendars[0].id);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({ id: event ? event.id : null, title, date: new Date(date), calendarId });
+    const newEvent = {
+      id: event?.id || Date.now(), // Generate ID for new events
+      title,
+      date: new Date(date).toISOString(),
+      calendarId,
+    };
+  
+    onSave(newEvent); // Now using the correct function passed as a prop
+    onClose();
   };
+  
 
   const handleDelete = () => {
     if (event) {
