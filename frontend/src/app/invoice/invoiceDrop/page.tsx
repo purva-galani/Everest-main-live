@@ -34,7 +34,7 @@ interface Invoice {
   amount: number;
   discount: number;
   gstRate: number;
-  status: "Pending" | "Unpaid" | "Paid";
+  status: "Unpaid"| "Paid" | "Pending";
   date: string;
   totalWithoutGst: number;
   totalWithGst: number;
@@ -180,7 +180,6 @@ export default function App() {
 
         <div className="p-6 ">
           {error && <p className="text-red-500 text-center">{error}</p>}
-
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-6xl md:max-w-4xl mx-auto">
           {Object.keys(statusColors).map((status) => {
               const invoiceStatus = groupedInvoices[status] || [];
@@ -189,9 +188,8 @@ export default function App() {
               return (
                 <div
                   key={status}
-                  className={`p-4  min-h-[300px] transition-all w-full border ${draggedOver === status ? "border-gray-500 border-dashed" : "border-transparent"}`}
+                  className={`p-4 rounded-lg  min-h-[530px] transition-all ${draggedOver === status}`}
                   onDrop={(e) => handleDrop(e, status)}
-
                   onDragOver={(e) => {
                     e.preventDefault();
                     setDraggedOver(status);
@@ -203,23 +201,28 @@ export default function App() {
                     <p className="text-sm font-semibold text-black">Total Invoice: {invoiceStatus.length}</p>
                     <p className="text-sm font-semibold text-black">Total Amount: ₹{totalAmount}</p>
                   </div>
-
-                  <div className="mt-4 space-y-3 min-h-[250px] max-h-[500px] overflow-auto">
+                  <div
+                    className="scrollable"
+                  >
                     {invoiceStatus.length === 0 ? (
                       <p className="text-gray-500 text-center">No invoices available</p>
                     ) : (
                       invoiceStatus.map((invoice) => (
                         <div
                           key={invoice._id}
-                          className="border border-gray-300 rounded-lg shadow-md bg-white p-3 cursor-grab active:cursor-grabbing"
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, invoice, status)}
-                          onClick={() => handleInvoiceClick(invoice)}
-                        >
-                          <p className="text-sm font-semibold text-black">Company Name: {invoice.companyName}</p>
-                          <p className="text-sm font-semibold text-black">Product: {invoice.productName}</p>
-                          <p className="text-sm font-semibold text-black">Next Date: {formatDate(invoice.date)}</p>
-                          <p className="text-sm font-semibold text-black">Amount: ₹{invoice.amount}</p>
+                          className="card-container  mt-4"
+                          >
+                          <div
+                            className="card"
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, invoice, status)}
+                            onClick={() => handleInvoiceClick(invoice)}
+                          >
+                            <p>Company Name: <span>{invoice.companyName}</span></p>
+                            <p>Product: <span>{invoice.productName}</span></p>
+                            <p>Amount: <span>₹{invoice.amount}</span></p>
+                            <p>Next Date: <span>{formatDate(invoice.date)}</span></p>
+                        </div>
                         </div>
                       ))
                     )}
@@ -242,7 +245,7 @@ export default function App() {
                     <MdCancel className="text-white text-2xl"/>
                       
                   </div>
-                  <h1 className="font-bold text-2xl text-white mb-6 text-center">Lead Details</h1>
+                  <h1 className="font-bold text-2xl text-white mb-6 text-center">invoice Details</h1>
                   <div className="grid grid-cols-2 gap-4 text-white">
                     {Object.entries(selectedInvoice)
                       .filter(([key]) => !["_id", "isActive", "createdAt", "updatedAt"].includes(key))

@@ -13,6 +13,8 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { ModeToggle } from "@/components/ModeToggle"
 import SearchBar from '@/components/globalSearch';
 import Notification from '@/components/notification';
+import { Meteors } from "@/components/ui/meteors";
+
 interface Lead {
   _id: string;
   companyName: string;
@@ -221,48 +223,43 @@ export default function App() {
         })}
       </div>
 
-      {isModalOpen && selectedLead && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm"
-          onClick={closeModal}
-        >
-          <div
-            className="modal-content p-6 rounded-md shadow-lg w-full max-w-3xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Deal Details
-              </h2>
-              <button
-                onClick={closeModal}
-                className="text-xl font-semibold text-gray-600 hover:text-red-600"
-              >
-                <MdCancel />
-              </button>
+          {isModalOpen && selectedLead && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="w-full max-w-lg relative">
+                <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-blue-500 to-teal-500 transform scale-[0.80] rounded-full blur-3xl" />
+
+                <div className="relative shadow-xl bg-gray-900 border border-gray-800 px-6 py-8 rounded-2xl">
+                  <div
+                    className="absolute top-3 right-3 h-8 w-8 rounded-full border border-gray-500 flex items-center justify-center cursor-pointer"
+                    onClick={() => {
+                      setIsModalOpen(false); 
+                    }}
+                  >
+                    <MdCancel className="text-white text-2xl"/>
+                      
+                  </div>
+
+                 
+                  <h1 className="font-bold text-2xl text-white mb-6 text-center">Lead Details</h1>
+
+                  <div className="grid grid-cols-2 gap-4 text-white">
+                    {Object.entries(selectedLead)
+                      .filter(([key]) => !["_id", "isActive", "createdAt", "updatedAt"].includes(key))
+                      .map(([key, value]) => (
+                        <p key={key} className="text-sm">
+                          <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong>{" "}
+                          {["date", "endDate"].includes(key) && value
+                            ? new Date(value).toLocaleDateString()
+                            : value || "N/A"}
+                        </p>
+                      ))}
+                  </div>
+
+                  <Meteors number={20} />
+                </div>
+              </div>
             </div>
-            <div className="form-content grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
-              {Object.entries(selectedLead)
-                .filter(
-                  ([key]) =>
-                    !["_id", "isActive", "createdAt", "updatedAt"].includes(key)
-                ) 
-                .map(([key, value]) => (
-                  <p key={key} className="mb-4">
-                    <strong>
-                      {key.charAt(0).toUpperCase() + key.slice(1)}:
-                    </strong>{" "}
-                    {key === "date" || key === "endDate"
-                      ? value
-                        ? new Date(value).toLocaleDateString()
-                        : "N/A"
-                      : value || "N/A"}
-                  </p>
-                ))}
-            </div>
-          </div>
-        </div>
-      )}
+          )}
     </div>
     </SidebarInset>
     </SidebarProvider>

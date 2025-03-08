@@ -170,10 +170,8 @@ export default function App() {
             </div>
         </div>
       </header>
-
         <div className="p-6 ">
           {error && <p className="text-red-500 text-center">{error}</p>}
-
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-6xl md:max-w-4xl mx-auto">
           {Object.keys(statusColors).map((status) => {
               const taskStatus = groupedTasks[status] || [];
@@ -181,9 +179,8 @@ export default function App() {
               return (
                 <div
                   key={status}
-                  className={`p-4  min-h-[300px] transition-all w-full border ${draggedOver === status ? "border-gray-500 border-dashed" : "border-transparent"}`}
+                  className={`p-4 rounded-lg  min-h-[530px] transition-all ${draggedOver === status}`}
                   onDrop={(e) => handleDrop(e, status)}
-
                   onDragOver={(e) => {
                     e.preventDefault();
                     setDraggedOver(status);
@@ -191,24 +188,29 @@ export default function App() {
                   onDragLeave={() => setDraggedOver(null)}
                 >
                   <h2 className={`text-sm font-bold mb-4 px-5 py-2 rounded-lg ${statusColors[status]}`}>{status}</h2>
-                  <div className="p-3 bg-[#FAF3DD] rounded-md shadow">
-                    <p className="text-sm font-semibold text-black">Total Task: {taskStatus.length}</p>
+                  <div className="p-3 bg-[#FAF3DD]   rounded-md shadow">
+                    <p className="text-sm font-semibold text-gray-500">Total Task: {taskStatus.length}</p>
                   </div>
-
-                  <div className="mt-4 space-y-3 min-h-[250px] max-h-[500px] overflow-auto">
+                  <div
+                    className="scrollable"
+                  >
                     {taskStatus.length === 0 ? (
                       <p className="text-gray-500 text-center">No tasks available</p>
                     ) : (
                       taskStatus.map((task) => (
                         <div
                           key={task._id}
-                          className="border border-gray-300 rounded-lg shadow-md bg-white p-3 cursor-grab active:cursor-grabbing"
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, task, status)}
-                          onClick={() => handleTaskClick(task)}
+                          className="card-container  mt-4"
+                          >
+                            <div
+                              className="card"
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, task, status)}
+                              onClick={() => handleTaskClick(task)}
                         >
-                          <p className="text-sm font-semibold text-black">Subject: {task.subject}</p>
-                          
+                            <p>Subject: <span>{task.subject}</span></p>
+  
+                        </div>
                         </div>
                       ))
                     )}

@@ -70,7 +70,7 @@ const remindEvent = async () => {
 
 
 // Schedule the cron job to run every hour
-cron.schedule('0 * * * *', remindEvent);
+cron.schedule('0 0 * * *', remindEvent);
 
 
 // const getAllData = async (req, res) => {

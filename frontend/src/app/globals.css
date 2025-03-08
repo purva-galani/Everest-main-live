@@ -79,7 +79,7 @@ body {
 }
 /* Hide scrollbar for all scrollable elements */
 .scrollable {
-  max-height: 300px;
+  max-height: 650px;
   overflow-y: auto;
   scrollbar-width: none; /* For Firefox */
   -ms-overflow-style: none; /* For Internet Explorer and Edge */
