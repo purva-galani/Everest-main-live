@@ -13,28 +13,29 @@ import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { CalendarIcon, Loader2 } from "lucide-react"
-  
-  export const columns = [
-    {name: "ID", uid: "id", sortable: true},
-    {name: "NAME", uid: "name", sortable: true},
-    {name: "AGE", uid: "age", sortable: true},
-    {name: "ROLE", uid: "role", sortable: true},
-    {name: "TEAM", uid: "team"},
-    {name: "EMAIL", uid: "email"},
-    {name: "STATUS", uid: "status", sortable: true},
-    {name: "ACTIONS", uid: "actions"},
-  ];
-  
-  export const statusOptions = [
-    {name: "Active", uid: "active"},
-    {name: "Paused", uid: "paused"},
-    {name: "Vacation", uid: "vacation"},
-  ];
-  
+
+
+export const columns = [
+    { name: "ID", uid: "id", sortable: true },
+    { name: "NAME", uid: "name", sortable: true },
+    { name: "AGE", uid: "age", sortable: true },
+    { name: "ROLE", uid: "role", sortable: true },
+    { name: "TEAM", uid: "team" },
+    { name: "EMAIL", uid: "email" },
+    { name: "STATUS", uid: "status", sortable: true },
+    { name: "ACTIONS", uid: "actions" },
+];
+
+export const statusOptions = [
+    { name: "Active", uid: "active" },
+    { name: "Paused", uid: "paused" },
+    { name: "Vacation", uid: "vacation" },
+];
+
 const formSchema = z.object({
     companyName: z.string().min(2, { message: "Company name is required." }),
     customerName: z.string().min(2, { message: "Customer name must be at least 2 characters." }),
-    contactNumber: z.string().optional(), 
+    contactNumber: z.string().optional(), // Optional field
     emailAddress: z.string().email({ message: "Invalid email address" }),
     address: z.string().min(2, { message: "Address is required." }),
     productName: z.string().min(2, { message: "Product name is required." }),
@@ -45,7 +46,7 @@ const formSchema = z.object({
     endDate: z.date().optional(),
     notes: z.string().optional(),
     isActive: z.boolean(),
-})
+});
 
 export default function LeadForm() {
     const router = useRouter()
@@ -88,7 +89,10 @@ export default function LeadForm() {
                 title: "Lead Submitted",
                 description: `Your lead has been successfully submitted. ID: ${data.id}`,
             })
-            router.push(`/lead/${data.id}`) 
+
+            // Redirect to the table page
+            router.push("/lead/table")  // Redirect to the
+            //  table page
         } catch (error) {
             toast({
                 title: "Error",
@@ -99,6 +103,7 @@ export default function LeadForm() {
             setIsSubmitting(false)
         }
     }
+
 
     return (
         <Form {...form}>
@@ -176,25 +181,25 @@ export default function LeadForm() {
                         )}
                     />
                     <FormField
-                    control={form.control}
-                    name="amount"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Amount</FormLabel>
-                        <FormControl>
-                            <Input
-                            placeholder="Enter amount"
-                            type="number"
-                            {...field}
-                            onChange={(e) => {
-                                const value = e.target.valueAsNumber || 0; 
-                                field.onChange(value); 
-                            }}
-                            />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
+                        control={form.control}
+                        name="amount"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Amount</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="Enter amount"
+                                        type="number"
+                                        {...field}
+                                        onChange={(e) => {
+                                            const value = e.target.valueAsNumber || 0;
+                                            field.onChange(value);
+                                        }}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
                 </div>
 
@@ -223,10 +228,10 @@ export default function LeadForm() {
                                         {...field}
                                         className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     >
-                                        <option value="Proposal">Proposal</option>
                                         <option value="New">New</option>
                                         <option value="Discussion">Discussion</option>
                                         <option value="Demo">Demo</option>
+                                        <option value="Proposal">Proposal</option>
                                         <option value="Decided">Decided</option>
                                     </select>
                                 </FormControl>
@@ -257,24 +262,35 @@ export default function LeadForm() {
                         control={form.control}
                         name="date"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="flex flex-col">
                                 <FormLabel>Start Date</FormLabel>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <FormControl>
                                             <Button
                                                 variant={"outline"}
-                                                className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                                                className={cn(
+                                                    "w-[240px] pl-3 text-left font-normal",
+                                                    !field.value && "text-muted-foreground"
+                                                )}
                                             >
-                                                {field.value ? format(field.value, "dd-MM-yyyy") : <span>Pick a date</span>}
+                                                {field.value ? (
+                                                    format(field.value, "PPP")
+                                                ) : (
+                                                    <span>Pick a date</span>
+                                                )}
                                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0" align="start">
                                         <Calendar
+                                            mode="single"
                                             selected={field.value}
                                             onSelect={field.onChange}
+                                            disabled={(date) =>
+                                                date > new Date() || date < new Date("1900-01-01")
+                                            }
                                             initialFocus
                                         />
                                     </PopoverContent>
@@ -317,29 +333,29 @@ export default function LeadForm() {
                         )}
                     />
                 </div>
-                
-                    <FormField
-                        control={form.control}
-                        name="notes"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Notes</FormLabel>
-                                <FormControl>
-                                    <textarea
-                                        placeholder="Enter notes"
-                                        {...field}
-                                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                
+
+                <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Notes</FormLabel>
+                            <FormControl>
+                                <textarea
+                                    placeholder="Enter notes"
+                                    {...field}
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <table />
                             Submitting...
                         </>
                     ) : (

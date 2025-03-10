@@ -31,9 +31,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { title } from "process"
-import { url } from "inspector"
-
 
 const data = {
   user: {
@@ -61,30 +58,27 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: LayoutDashboard,
-      isActive: window.location.pathname === "",
       items: [
       {  title: "Dashboard", url: "/dashboard",}
       ]
     },
     {
       title: "Lead",
-      url: "#",
+      url: "/lead",
       icon: Target,
-      isActive: window.location.pathname === "",
       items: [
-        { title: "Create", url: "/lead/leadForm" },
-        { title: "List", url: "/lead" },
+        { title: "Create", url: "/lead" },
+        { title: "List", url: "/lead/table" },
         { title: "Graph", url: "/Lead-chart" },
         { title: "Drag & Drop", url: "/lead/leadDrop" }
       ],
     },
     {
       title: "Invoice",
-      url: "#",
+      url: "/invoice",
       icon: ReceiptText,
-      isActive: window.location.pathname === "",
       items: [
         { title: "Create", url: "/invoice/invoiceForm" },
         { title: "List", url: "/invoice" },
@@ -94,9 +88,9 @@ const data = {
     },
     {
       title: "Reminder",
-      url: "#",
+      url: "/reminder",
       icon: BellMinus,
-      isActive: window.location.pathname === "",
+      
       items: [
         { title: "List", url: "/reminder/list" },
         { title: "Email", url: "/reminder/reminderEmail" },
@@ -105,9 +99,9 @@ const data = {
     },
     {
       title: "Deal",
-      url: "#",
+      url: "/deal",
       icon: Handshake,
-      isActive: window.location.pathname === "",
+      
       items: [
         { title: "Create", url: "/deal" },
         { title: "List", url: "/deal/list" },
@@ -117,9 +111,9 @@ const data = {
     },
     {
       title: "Task",
-      url: "#",
+      url: "/task",
       icon: BookCheck,
-      isActive: window.location.pathname === "",
+      
       items: [
         { title: "Create", url: "/task" },
         { title: "List", url: "/task/list" },
@@ -128,9 +122,9 @@ const data = {
     },
     {
       title: "Complaint",
-      url: "#",
+      url: "/complaint",
       icon: UserX,
-      isActive: window.location.pathname === "",
+      
       items: [
         { title: "Create", url: "/complaint" },
         { title: "List", url: "/complaint/list" },
@@ -139,9 +133,9 @@ const data = {
     },
     {
       title: "Contact",
-      url: "#",
+      url: "/contact",
       icon: SquareUser,
-      isActive: window.location.pathname === "",
+      
       items: [
         { title: "Create", url: "/contact" },
         { title: "List", url: "/contact/list" },
@@ -150,9 +144,9 @@ const data = {
     },
     {
       title: "Account",
-      url: "#",
+      url: "/account",
       icon: HandCoins,
-      isActive: window.location.pathname === "",
+      
       items: [
         { title: "Create", url: "/Account" },
         { title: "List", url: "/account/list" }
@@ -160,20 +154,20 @@ const data = {
     },
     {
       title: "Documents",
-      url: "#",
+      url: "/document",
       icon: ScrollText,
-      isActive: window.location.pathname === "",
+      
       items: [
-        { title: "Photos", url: "/document" },
-        { title: "Videos", url: "/video" },
+        // { title: "Photos", url: "/document" },
+        // { title: "Videos", url: "/video" },
         { title: "Others", url: "/flipflap" }
       ],
     },
     {
       title: "Schedule",
-      url: "#",
+      url: "/scheduled",
       icon: CalendarSync,
-      isActive: window.location.pathname === "",
+      
       items: [
         { title: "Create", url: "/Scheduled" },
         { title: "List", url: "/scheduled/list" }
@@ -181,9 +175,9 @@ const data = {
     },
     {
       title: "Calendar",
-      url: "#",
+      url: "/calendar",
       icon: CirclePlay,
-      isActive: window.location.pathname === "",
+      
       items: [
         { title: "Calendar", url: "/calendar"},
       ],

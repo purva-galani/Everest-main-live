@@ -166,12 +166,12 @@ export default function App() {
           </Breadcrumb>
         </div>
         <div className="flex items-center space-x-4 ml-auto mr-4">
-        <div  >
-                <SearchBar/>
-            </div>
-            <div>
-              <Notification/>
-            </div>
+          <div>
+            <SearchBar/>
+          </div>
+          <div>
+            <Notification/>
+          </div>
         </div>
       </header>
     <div className="p-6">
