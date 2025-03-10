@@ -32,9 +32,17 @@ export default function CertificatePage() {
                        </BreadcrumbLink>
                      </BreadcrumbItem>
                      <BreadcrumbSeparator className="hidden md:block" />
-                     <BreadcrumbItem>
-                       <BreadcrumbPage>Data</BreadcrumbPage>
-                     </BreadcrumbItem>
+                        <BreadcrumbItem>
+                          <BreadcrumbLink href="/invoice">
+                            Invoice
+                          </BreadcrumbLink>                            
+                        </BreadcrumbItem>
+                      <BreadcrumbSeparator className="hidden md:block" />
+                        <BreadcrumbItem>
+                          <BreadcrumbLink href="/Invoice-chart">
+                            Graph
+                          </BreadcrumbLink>                            
+                        </BreadcrumbItem>
                    </BreadcrumbList>
                  </Breadcrumb>
                </div>

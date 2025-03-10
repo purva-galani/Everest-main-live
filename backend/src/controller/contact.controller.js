@@ -195,15 +195,15 @@ const createCallLink = async (req, res) => {
   }
 };
 
-const sendEmailComplaint = async (req, res) => {
 
-  const { to, subject, message } = req.body;
+const sendEmailContact = async (req, res) => {
+  const { to, subject = "(No Subject)", message = "(No Message)" } = req.body; // Provide default values
   const attachments = req.files; // Get uploaded files
 
-  if (!to || !subject || !message) {
+  if (!to) {
       return res.status(400).json({
           success: false,
-          message: "All fields (to, subject, message) are required.",
+          message: "The recipient's email (to) is required.",
       });
   }
 
@@ -211,59 +211,14 @@ const sendEmailComplaint = async (req, res) => {
       const mailOptions = {
           from: "purvagalani@gmail.com",
           to: to,
-          subject: subject,
-          text: message,
-          attachments: attachments.map(file => ({
-              filename: file.originalname,
-              path: file.path
-          }))
-      };
-
-      transporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-              console.error("Error sending email:", error.message);
-              return res.status(500).json({
-                  success: false,
-                  message: "Error sending email: " + error.message,
-              });
-          }
-
-          console.log("Email sent successfully: " + info.response);
-          res.status(200).json({
-              success: true,
-              message: `Email sent successfully to ${to}`,
-              data: info.response,
-          });
-      });
-  } catch (error) {
-      console.error("Error sending email:", error.message);
-      res.status(500).json({
-          success: false,
-          message: "Internal server error: " + error.message,
-      });
-  }
-};const sendEmailContact = async (req, res) => {
-
-  const { to, subject, message } = req.body;
-  const attachments = req.files; // Get uploaded files
-
-  if (!to || !subject || !message) {
-      return res.status(400).json({
-          success: false,
-          message: "All fields (to, subject, message) are required.",
-      });
-  }
-
-  try {
-      const mailOptions = {
-          from: "purvagalani@gmail.com",
-          to: to,
-          subject: subject,
-          text: message,
-          attachments: attachments.map(file => ({
-              filename: file.originalname,
-              path: file.path
-          }))
+          subject: subject || "(No Subject)", // Use default if empty
+          html: message || "(No Message)", // Use default if empty
+          attachments: attachments
+              ? attachments.map(file => ({
+                    filename: file.originalname,
+                    path: file.path,
+                }))
+              : [], // Handle case where there are no attachments
       };
 
       transporter.sendMail(mailOptions, (error, info) => {
@@ -290,7 +245,6 @@ const sendEmailComplaint = async (req, res) => {
       });
   }
 };
-
 
 module.exports = {
   sendSMS,

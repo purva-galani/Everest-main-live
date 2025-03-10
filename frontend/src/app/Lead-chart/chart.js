@@ -102,7 +102,7 @@ export default function CardChart() {
         <div className="flex flex-wrap items-center justify-between">
           <div className="relative w-full max-w-full flex-grow flex-1">
             <h6 className="uppercase text-blueGray-100 mb-1 text-xs font-semibold">Overview</h6>
-            <h2 className="text-white text-blueGray-100 font-semibold">Total Lead Value</h2>
+            <h2 className="text-gray-900 dark:text-white font-semibold">Total Lead Value</h2>
           </div>
 
           <div className="flex gap-4">

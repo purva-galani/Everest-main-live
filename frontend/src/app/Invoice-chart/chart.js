@@ -8,7 +8,7 @@ export default function CardLineChart() {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
-  const statuses = ["New", "Paid", "Pending"];
+  const statuses = ["Unpaid", "Paid", "Pending"];
 
   useEffect(() => {
     const fetchAllData = async () => {

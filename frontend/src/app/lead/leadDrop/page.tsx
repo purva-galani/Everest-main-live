@@ -158,9 +158,17 @@ const formatDate = (dateString: string): string => {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Data</BreadcrumbPage>
+                <BreadcrumbLink href="/lead">
+                  Lead
+                </BreadcrumbLink>
               </BreadcrumbItem>
-            </BreadcrumbList>
+              <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/lead/leadDrop">
+                    Drag & Drop
+                  </BreadcrumbLink>              
+                </BreadcrumbItem>
+              </BreadcrumbList>
           </Breadcrumb>
         </div>
         <div className="flex items-center space-x-4 ml-auto mr-4">

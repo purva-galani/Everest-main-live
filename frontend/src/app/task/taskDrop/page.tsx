@@ -156,7 +156,15 @@ export default function App() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Data</BreadcrumbPage>
+                <BreadcrumbLink href="/task">
+                  Task
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/task/taskDrop">
+                  Drag & Drop
+                </BreadcrumbLink>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -203,8 +211,8 @@ export default function App() {
                           className="card-container  mt-4"
                           >
                             <div
-                            className="card border border-gray-300 rounded-lg shadow-md bg-white p-3 cursor-grab active:cursor-grabbing"
-                            draggable
+                              className="card border border-gray-300 rounded-lg shadow-md bg-white p-3 cursor-grab active:cursor-grabbing"
+                              draggable
                               onDragStart={(e) => handleDragStart(e, task, status)}
                               onClick={() => handleTaskClick(task)}
                         >

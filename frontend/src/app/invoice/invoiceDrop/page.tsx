@@ -162,9 +162,17 @@ export default function App() {
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Data</BreadcrumbPage>
-              </BreadcrumbItem>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/invoice">
+                    Invoice
+                  </BreadcrumbLink>                            
+                </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/invoice/invoiceDrop">
+                    Drag & Drop
+                  </BreadcrumbLink>                            
+                </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>

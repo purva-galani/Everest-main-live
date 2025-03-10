@@ -20,7 +20,6 @@ passport.use(
         if (!user) {
           // Create new user on first login
           user = await Users.create({
-            googleId: profile.id,
             name: profile.displayName,
             email: profile.emails?.[0]?.value,
             image: profile.photos?.[0]?.value,

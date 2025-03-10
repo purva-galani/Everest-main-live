@@ -33,7 +33,15 @@ export default function CertificatePage() {
                         </BreadcrumbItem>
                         <BreadcrumbSeparator className="hidden md:block" />
                         <BreadcrumbItem>
-                            <BreadcrumbPage>Data</BreadcrumbPage>
+                            <BreadcrumbLink href="/deal">
+                                Deal
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>  
+                        <BreadcrumbSeparator className="hidden md:block" />
+                        <BreadcrumbItem>
+                            <BreadcrumbLink href="/Deal-chart">
+                                Graph
+                            </BreadcrumbLink>
                         </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
