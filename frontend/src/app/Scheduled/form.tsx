@@ -13,7 +13,9 @@ import { format } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation"
 
+// Define validation schema using Zod
 const eventSchema = z.object({
   subject: z.string().min(2, { message: "Subject is required." }),
   assignedUser: z.string().min(2, { message: "Assigned user is required." }),
@@ -29,6 +31,7 @@ const eventSchema = z.object({
 
 export default function ScheduledEventForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter()
 
   const form = useForm<z.infer<typeof eventSchema>>({
     resolver: zodResolver(eventSchema),
@@ -49,23 +52,30 @@ export default function ScheduledEventForm() {
   const onSubmit = async (values: z.infer<typeof eventSchema>) => {
     setIsSubmitting(true);
     try {
+      // Format the date before submitting (if necessary)
+      const formattedValues = {
+        ...values,
+        date: values.date ? format(new Date(values.date), "yyyy-MM-dd") : undefined, // Using "yyyy-MM-dd" for consistency in submission
+      };
+  
       const response = await fetch("http://localhost:8000/api/v1/scheduledevents/createScheduledEvent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(formattedValues),
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
         throw new Error(data.error || "Failed to submit the event.");
       }
-
+  
       toast({
         title: "Scheduled Event Created",
         description: "Your scheduled event has been created successfully.",
       });
 
+      router.push("/Scheduled/table") 
     } catch (error) {
       toast({
         title: "Error",
@@ -76,6 +86,7 @@ export default function ScheduledEventForm() {
       setIsSubmitting(false);
     }
   };
+  
 
   return (
     <Form {...form}>
@@ -225,7 +236,7 @@ export default function ScheduledEventForm() {
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? new Date(field.value) : undefined} 
+                      selected={field.value ? new Date(field.value) : undefined} // Convert string to Date
                       onSelect={field.onChange}
                       disabled={(date) => date > new Date()}
                       initialFocus
@@ -283,6 +294,7 @@ export default function ScheduledEventForm() {
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <table/>
               Creating Event...
             </>
           ) : (

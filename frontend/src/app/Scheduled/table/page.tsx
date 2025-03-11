@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import  ScheduledEventForm from "../Scheduled/form"
+import SecheduledTable from "./scheduled-table"
 import {
     SidebarInset,
     SidebarProvider,
@@ -13,7 +13,7 @@ import { ModeToggle } from "@/components/ModeToggle"
 import SearchBar from '@/components/globalSearch';
 import Notification from '@/components/notification';
 
-export default function CertificatePage() {
+export default function LeadTablePage() {
     return (
         <SidebarProvider>
             <AppSidebar/>
@@ -38,8 +38,8 @@ export default function CertificatePage() {
                             </BreadcrumbItem>
                             <BreadcrumbSeparator className="hidden md:block" />
                                 <BreadcrumbItem>
-                                <BreadcrumbLink href="/Scheduled">
-                                Create
+                                <BreadcrumbLink href="/Scheduled/table">
+                                Schedule List
                                 </BreadcrumbLink>              
                                 </BreadcrumbItem>
                             </BreadcrumbList>
@@ -54,16 +54,19 @@ export default function CertificatePage() {
                             </div>
                         </div>
                     </header>
-                <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15">
-                    <Card className="max-w-2xl mx-auto">
+                
+
+                <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-12 pt-15">
+                    {/* Increase width by changing max-w-2xl to max-w-4xl or max-w-7xl */}
+                    <Card className="max-w-6xl mx-auto">
                         <CardHeader>
-                            <CardTitle className="text-3xl font-bold text-center">Scheduled</CardTitle>
+                            <CardTitle className="text-3xl font-bold text-center">Scheduled Manager</CardTitle>
                             <CardDescription className="text-center">
                                 Manage and track your Scheduled effectively.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <ScheduledEventForm />
+                            <SecheduledTable />
                         </CardContent>
                     </Card>
                 </div>

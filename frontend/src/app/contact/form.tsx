@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
+// Define validation schema using Zod
 const contactSchema = z.object({
   companyName: z.string().min(2, { message: "Company name is required." }),
   customerName: z.string().min(2, { message: "Customer name is required." }),
@@ -22,6 +23,7 @@ const contactSchema = z.object({
 export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Initialize the form
   const form = useForm<z.infer<typeof contactSchema>>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
@@ -55,6 +57,7 @@ export default function ContactForm() {
         description: "Your contact has been created successfully.",
       });
 
+      // You can redirect or reset the form here if needed
     } catch (error) {
       toast({
         title: "Error",

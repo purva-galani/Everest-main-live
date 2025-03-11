@@ -18,164 +18,142 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useRouter } from "next/navigation"; 
 import { Calendar } from "@/components/ui/calendar"
 
-interface Lead {
+interface Invoice {
     _id: string;
     companyName: string;
     customerName: string;
     contactNumber: string;
     emailAddress: string;
     address: string;
-    productName: string;
-    amount: string;
     gstNumber: string;
+    productName: string;
+    amount: number;
+    discount: number;
+    gstRate: number;
     status: string;
     date: string;
-    endDate: string;
-    notes: string;
-    isActive: string;
+    totalWithoutGst: number;
+    totalWithGst: number;
+    paidAmount: number;
+    remainingAmount: number;
 }
 
+export const invoiceSchema = z.object({
+    companyName: z.string().min(2, { message: "Company name is required." }),
+    customerName: z.string().min(2, { message: "Customer name must be at least 2 characters." }),
+    contactNumber: z.string().min(10, { message: "Contact number is required." }),
+    emailAddress: z.string().email({ message: "Invalid email address" }),
+    address: z.string().min(2, { message: "Address is required." }),
+    gstNumber: z.string().min(1, { message: "GST number is required." }),
+    productName: z.string().min(2, { message: "Product name is required." }),
+    amount: z.coerce.number().positive({ message: "Amount must be positive." }),
+    discount: z.coerce.number().min(0).default(0),
+    gstRate: z.coerce.number().min(0).default(0),
+    status: z.enum(["Unpaid", "Paid", "Pending"]).default("Unpaid"),
+    date: z.string().refine((val) => !isNaN(Date.parse(val)), {
+        message: "Invalid date",
+    }).transform((val) => new Date(val)),  // ✅ Convert string to Date
+
+    endDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
+        message: "Invalid date",
+    }).transform((val) => new Date(val)),  // ✅ Convert string to Date
+    totalWithoutGst: z.coerce.number().min(0).default(0),
+    totalWithGst: z.coerce.number().min(0).default(0),
+    paidAmount: z.coerce.number().min(0).default(0),
+    remainingAmount: z.coerce.number().min(0).default(0)
+});
 
 const generateUniqueId = () => {
     return Math.random().toString(36).substring(2) + Date.now().toString(36);
 };
 
-const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toISOString().split("T")[0]; // Returns "YYYY-MM-DD"
+const formatDate = (date: any) => {
+    if (!date) return "N/A"; // Handle undefined/null values gracefully
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) return "Invalid Date"; // Handle invalid dates
+    return parsedDate.toLocaleDateString("en-GB"); // Format: DD/MM/YYYY
 };
 
 const columns = [
-    { name: "COMPANY", uid: "companyName", sortable: true, width: "120px" },
-    { name: "CUSTOMER", uid: "customerName", sortable: true, width: "120px" },
-    { name: "CONTACT", uid: "contactNumber", sortable: true, width: "100px" },
-    { name: "EMAIL", uid: "emailAddress", sortable: true, width: "150px" },
-    { name: "ADDRESS", uid: "address", sortable: true, width: "180px" },
-    { name: "PRODUCT", uid: "productName", sortable: true, width: "120px" },
-    { name: "AMOUNT", uid: "amount", sortable: true, width: "100px" },
-    { name: "GST", uid: "gstNumber", sortable: true, width: "100px" },
-    { name: "STATUS", uid: "status", sortable: true, width: "100px" },
+    { name: "COMPANY", uid: "companyName", sortable: true },
+    { name: "CUSTOMER", uid: "customerName", sortable: true },
+    { name: "CONTACT", uid: "contactNumber", sortable: true },
+    { name: "EMAIL", uid: "emailAddress", sortable: true },
+    { name: "ADDRESS", uid: "address", sortable: true },
+    { name: "GST NUMBER", uid: "gstNumber", sortable: true },
+    { name: "PRODUCT", uid: "productName", sortable: true },
+    { name: "AMOUNT", uid: "amount", sortable: true },
+    { name: "DISCOUNT", uid: "discount", sortable: true },
+    { name: "GST RATE", uid: "gstRate", sortable: true },
+    { name: "STATUS", uid: "status", sortable: true },
     {
         name: "DATE",
         uid: "date",
         sortable: true,
-        width: "170px",
-        render: (row: any) => formatDate(row.date),
-    }
-    ,
-    {
-        name: "END DATE",
-        uid: "endDate",
-        sortable: true,
-        width: "120px",
-        render: (row: any) => formatDate(row.endDate)
+        render: (row: any) => formatDate(row.date) // Ensure only date is shown
     },
-    {
-        name: "NOTES",
-        uid: "notes",
-        sortable: true,
-        width: "180px"
-    },
-    { name: "ACTION", uid: "actions", sortable: true, width: "100px" },
+
+    { name: "TOTAL (WITHOUT GST)", uid: "totalWithoutGst", sortable: true },
+    { name: "TOTAL (WITH GST)", uid: "totalWithGst", sortable: true },
+    { name: "PAID AMOUNT", uid: "paidAmount", sortable: true },
+    { name: "REMAINING AMOUNT", uid: "remainingAmount", sortable: true },
+    { name: "ACTION", uid: "actions", sortable: true }
 ];
-const INITIAL_VISIBLE_COLUMNS = ["companyName", "customerName", "contactNumber", "emailAddress", "address", "productName", "amount", "gstNumber", "status", "date", "endDate", "notes", "actions"];
 
-const formSchema = z.object({
-    companyName: z.string().min(2, { message: "Company name is required." }),
-    customerName: z.string().min(2, { message: "Customer name must be at least 2 characters." }),
-    contactNumber: z.string().optional(), // Optional field
-    emailAddress: z.string().email({ message: "Invalid email address" }),
-    address: z.string().min(2, { message: "Address is required." }),
-    productName: z.string().min(2, { message: "Product name is required." }),
-    amount: z.number().positive({ message: "Amount must be positive." }),
-    gstNumber: z.string().min(1, { message: "GST Number is required." }),
-    status: z.enum(["New", "Discussion", "Demo", "Proposal", "Decided"]),
-    date: z.string().refine((val) => !isNaN(Date.parse(val)), {
-        message: "Invalid date",
-    }).transform((val) => new Date(val)),
+const INITIAL_VISIBLE_COLUMNS = ["companyName", "customerName", "contactNumber", "emailAddress", "address", "gstNumber", "productName", "amount", "discount", "gstRate", "status", "date", "endDate", "totalWithoutGst", "totalWithGst", "paidAmount", "remainingAmount", "actions"];
 
-    endDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
-        message: "Invalid date",
-    }).transform((val) => new Date(val)),
-    notes: z.string().optional(),
-    isActive: z.boolean(),
-})
+const formSchema = invoiceSchema;
 
-export default function LeadTable() {
-    const [leads, setLeads] = useState<Lead[]>([]);
+
+
+export default function InvoiceTable() {
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [selectedKeys, setSelectedKeys] = useState<Iterable<string> | 'all' | undefined>(undefined);
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const router = useRouter(); 
 
-
-
-    const fetchLeads = async () => {
+    const fetchInvoices = async () => {
+        setIsLoading(true);
         try {
-            const response = await axios.get(
-                "http://localhost:8000/api/v1/lead/getAllLeads"
-            );
-
-            // Log the response structure
-            console.log('Full API Response:', {
-                status: response.status,
-                data: response.data,
-                type: typeof response.data,
-                hasData: 'data' in response.data
-            });
-
-            // Handle the response based on its structure
-            let leadsData;
-            if (typeof response.data === 'object' && 'data' in response.data) {
-                // Response format: { data: [...leads] }
-                leadsData = response.data.data;
-            } else if (Array.isArray(response.data)) {
-                // Response format: [...leads]
-                leadsData = response.data;
-            } else {
-                console.error('Unexpected response format:', response.data);
-                throw new Error('Invalid response format');
-            }
-
-            // Ensure leadsData is an array
-            if (!Array.isArray(leadsData)) {
-                leadsData = [];
-            }
-
-            // Map the data with safe key generation
-            const leadsWithKeys = leadsData.map((lead: Lead) => ({
-                ...lead,
-                key: lead._id || generateUniqueId()
-            }));
-
-            setLeads(leadsWithKeys);
-            setError(null); // Clear any previous errors
+            const response = await axios.get("http://localhost:8000/api/v1/invoice/getAllInvoices");
+            const invoicesData = Array.isArray(response.data) ? response.data : response.data.data || [];
+            setInvoices(invoicesData);
+            setError(null);
         } catch (error) {
-            console.error("Error fetching leads:", error);
-            if (axios.isAxiosError(error)) {
-                setError(`Failed to fetch leads: ${error.response?.data?.message || error.message}`);
-            } else {
-                setError("Failed to fetch leads.");
-            }
-            setLeads([]); // Set empty array on error
+            console.error("Error fetching invoices:", error);
+            setError(error instanceof Error ? error.message : "Failed to fetch invoices");
+            setInvoices([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
+
     useEffect(() => {
-        fetchLeads();
+        fetchInvoices();
     }, []);
+
 
     const [isAddNewOpen, setIsAddNewOpen] = useState(false);
     const [filterValue, setFilterValue] = useState("");
+    const [selectedKeys, setSelectedKeys] = useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = useState(new Set(INITIAL_VISIBLE_COLUMNS));
     const [statusFilter, setStatusFilter] = useState("all");
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [currentPage, setCurrentPage] = useState(1);
     const [sortDescriptor, setSortDescriptor] = useState({
         column: "companyName",
         direction: "ascending",
     });
     const [page, setPage] = useState(1);
-    const router = useRouter(); 
 
-    // Form setup
+
+
+
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -187,12 +165,15 @@ export default function LeadTable() {
             productName: "",
             amount: 0,
             gstNumber: "",
-            status: "New",
+            discount: 0,
+            gstRate: 0,
+            status: "Unpaid",
             date: new Date(),
-            endDate: undefined,
-            notes: "",
-            isActive: true,
-        },
+            totalWithoutGst: 0,
+            totalWithGst: 0,
+            paidAmount: 0,
+            remainingAmount: 0,
+        }
     })
 
     const hasSearchFilter = Boolean(filterValue);
@@ -202,18 +183,22 @@ export default function LeadTable() {
         return columns.filter((column) => visibleColumns.has(column.uid));
     }, [visibleColumns]);
 
+
     const filteredItems = React.useMemo(() => {
-        let filteredLeads = [...leads];
+        let filteredInvoices = [...invoices];
 
         if (hasSearchFilter) {
-            filteredLeads = filteredLeads.filter((lead) => {
+            filteredInvoices = filteredInvoices.filter((invoice) => {
                 const searchableFields = {
-                    companyName: lead.companyName,
-                    customerName: lead.customerName,
-                    emailAddress: lead.emailAddress,
-                    productName: lead.productName,
-                    status: lead.status,
-                    notes: lead.notes,
+                    companyName: invoice.companyName,
+                    customerName: invoice.customerName,
+                    emailAddress: invoice.emailAddress,
+                    productName: invoice.productName,
+                    status: invoice.status,
+                    gstNumber: invoice.gstNumber,
+                    contactNumber: invoice.contactNumber,
+                    address: invoice.address,
+                    date: invoice.date,
                 };
 
                 return Object.values(searchableFields).some(value =>
@@ -223,13 +208,13 @@ export default function LeadTable() {
         }
 
         if (statusFilter !== "all") {
-            filteredLeads = filteredLeads.filter((lead) =>
-                statusFilter === lead.status
+            filteredInvoices = filteredInvoices.filter((invoice) =>
+                statusFilter === invoice.status
             );
         }
 
-        return filteredLeads;
-    }, [leads, filterValue, statusFilter]);
+        return filteredInvoices;
+    }, [invoices, filterValue, statusFilter]);
 
     const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
@@ -242,8 +227,8 @@ export default function LeadTable() {
 
     const sortedItems = React.useMemo(() => {
         return [...items].sort((a, b) => {
-            const first = a[sortDescriptor.column as keyof Lead];
-            const second = b[sortDescriptor.column as keyof Lead];
+            const first = a[sortDescriptor.column as keyof Invoice];
+            const second = b[sortDescriptor.column as keyof Invoice];
             const cmp = first < second ? -1 : first > second ? 1 : 0;
 
             return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -251,57 +236,60 @@ export default function LeadTable() {
     }, [sortDescriptor, items]);
 
     const [isEditOpen, setIsEditOpen] = useState(false);
-    const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+    const [selectedLead, setSelectedLead] = useState<Invoice | null>(null);
 
     // Function to handle edit button click
-    const handleEditClick = (lead: Lead) => {
-        setSelectedLead(lead);
-        // Pre-fill the form with lead data
+    const handleEditClick = (invoice: Invoice) => {
+        setSelectedInvoice(invoice);
+        // Pre-fill the form with invoice data
         form.reset({
-            companyName: lead.companyName,
-            customerName: lead.customerName,
-            emailAddress: lead.emailAddress,
-            contactNumber: lead.contactNumber || "",
-            address: lead.address,
-            productName: lead.productName,
-            amount: parseFloat(lead.amount),
-            gstNumber: lead.gstNumber,
-            status: lead.status as "New" | "Discussion" | "Demo" | "Proposal" | "Decided",
-            date: lead.date ? new Date(lead.date) : undefined,
-            endDate: lead.endDate ? new Date(lead.endDate) : undefined,
-            notes: lead.notes || "",
-            isActive: lead.isActive === "true",
+            companyName: invoice.companyName,
+            customerName: invoice.customerName,
+            emailAddress: invoice.emailAddress,
+            contactNumber: invoice.contactNumber || "",
+            address: invoice.address,
+            gstNumber: invoice.gstNumber,
+            productName: invoice.productName,
+            amount: invoice.amount,
+            discount: invoice.discount || 0,
+            gstRate: invoice.gstRate || 0,
+            status: invoice.status as "Unpaid" | "Paid" | "Pending",
+            date: invoice.date ? new Date(invoice.date) : undefined,
+            totalWithoutGst: invoice.totalWithoutGst || 0,
+            totalWithGst: invoice.totalWithGst || 0,
+            paidAmount: invoice.paidAmount || 0,
+            remainingAmount: invoice.remainingAmount || 0,
         });
-        setIsEditOpen(true);
+        setIsEditDialogOpen(true);
     };
 
     // Function to handle delete button click
-    const handleDeleteClick = async (lead: Lead) => {
-        if (!window.confirm("Are you sure you want to delete this lead?")) {
+    const handleDeleteClick = async (invoice: Invoice) => {
+        if (!window.confirm("Are you sure you want to delete this invoice?")) {
             return;
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/lead/deleteLead/${lead._id}`, {
+            const response = await fetch(`http://localhost:8000/api/v1/invoice/deleteInvoice/${invoice._id}`, {
                 method: "DELETE",
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to delete lead");
+                throw new Error(errorData.message || "Failed to delete invoice");
             }
 
             toast({
-                title: "Lead Deleted",
-                description: "The lead has been successfully deleted.",
+                title: "Invoice Deleted",
+                description: "The invoice has been successfully deleted.",
             });
 
-            // Refresh the leads list
-            fetchLeads();
+            // Refresh the invoices list
+            fetchInvoices();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to delete lead",
+                description: error instanceof Error ? error.message : "Failed to delete invoice",
                 variant: "destructive",
             });
         }
@@ -314,11 +302,11 @@ export default function LeadTable() {
 
 
     async function onEdit(values: z.infer<typeof formSchema>) {
-        if (!selectedLead?._id) return;
+        if (!selectedInvoice?._id) return;
 
-        setIsSubmitting(true);
+        setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/lead/updateLead/${selectedLead._id}`, {
+            const response = await fetch(`http://localhost:8000/api/v1/invoice/updateInvoice/${selectedInvoice._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
@@ -326,67 +314,64 @@ export default function LeadTable() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to update lead");
+                throw new Error(errorData.message || "Failed to update invoice");
             }
 
             toast({
-                title: "Lead Updated",
-                description: "The lead has been successfully updated.",
+                title: "Invoice Updated",
+                description: "The invoice has been successfully updated.",
             });
 
             // Close dialog and reset form
-            setIsEditOpen(false);
-            setSelectedLead(null);
+            setIsEditDialogOpen(false);
+            setSelectedInvoice(null);
             form.reset();
 
-            // Refresh the leads list
-            fetchLeads();
+            // Refresh the invoices list
+            fetchInvoices();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to update lead",
+                description: error instanceof Error ? error.message : "Failed to update invoice",
                 variant: "destructive",
             });
         } finally {
-            setIsSubmitting(false);
+            setIsLoading(false);
         }
     }
 
-    const renderCell = React.useCallback((lead: Lead, columnKey: string) => {
-        const cellValue = lead[columnKey as keyof Lead];
+    const renderCell = React.useCallback((invoice: Invoice, columnKey: string) => {
+        const cellValue = invoice[columnKey as keyof Invoice];
 
-        if ((columnKey === "date" || columnKey === "endDate") && cellValue) {
-            return formatDate(cellValue);
+        switch (columnKey) {
+            case "actions":
+                return (
+                    <div className="relative flex items-center gap-2">
+                        <Tooltip>
+                            <span
+                                className="text-lg text-default-400 cursor-pointer active:opacity-50"
+                                onClick={() => handleEditClick(invoice)}
+                            >
+                                <Edit className="h-4 w-4" />
+                            </span>
+                        </Tooltip>
+                        <Tooltip color="danger">
+                            <span
+                                className="text-lg text-danger cursor-pointer active:opacity-50"
+                                onClick={() => handleDeleteClick(invoice)}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </span>
+                        </Tooltip>
+                    </div>
+                );
+            case "date":
+                return formatDate(cellValue); // Format the endDate
+            case "endDate":
+                return formatDate(cellValue); // Format the endDate
+            default:
+                return cellValue;
         }
-        
-        if (columnKey === "notes") {
-            return cellValue || "No note available";
-        }
-        
-        if (columnKey === "actions") {
-            return (
-                <div className="relative flex items-center gap-2">
-                    <Tooltip content="">
-                        <span
-                            className="text-lg text-default-400 cursor-pointer active:opacity-50"
-                            onClick={() => handleEditClick(lead)}
-                        >
-                            <Edit className="h-4 w-4" />
-                        </span>
-                    </Tooltip>
-                    <Tooltip color="danger" content="">
-                        <span
-                            className="text-lg text-danger cursor-pointer active:opacity-50"
-                            onClick={() => handleDeleteClick(lead)}
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </span>
-                    </Tooltip>
-                </div>
-            );
-        }
-
-        return cellValue;
     }, []);
 
 
@@ -469,14 +454,14 @@ export default function LeadTable() {
                             variant="default"
                             size="default"
                             endContent={<PlusCircle />} // Add an icon at the end
-                            onClick={() => router.push("/lead")} 
+                            onClick={() => router.push("/invoice")} 
                         >
                             Add New
                         </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-default-400 text-small">Total {leads.length} leads</span>
+                    <span className="text-default-400 text-small">Total {invoices.length} leads</span>
                     <label className="flex items-center text-default-400 text-small">
                         Rows per page:
                         <select
@@ -496,7 +481,7 @@ export default function LeadTable() {
         statusFilter,
         visibleColumns,
         onRowsPerPageChange,
-        leads.length,
+        invoices.length,
         onSearchChange,
     ]);
 
@@ -545,6 +530,48 @@ export default function LeadTable() {
         );
     }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
+
+    const { watch, setValue } = form;
+
+
+    const amount = watch("amount") ?? 0;
+    const discount = watch("discount") ?? 0;
+    const gstRate = watch("gstRate") ?? 0;
+    const paidAmount = watch("paidAmount") ?? 0;
+
+
+    useEffect(() => {
+
+        const { totalWithoutGst, totalWithGst, remainingAmount } = calculateGST(amount, discount, gstRate, paidAmount);
+
+
+        setValue("totalWithoutGst", totalWithoutGst);
+        setValue("totalWithGst", totalWithGst);
+        setValue("remainingAmount", remainingAmount);
+    }, [amount, discount, gstRate, paidAmount, setValue]);
+
+
+
+    const calculateGST = (
+        amount: number,
+        discount: number,
+        gstRate: number,
+        paidAmount: number
+    ) => {
+
+        const discountedAmount = amount - amount * (discount / 100);
+        const gstAmount = discountedAmount * (gstRate / 100);
+        const totalWithoutGst = discountedAmount;
+        const totalWithGst = discountedAmount + gstAmount;
+        const remainingAmount = totalWithGst - paidAmount;
+
+        return {
+            totalWithoutGst,
+            totalWithGst,
+            remainingAmount,
+        };
+    };
+
     return (
         <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
             <Table
@@ -587,13 +614,12 @@ export default function LeadTable() {
                 </TableBody>
             </Table>
 
-
-            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
-                        <DialogTitle>Edit Lead</DialogTitle>
+                        <DialogTitle>Edit Invoice</DialogTitle>
                         <DialogDescription>
-                            Update the lead details.
+                            Update the invoice details.
                         </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
@@ -630,6 +656,19 @@ export default function LeadTable() {
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
+                                    name="contactNumber"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Contact Number</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter contact number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
                                     name="emailAddress"
                                     render={({ field }) => (
                                         <FormItem>
@@ -641,6 +680,9 @@ export default function LeadTable() {
                                         </FormItem>
                                     )}
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
                                     name="address"
@@ -649,6 +691,19 @@ export default function LeadTable() {
                                             <FormLabel>Address</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Enter address" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="gstNumber"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>GST Number</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter GST number" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -677,15 +732,7 @@ export default function LeadTable() {
                                         <FormItem>
                                             <FormLabel>Amount</FormLabel>
                                             <FormControl>
-                                                <Input
-                                                    placeholder="Enter amount"
-                                                    type="number"
-                                                    {...field}
-                                                    onChange={(e) => {
-                                                        const value = e.target.valueAsNumber || 0;
-                                                        field.onChange(value);
-                                                    }}
-                                                />
+                                                <Input placeholder="Enter amount" type="number" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -696,17 +743,33 @@ export default function LeadTable() {
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
-                                    name="gstNumber"
+                                    name="discount"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>GST Number</FormLabel>
+                                            <FormLabel>Discount</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter GST number" {...field} />
+                                                <Input placeholder="Enter discount" type="number" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
+                                <FormField
+                                    control={form.control}
+                                    name="gstRate"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>GST Rate (%)</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter GST rate" type="number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
                                     name="status"
@@ -718,28 +781,69 @@ export default function LeadTable() {
                                                     {...field}
                                                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                 >
-                                                    <option value="New">New</option>
-                                                    <option value="Discussion">Discussion</option>
-                                                    <option value="Demo">Demo</option>
-                                                    <option value="Proposal">Proposal</option>
-                                                    <option value="Decided">Decided</option>
+                                                    <option value="Unpaid">Unpaid</option>
+                                                    <option value="Paid">Paid</option>
+                                                    <option value="Pending">Pending</option>
                                                 </select>
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
+
+                                <FormField
+                                    control={form.control}
+                                    name="date"
+                                    render={({ field }) => {
+                                        // Convert the Date object to a string in "YYYY-MM-DD" format
+                                        const dateValue = field.value ? format(field.value, "yyyy-MM-dd") : "";
+                                        return (
+                                            <FormItem>
+                                                <FormLabel>Invoice Date</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="date"
+                                                        value={dateValue}
+                                                        onChange={(e) => {
+                                                            // Convert the string back to a Date object
+                                                            const selectedDate = new Date(e.target.value);
+                                                            field.onChange(selectedDate);
+                                                        }}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        );
+                                    }}
+                                />
+
+
                             </div>
+
 
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
-                                    name="contactNumber"
+                                    name="totalWithoutGst"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Contact Number</FormLabel>
+                                            <FormLabel>Total Without GST</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter contact number" {...field} />
+                                                <Input placeholder="Enter total without GST" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="totalWithGst"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Total With GST</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter total with GST" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -747,34 +851,17 @@ export default function LeadTable() {
                                 />
                             </div>
 
+
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
-                                    name="date"
+                                    name="paidAmount"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Start Date</FormLabel>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <FormControl>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                                                        >
-                                                            {field.value ? format(field.value, "dd-MM-yyyy") : <span>Pick a date</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </Button>
-                                                    </FormControl>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0" align="start">
-                                                    <Calendar
-                                                        mode="single"
-                                                        
-                                                        onSelect={field.onChange}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                            <FormLabel>Paid Amount</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter paid amount" {...field} />
+                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -782,55 +869,19 @@ export default function LeadTable() {
 
                                 <FormField
                                     control={form.control}
-                                    name="endDate"
+                                    name="remainingAmount"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>End Date</FormLabel>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <FormControl>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                                                        >
-                                                            {field.value ? format(field.value, "dd-MM-yyyy") : <span>Pick a date</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </Button>
-                                                    </FormControl>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0" align="start">
-                                                    <Calendar
-                                                        mode="single"
-                                                        
-                                                        onSelect={field.onChange}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                            <FormLabel>Remaining Amount</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter remaining amount" {...field} />
+                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                             </div>
 
-
-                            <FormField
-                                control={form.control}
-                                name="notes"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Notes</FormLabel>
-                                        <FormControl>
-                                            <textarea
-                                                placeholder="Enter notes"
-                                                {...field}
-                                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
 
                             <Button type="submit" className="w-full" disabled={isSubmitting}>
                                 {isSubmitting ? (
@@ -839,15 +890,16 @@ export default function LeadTable() {
                                         Updating...
                                     </>
                                 ) : (
-                                    "Update Lead"
+                                    "Update Invoice"
                                 )}
                             </Button>
                         </form>
                     </Form>
                 </DialogContent>
             </Dialog>
-
         </div>
+
+
 
     );
 }

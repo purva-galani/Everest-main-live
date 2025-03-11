@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { CalendarIcon, Loader2 } from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon, Loader2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
-// Invoice schema validation with zod
+
 const formSchema = z.object({
   companyName: z.string().min(2, { message: "Company name is required." }),
   customerName: z.string().min(2, { message: "Customer name is required." }),
@@ -30,7 +30,7 @@ const formSchema = z.object({
   date: z.date().optional(),
   totalWithoutGst: z.number().optional(),
   totalWithGst: z.number().optional(),
-  paidAmount: z.number().optional(),
+  paidAmount: z.string().optional(),
   remainingAmount: z.number().optional(),
 });
 
@@ -54,45 +54,31 @@ export default function InvoiceForm() {
       date: new Date(),
       totalWithoutGst: 0,
       totalWithGst: 0,
-      paidAmount: 0,
+      paidAmount: "",
       remainingAmount: 0,
     },
   });
 
-
   const { watch, setValue } = form;
 
-  
-  const amount = watch("amount") ?? 0; 
-  const discount = watch("discount") ?? 0;  
-  const gstRate = watch("gstRate") ?? 0; 
-  const paidAmount = watch("paidAmount") ?? 0;  
-  
+  const amount = watch("amount") ?? 0;
+  const discount = watch("discount") ?? 0;
+  const gstRate = watch("gstRate") ?? 0;
+  const paidAmount = watch("paidAmount") ?? 0;
 
   useEffect(() => {
-    
     const { totalWithoutGst, totalWithGst, remainingAmount } = calculateGST(amount, discount, gstRate, paidAmount);
-
-    
     setValue("totalWithoutGst", totalWithoutGst);
     setValue("totalWithGst", totalWithGst);
     setValue("remainingAmount", remainingAmount);
   }, [amount, discount, gstRate, paidAmount, setValue]);
 
-
-
-  const calculateGST = (
-    amount: number,
-    discount: number,
-    gstRate: number,
-    paidAmount: number
-  ) => {
-    
+  const calculateGST = (amount: number, discount: number, gstRate: number, paidAmount: number) => {
     const discountedAmount = amount - amount * (discount / 100);
-    const gstAmount = discountedAmount * (gstRate / 100); 
+    const gstAmount = discountedAmount * (gstRate / 100);
     const totalWithoutGst = discountedAmount;
-    const totalWithGst = discountedAmount + gstAmount; 
-    const remainingAmount = totalWithGst - paidAmount; 
+    const totalWithGst = discountedAmount + gstAmount;
+    const remainingAmount = totalWithGst - paidAmount;
 
     return {
       totalWithoutGst,
@@ -118,9 +104,9 @@ export default function InvoiceForm() {
 
       toast({
         title: "Invoice Submitted",
-        description: `Your invoice has been successfully submitted. ID: ${data.id}`,
+        description: `Your invoice has been successfully submitted.`,
       });
-      router.push(`/invoice/${data.id}`);
+      router.push(`/invoice/table`);
     } catch (error) {
       toast({
         title: "Error",
@@ -243,16 +229,15 @@ export default function InvoiceForm() {
               <FormItem>
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
-                    <Input 
-                    placeholder="Enter amount" 
-                    type="number" 
-                    {...field} 
+                  <Input
+                    placeholder="Enter amount"
+                    type="number"
+                    {...field}
                     onChange={(e) => {
-                      // Convert the string value to a number
-                      const value = e.target.valueAsNumber || 0; // Use `valueAsNumber` to get a number
-                      field.onChange(value); // Pass the number to the form
+                      const value = e.target.valueAsNumber || 0;
+                      field.onChange(value);
                     }}
-                    />
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -261,22 +246,21 @@ export default function InvoiceForm() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <FormField
+          <FormField
             control={form.control}
             name="discount"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Discount</FormLabel>
                 <FormControl>
-                  <Input 
-                  placeholder="Enter discount" 
-                  type="number" 
-                  {...field} 
-                  onChange={(e) => {
-                    // Convert the string value to a number
-                    const value = e.target.valueAsNumber || 0; // Use `valueAsNumber` to get a number
-                    field.onChange(value); // Pass the number to the form
-                  }}
+                  <Input
+                    placeholder="Enter discount"
+                    type="number"
+                    {...field}
+                    onChange={(e) => {
+                      const value = e.target.valueAsNumber || 0;
+                      field.onChange(value);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -292,8 +276,8 @@ export default function InvoiceForm() {
                 <FormControl>
                   <select
                     {...field}
-                    value={field.value} // Ensure the value is controlled
-                    onChange={(e) => field.onChange(Number(e.target.value))} // Convert to number
+                    value={field.value}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select GST Rate</option>
@@ -307,7 +291,6 @@ export default function InvoiceForm() {
               </FormItem>
             )}
           />
-
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 justify-items-stretch">
@@ -322,7 +305,7 @@ export default function InvoiceForm() {
                     {...field}
                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="Unpaid">Unpaid</option>
+                    <option value="New">Unpaid</option>
                     <option value="Paid">Paid</option>
                     <option value="Pending">Pending</option>
                   </select>
@@ -332,7 +315,7 @@ export default function InvoiceForm() {
             )}
           />
 
-<FormField
+          <FormField
             control={form.control}
             name="date"
             render={({ field }) => (
@@ -374,11 +357,7 @@ export default function InvoiceForm() {
               <FormItem>
                 <FormLabel>Paid Amount</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter paid amount" type="number" {...field}                     onChange={(e) => {
-                      // Convert the string value to a number
-                      const value = e.target.valueAsNumber || 0; // Use `valueAsNumber` to get a number
-                      field.onChange(value); // Pass the number to the form
-                    }}/>
+                  <Input placeholder="Enter paid amount" type="string" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -398,19 +377,18 @@ export default function InvoiceForm() {
               </FormItem>
             )}
           />
-
         </div>
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Submitting...
-            </>
-          ) : (
-            "Submit Invoice"
-          )}
-        </Button>
+                    {isSubmitting ? (
+                        <>
+                            <table />
+                            Submitting...
+                        </>
+                    ) : (
+                        "Submit Invoice"
+                    )}
+                </Button>
       </form>
     </Form>
   );

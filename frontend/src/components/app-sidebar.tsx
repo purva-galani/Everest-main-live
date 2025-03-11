@@ -80,8 +80,8 @@ const data = {
       url: "/invoice",
       icon: ReceiptText,
       items: [
-        { title: "Create", url: "/invoice/invoiceForm" },
-        { title: "List", url: "/invoice" },
+        { title: "Create", url: "/invoice" },
+        { title: "List", url: "/invoice/table" },
         { title: "Graph", url: "/Invoice-chart" },
         { title: "Drag & Drop", url: "/invoice/invoiceDrop" }
       ],
@@ -104,7 +104,7 @@ const data = {
       
       items: [
         { title: "Create", url: "/deal" },
-        { title: "List", url: "/deal/list" },
+        { title: "List", url: "/deal/table" },
         { title: "Graph", url: "/Deal-chart" },
         { title: "Drag & Drop", url: "/deal/dealDrop" }
       ],
@@ -116,7 +116,7 @@ const data = {
       
       items: [
         { title: "Create", url: "/task" },
-        { title: "List", url: "/task/list" },
+        { title: "List", url: "/task/table" },
         { title: "Drag & Drop", url: "/task/taskDrop" }
       ],
     },
@@ -127,7 +127,7 @@ const data = {
       
       items: [
         { title: "Create", url: "/complaint" },
-        { title: "List", url: "/complaint/list" },
+        { title: "List", url: "/complaint/table" },
         { title: "Email", url: "/complaint/complaintEmail" }
       ],
     },
@@ -138,7 +138,7 @@ const data = {
       
       items: [
         { title: "Create", url: "/contact" },
-        { title: "List", url: "/contact/list" },
+        { title: "List", url: "/contact/table" },
         { title: "Email", url: "/contact/contactEmail" }
       ],
     },
@@ -149,17 +149,14 @@ const data = {
       
       items: [
         { title: "Create", url: "/Account" },
-        { title: "List", url: "/account/list" }
+        { title: "List", url: "/Account/table" }
       ],
     },
     {
       title: "Documents",
       url: "/document",
       icon: ScrollText,
-      
       items: [
-        // { title: "Photos", url: "/document" },
-        // { title: "Videos", url: "/video" },
         { title: "Others", url: "/flipflap" }
       ],
     },
@@ -170,7 +167,7 @@ const data = {
       
       items: [
         { title: "Create", url: "/Scheduled" },
-        { title: "List", url: "/scheduled/list" }
+        { title: "List", url: "/Scheduled/table" }
       ],
     },
     {

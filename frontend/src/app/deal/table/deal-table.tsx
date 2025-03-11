@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useRouter } from "next/navigation"; 
 import { Calendar } from "@/components/ui/calendar"
 
-interface Lead {
+interface Deal {
     _id: string;
     companyName: string;
     customerName: string;
@@ -101,17 +101,16 @@ const formSchema = z.object({
     isActive: z.boolean(),
 })
 
-export default function LeadTable() {
-    const [leads, setLeads] = useState<Lead[]>([]);
+export default function DealTable() {
+    const [Deals, setDeals] = useState<Deal[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [selectedKeys, setSelectedKeys] = useState<Iterable<string> | 'all' | undefined>(undefined);
+    const router = useRouter(); 
 
-
-
-    const fetchLeads = async () => {
+    const fetchdeal = async () => {
         try {
             const response = await axios.get(
-                "http://localhost:8000/api/v1/lead/getAllLeads"
+                'http://localhost:8000/api/v1/deal/getAllDeals'
             );
 
             // Log the response structure
@@ -141,26 +140,26 @@ export default function LeadTable() {
             }
 
             // Map the data with safe key generation
-            const leadsWithKeys = leadsData.map((lead: Lead) => ({
-                ...lead,
-                key: lead._id || generateUniqueId()
+            const leadsWithKeys = leadsData.map((deal: Deal) => ({
+                ...deal,
+                key: deal._id || generateUniqueId()
             }));
 
-            setLeads(leadsWithKeys);
+            setDeals(leadsWithKeys);
             setError(null); // Clear any previous errors
         } catch (error) {
-            console.error("Error fetching leads:", error);
+            console.error("Error fetching deals:", error);
             if (axios.isAxiosError(error)) {
-                setError(`Failed to fetch leads: ${error.response?.data?.message || error.message}`);
+                setError(`Failed to fetch deals: ${error.response?.data?.message || error.message}`);
             } else {
-                setError("Failed to fetch leads.");
+                setError("Failed to fetch deals.");
             }
-            setLeads([]); // Set empty array on error
+            setDeals([]); // Set empty array on error
         }
     };
 
     useEffect(() => {
-        fetchLeads();
+        fetchdeal();
     }, []);
 
     const [isAddNewOpen, setIsAddNewOpen] = useState(false);
@@ -173,7 +172,10 @@ export default function LeadTable() {
         direction: "ascending",
     });
     const [page, setPage] = useState(1);
-    const router = useRouter(); 
+
+
+
+
 
     // Form setup
     const form = useForm<z.infer<typeof formSchema>>({
@@ -203,17 +205,17 @@ export default function LeadTable() {
     }, [visibleColumns]);
 
     const filteredItems = React.useMemo(() => {
-        let filteredLeads = [...leads];
+        let filteredDeals = [...Deals];
 
         if (hasSearchFilter) {
-            filteredLeads = filteredLeads.filter((lead) => {
+            filteredDeals = filteredDeals.filter((Deals) => {
                 const searchableFields = {
-                    companyName: lead.companyName,
-                    customerName: lead.customerName,
-                    emailAddress: lead.emailAddress,
-                    productName: lead.productName,
-                    status: lead.status,
-                    notes: lead.notes,
+                    companyName: Deals.companyName,
+                    customerName: Deals.customerName,
+                    emailAddress: Deals.emailAddress,
+                    productName: Deals.productName,
+                    status: Deals.status,
+                    notes: Deals.notes,
                 };
 
                 return Object.values(searchableFields).some(value =>
@@ -223,13 +225,13 @@ export default function LeadTable() {
         }
 
         if (statusFilter !== "all") {
-            filteredLeads = filteredLeads.filter((lead) =>
-                statusFilter === lead.status
+            filteredDeals = filteredDeals.filter((Deals) =>
+                statusFilter === Deals.status
             );
         }
 
-        return filteredLeads;
-    }, [leads, filterValue, statusFilter]);
+        return filteredDeals;
+    }, [Deals, filterValue, statusFilter]);
 
     const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
@@ -242,8 +244,8 @@ export default function LeadTable() {
 
     const sortedItems = React.useMemo(() => {
         return [...items].sort((a, b) => {
-            const first = a[sortDescriptor.column as keyof Lead];
-            const second = b[sortDescriptor.column as keyof Lead];
+            const first = a[sortDescriptor.column as keyof Deal];
+            const second = b[sortDescriptor.column as keyof Deal];
             const cmp = first < second ? -1 : first > second ? 1 : 0;
 
             return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -251,53 +253,53 @@ export default function LeadTable() {
     }, [sortDescriptor, items]);
 
     const [isEditOpen, setIsEditOpen] = useState(false);
-    const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+    const [selectedLead, setSelectedLead] = useState<Deal| null>(null);
 
     // Function to handle edit button click
-    const handleEditClick = (lead: Lead) => {
-        setSelectedLead(lead);
+    const handleEditClick = (Deals: Deal) => {
+        setSelectedLead(Deals);
         // Pre-fill the form with lead data
         form.reset({
-            companyName: lead.companyName,
-            customerName: lead.customerName,
-            emailAddress: lead.emailAddress,
-            contactNumber: lead.contactNumber || "",
-            address: lead.address,
-            productName: lead.productName,
-            amount: parseFloat(lead.amount),
-            gstNumber: lead.gstNumber,
-            status: lead.status as "New" | "Discussion" | "Demo" | "Proposal" | "Decided",
-            date: lead.date ? new Date(lead.date) : undefined,
-            endDate: lead.endDate ? new Date(lead.endDate) : undefined,
-            notes: lead.notes || "",
-            isActive: lead.isActive === "true",
+            companyName: Deals.companyName,
+            customerName: Deals.customerName,
+            emailAddress: Deals.emailAddress,
+            contactNumber: Deals.contactNumber || "",
+            address: Deals.address,
+            productName: Deals.productName,
+            amount: parseFloat(Deals.amount),
+            gstNumber: Deals.gstNumber,
+            status: Deals.status as "New" | "Discussion" | "Demo" | "Proposal" | "Decided",
+            date: Deals.date ? new Date(Deals.date) : undefined,
+            endDate: Deals.endDate ? new Date(Deals.endDate) : undefined,
+            notes: Deals.notes || "",
+            isActive: Deals.isActive === "true",
         });
         setIsEditOpen(true);
     };
 
     // Function to handle delete button click
-    const handleDeleteClick = async (lead: Lead) => {
-        if (!window.confirm("Are you sure you want to delete this lead?")) {
+    const handleDeleteClick = async (Deals: Deal) => {
+        if (!window.confirm("Are you sure you want to delete this deals?")) {
             return;
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/lead/deleteLead/${lead._id}`, {
+            const response = await fetch(`http://localhost:8000/api/v1/deal/deleteLead/${Deals._id}`, {
                 method: "DELETE",
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to delete lead");
+                throw new Error(errorData.message || "Failed to delete deal");
             }
 
             toast({
-                title: "Lead Deleted",
-                description: "The lead has been successfully deleted.",
+                title: "Deal Deleted",
+                description: "The deal has been successfully deleted.",
             });
 
             // Refresh the leads list
-            fetchLeads();
+            fetchdeal();
         } catch (error) {
             toast({
                 title: "Error",
@@ -318,7 +320,7 @@ export default function LeadTable() {
 
         setIsSubmitting(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/lead/updateLead/${selectedLead._id}`, {
+            const response = await fetch(`http://localhost:8000/api/v1/deal/updateLead/${selectedLead._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
@@ -326,12 +328,12 @@ export default function LeadTable() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to update lead");
+                throw new Error(errorData.message || "Failed to update deal");
             }
 
             toast({
-                title: "Lead Updated",
-                description: "The lead has been successfully updated.",
+                title: "deal Updated",
+                description: "The deal has been successfully updated.",
             });
 
             // Close dialog and reset form
@@ -340,11 +342,11 @@ export default function LeadTable() {
             form.reset();
 
             // Refresh the leads list
-            fetchLeads();
+            fetchdeal();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to update lead",
+                description: error instanceof Error ? error.message : "Failed to update deal",
                 variant: "destructive",
             });
         } finally {
@@ -352,8 +354,8 @@ export default function LeadTable() {
         }
     }
 
-    const renderCell = React.useCallback((lead: Lead, columnKey: string) => {
-        const cellValue = lead[columnKey as keyof Lead];
+    const renderCell = React.useCallback((Deals: Deal, columnKey: string) => {
+        const cellValue = Deals[columnKey as keyof Deal];
 
         if ((columnKey === "date" || columnKey === "endDate") && cellValue) {
             return formatDate(cellValue);
@@ -369,7 +371,7 @@ export default function LeadTable() {
                     <Tooltip content="">
                         <span
                             className="text-lg text-default-400 cursor-pointer active:opacity-50"
-                            onClick={() => handleEditClick(lead)}
+                            onClick={() => handleEditClick(Deals)}
                         >
                             <Edit className="h-4 w-4" />
                         </span>
@@ -377,7 +379,7 @@ export default function LeadTable() {
                     <Tooltip color="danger" content="">
                         <span
                             className="text-lg text-danger cursor-pointer active:opacity-50"
-                            onClick={() => handleDeleteClick(lead)}
+                            onClick={() => handleDeleteClick(Deals)}
                         >
                             <Trash2 className="h-4 w-4" />
                         </span>
@@ -469,14 +471,14 @@ export default function LeadTable() {
                             variant="default"
                             size="default"
                             endContent={<PlusCircle />} // Add an icon at the end
-                            onClick={() => router.push("/lead")} 
+                            onClick={() => router.push("/deal")} 
                         >
                             Add New
                         </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-default-400 text-small">Total {leads.length} leads</span>
+                    <span className="text-default-400 text-small">Total {Deals.length} leads</span>
                     <label className="flex items-center text-default-400 text-small">
                         Rows per page:
                         <select
@@ -496,7 +498,7 @@ export default function LeadTable() {
         statusFilter,
         visibleColumns,
         onRowsPerPageChange,
-        leads.length,
+        Deals.length,
         onSearchChange,
     ]);
 
@@ -578,9 +580,9 @@ export default function LeadTable() {
                         </TableColumn>
                     )}
                 </TableHeader>
-                <TableBody emptyContent={"No lead found"} items={sortedItems}>
+                <TableBody emptyContent={"No deals found"} items={sortedItems}>
                     {(item) => (
-                        <TableRow key={item._id}>
+                        <TableRow key={item.id}>
                             {(columnKey) => <TableCell style={{ fontSize: "12px", padding: "8px" }}>{renderCell(item, columnKey as string)}</TableCell>}
                         </TableRow>
                     )}
@@ -591,9 +593,9 @@ export default function LeadTable() {
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                 <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
-                        <DialogTitle>Edit Lead</DialogTitle>
+                        <DialogTitle>Edit Deal</DialogTitle>
                         <DialogDescription>
-                            Update the lead details.
+                            Update the Deal details.
                         </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>

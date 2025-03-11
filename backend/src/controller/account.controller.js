@@ -3,23 +3,14 @@ const nodemailer = require("nodemailer");
 
 const accountAdd = async (req, res) => {
     try {
-        const { accountName, contactName, contactNumber, emailAddress, accountType1, industry, status, accountManager,startDate, endDate, address, description, companyName, bankDetails   } = req.body;
+        const { accountHolderName, accountNumber, bankName, accountType, IFSCCode  } = req.body;
 
         const newAccount = new Account({
-            accountName,
-            contactName,
-            contactNumber,
-            emailAddress,
-            accountType1,
-            industry,
-            status,
-            accountManager,
-            startDate,
-            endDate,
-            address,
-            description,
-            companyName,
-            bankDetails
+            accountHolderName,
+            accountNumber,
+            bankName,
+            accountType,
+            IFSCCode
         });
 
         const savedAccount = await newAccount.save();
@@ -31,32 +22,32 @@ const accountAdd = async (req, res) => {
     }
 };
 
-const updateInvoice = async (req, res) => {
+const updateAccount = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
     try {
-        console.log("Updating invoice with ID:", id, "and data:", updates);
+        console.log("Updating account with ID:", id, "and data:", updates);
 
-        const updatedInvoice = await Invoice.findByIdAndUpdate(id, updates, {
+        const updatedAccount = await Account.findByIdAndUpdate(id, updates, {
             new: true,
             runValidators: true
         });
 
-        if (!updatedInvoice) {
+        if (!updatedAccount) {
             return res.status(404).json({
                 success: false,
-                message: "Invoice not found"
+                message: "Account not found"
             });
         }
 
         res.status(200).json({
             success: true,
-            message: "Invoice updated successfully",
-            data: updatedInvoice
+            message: "Account updated successfully",
+            data: updatedAccount
         });
     } catch (error) {
-        console.error("Error updating invoice:", error);
+        console.error("Error updating account:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error: " + error.message,
@@ -64,26 +55,26 @@ const updateInvoice = async (req, res) => {
     }
 };
 
-const deleteInvoice = async (req, res) => {
+const deleteAccount = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const deletedInvoice = await Invoice.findByIdAndDelete(id);
+        const deletedAccount = await Account.findByIdAndDelete(id);
 
-        if (!deletedInvoice) {
+        if (!deletedAccount) {
             return res.status(404).json({
                 success: false,
-                message: "Invoice not found"
+                message: "Account not found"
             });
         }
 
         res.status(200).json({
             success: true,
-            message: "Invoice deleted successfully",
-            data: deletedInvoice
+            message: "Account deleted successfully",
+            data: deletedAccount
         });
     } catch (error) {
-        console.error("Error deleting invoice:", error);
+        console.error("Error deleting account:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error: " + error.message,
@@ -91,15 +82,15 @@ const deleteInvoice = async (req, res) => {
     }
 };
 
-const getAllInvoices = async (req, res) => {
+const getAllAccounts = async (req, res) => {
     try {
-        const invoices = await Invoice.find({});
+        const accounts = await Account.find({});
         res.status(200).json({
             success: true,
-            data: invoices
+            data: accounts
         });
     } catch (error) {
-        console.error("Error fetching invoices:", error);
+        console.error("Error fetching accounts:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error: " + error.message,
@@ -107,25 +98,25 @@ const getAllInvoices = async (req, res) => {
     }
 };
 
-const getInvoiceById = async (req, res) => {
+const getAccountById = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const invoice = await Invoice.findById(id);
+        const account = await Account.findById(id);
 
-        if (!invoice) {
+        if (!account) {
             return res.status(404).json({
                 success: false,
-                message: "Invoice not found"
+                message: "Account not found"
             });
         }
 
         res.status(200).json({
             success: true,
-            data: invoice
+            data: account
         });
     } catch (error) {
-        console.error("Error fetching invoice:", error);
+        console.error("Error fetching account:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error: " + error.message,
@@ -133,16 +124,16 @@ const getInvoiceById = async (req, res) => {
     }
 };
 
-const getUnpaidInvoices = async (req, res) => {
+const getUnpaidAccounts = async (req, res) => {
 
     try {
-        const unpaidInvoices = await Invoice.find({ status: "Unpaid" });
+        const unpaidAccounts = await Account.find({ status: "Unpaid" });
         res.status(200).json({
             success: true,
-            data: unpaidInvoices,
+            data: unpaidAccounts,
         });
     } catch (error) {
-        console.error("Error fetching unpaid invoices:", error);
+        console.error("Error fetching unpaid accounts:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error: " + error.message,
@@ -150,18 +141,18 @@ const getUnpaidInvoices = async (req, res) => {
     }
 };
 
-const getPaidInvoices = async (req, res) => {
+const getPaidAccounts = async (req, res) => {
 
     try {
-        const paidInvoices = await Invoice.find({ status: 'Paid' });
+        const paidAccounts = await Account.find({ status: 'Paid' });
 
         // Map to extract only the desired fields
-        // const response = unpaidInvoices.map(invoice => ({
-        //     companyName: invoice.companyName,
-        //     withGstAmount:invoice.withGstAmount,
-        //     mobile:invoice.mobile,
-        //     productName: invoice.productName,
-        //     endDate: invoice.date // Assuming 'date' is your end date
+        // const response = unpaidAccounts.map(account => ({
+        //     companyName: account.companyName,
+        //     withGstAmount:account.withGstAmount,
+        //     mobile:account.mobile,
+        //     productName: account.productName,
+        //     endDate: account.date // Assuming 'date' is your end date
         // }));
 
         // res.status(200).json({
@@ -170,10 +161,10 @@ const getPaidInvoices = async (req, res) => {
         // });
         res.status(200).json({
             success: true,
-            data: paidInvoices
+            data: paidAccounts
         });
     } catch (error) {
-        console.error("Error fetching unpaid invoices:", error);
+        console.error("Error fetching unpaid accounts:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error: " + error.message,
@@ -202,26 +193,26 @@ const sendEmailReminder = async (req, res) => {
     }
 
     try {
-        // Find the invoice by ID
-        const invoice = await Invoice.findById(id);
+        // Find the account by ID
+        const account = await Account.findById(id);
 
-        if (!invoice) {
-            return res.status(404).json({ success: false, message: "Invoice not found" });
+        if (!account) {
+            return res.status(404).json({ success: false, message: "Account not found" });
         }
 
         // Validate the email address
-        if (!invoice.emailAddress) {
+        if (!account.emailAddress) {
             return res.status(400).json({
                 success: false,
-                message: "Email address not available for this invoice",
+                message: "Email address not available for this account",
             });
         }
 
         // Define the email options
         const mailOptions = {
             from: "your-email@gmail.com", // Your email address
-            to: invoice.emailAddress, // Recipient's email address from the database
-            subject: `Payment Reminder for Invoice #${invoice.id}`, // Subject of the email
+            to: account.emailAddress, // Recipient's email address from the database
+            subject: `Payment Reminder for Account #${account.id}`, // Subject of the email
             text: message, // The message the user wrote
         };
 
@@ -238,7 +229,7 @@ const sendEmailReminder = async (req, res) => {
             console.log("Email sent successfully: " + info.response);
             res.status(200).json({
                 success: true,
-                message: `Email sent successfully to ${invoice.emailAddress}`,
+                message: `Email sent successfully to ${account.emailAddress}`,
                 data: info.response, // Return the email info (optional)
             });
         });
@@ -256,22 +247,22 @@ const sendWhatsAppReminder = async (req, res) => {
     const { id } = req.params;
 
     try {
-        // Find the invoice by ID
-        const invoice = await Invoice.findById(id);
-        if (!invoice) {
-            return res.status(404).json({ success: false, message: "Invoice not found" });
+        // Find the account by ID
+        const account = await Account.findById(id);
+        if (!account) {
+            return res.status(404).json({ success: false, message: "Account not found" });
         }
 
         // Construct the recipient's WhatsApp number
         const countryCode = '+91';
-        const customerNumber = invoice.contactNumber;
+        const customerNumber = account.contactNumber;
         if (!customerNumber) {
             return res.status(400).json({ success: false, message: "Customer contact number not found" });
         }
         const formattedNumber = `${countryCode}${customerNumber}`;
 
         // Construct the reminder message
-        const message = `Hello ${invoice.customerName},\n\nThis is a reminder to pay your outstanding invoice of ₹${invoice.remainingAmount}. Please make the payment at your earliest convenience.`;
+        const message = `Hello ${account.customerName},\n\nThis is a reminder to pay your outstanding account of ₹${account.remainingAmount}. Please make the payment at your earliest convenience.`;
 
         // Simulate sending a WhatsApp message
         console.log(`Sending WhatsApp message to: ${formattedNumber}`);
@@ -295,15 +286,15 @@ const sendWhatsAppReminder = async (req, res) => {
 const updateCustomMessage = async(req,res)=>{
     try {
         const { customMessage } = req.body;
-        const invoiceId = req.params.invoiceId;
+        const accountId = req.params.accountId;
     
-        const updatedInvoice = await Invoice.findByIdAndUpdate(invoiceId, { customMessage }, { new: true });
+        const updatedAccount = await Account.findByIdAndUpdate(accountId, { customMessage }, { new: true });
     
-        if (!updatedInvoice) {
-          return res.status(404).json({ message: 'Invoice not found' });
+        if (!updatedAccount) {
+          return res.status(404).json({ message: 'Account not found' });
         }
     
-        return res.json({ data: updatedInvoice });
+        return res.json({ data: updatedAccount });
       } catch (error) {
         console.error('Error saving custom message:', error);
         res.status(500).json({ message: 'Failed to save custom message' });
@@ -312,13 +303,12 @@ const updateCustomMessage = async(req,res)=>{
 
 module.exports = {
     accountAdd,
-
-    updateInvoice,
-    deleteInvoice,
-    getAllInvoices,
-    getInvoiceById,
-    getUnpaidInvoices,
-    getPaidInvoices,
+    updateAccount,
+    deleteAccount,
+    getAllAccounts,
+    getAccountById,
+    getUnpaidAccounts,
+    getPaidAccounts,
     sendEmailReminder,
     sendWhatsAppReminder,
     updateCustomMessage,

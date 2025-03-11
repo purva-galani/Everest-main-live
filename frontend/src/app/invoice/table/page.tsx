@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import  ComplaintForm from "../complaint/form"
+import InvoiceTable from "./invoice-table"
 import {
     SidebarInset,
     SidebarProvider,
@@ -8,13 +8,12 @@ import {
 import { AppSidebar } from "@/components/app-sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button" 
+import { Button } from "@/components/ui/button" // Import Button component
 import { ModeToggle } from "@/components/ModeToggle"
 import SearchBar from '@/components/globalSearch';
 import Notification from '@/components/notification';
 
-
-export default function CertificatePage() {
+export default function invoiceTable() {
     return (
         <SidebarProvider>
             <AppSidebar/>
@@ -33,14 +32,14 @@ export default function CertificatePage() {
                         </BreadcrumbItem>
                         <BreadcrumbSeparator className="hidden md:block" />
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/complaint">
-                            Complaint
+                            <BreadcrumbLink href="/invoice">
+                            Invoice
                             </BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator className="hidden md:block" />
                             <BreadcrumbItem>
-                            <BreadcrumbLink href="/complaint">
-                            Create
+                            <BreadcrumbLink href="/invoice/table">
+                            Invoice list
                             </BreadcrumbLink>              
                             </BreadcrumbItem>
                         </BreadcrumbList>
@@ -55,16 +54,19 @@ export default function CertificatePage() {
                         </div>
                     </div>
                 </header>
-                <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15">
-                    <Card className="max-w-2xl mx-auto">
+                
+   
+                <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-12 pt-15">
+                    {/* Increase width by changing max-w-2xl to max-w-4xl or max-w-7xl */}
+                    <Card className="max-w-6xl mx-auto">
                         <CardHeader>
-                            <CardTitle className="text-3xl font-bold text-center">Complaint</CardTitle>
+                            <CardTitle className="text-3xl font-bold text-center">invoice Manager</CardTitle>
                             <CardDescription className="text-center">
-                                Manage and track your Complaint effectively.
+                                Manage and track your invoices effectively.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <ComplaintForm />
+                            <InvoiceTable/>
                         </CardContent>
                     </Card>
                 </div>

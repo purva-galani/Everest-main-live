@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import  ComplaintForm from "../complaint/form"
+import  ContactTable from "../table/contact-table"
 import {
     SidebarInset,
     SidebarProvider,
@@ -8,18 +8,17 @@ import {
 import { AppSidebar } from "@/components/app-sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button" 
+import { Button } from "@/components/ui/button" // Import Button component
 import { ModeToggle } from "@/components/ModeToggle"
 import SearchBar from '@/components/globalSearch';
 import Notification from '@/components/notification';
-
 
 export default function CertificatePage() {
     return (
         <SidebarProvider>
             <AppSidebar/>
             <SidebarInset>
-            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
+                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
                     <div className="flex items-center gap-2 px-4">
                     <SidebarTrigger className="-ml-1" />
                     <ModeToggle />
@@ -33,14 +32,14 @@ export default function CertificatePage() {
                         </BreadcrumbItem>
                         <BreadcrumbSeparator className="hidden md:block" />
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/complaint">
-                            Complaint
+                            <BreadcrumbLink href="/contact">
+                            Contact
                             </BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator className="hidden md:block" />
                             <BreadcrumbItem>
-                            <BreadcrumbLink href="/complaint">
-                            Create
+                            <BreadcrumbLink href="/contact/table">
+                            Contact list
                             </BreadcrumbLink>              
                             </BreadcrumbItem>
                         </BreadcrumbList>
@@ -56,15 +55,15 @@ export default function CertificatePage() {
                     </div>
                 </header>
                 <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15">
-                    <Card className="max-w-2xl mx-auto">
+                    <Card className="max-w-6xl mx-auto">
                         <CardHeader>
-                            <CardTitle className="text-3xl font-bold text-center">Complaint</CardTitle>
+                            <CardTitle className="text-3xl font-bold text-center">Contact</CardTitle>
                             <CardDescription className="text-center">
-                                Manage and track your Complaint effectively.
+                                Manage and track your Contact effectively.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <ComplaintForm />
+                            <ContactTable />
                         </CardContent>
                     </Card>
                 </div>

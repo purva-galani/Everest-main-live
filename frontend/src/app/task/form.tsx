@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -16,25 +17,24 @@ import { cn } from "@/lib/utils"
 const taskSchema = z.object({
   subject: z.string().min(2, { message: "Subject is required." }),
   relatedTo: z.string().min(2, { message: "Related to field is required." }),
-  lastReminder: z.string().optional(),
   name: z.string().min(2, { message: "Name is required." }),
   assigned: z.string().min(2, { message: "Assigned person is required." }),
   taskDate: z.date().optional(),
   dueDate: z.date().optional(),
-  status: z.enum(["Pending", "In Progress","Resolved"]),
+  status: z.enum(["Pending", "Resolved", "In Progress"]),
   priority: z.enum(["High", "Medium", "Low"]),
   notes: z.string().optional(),
   
 });
 
 export default function Task() {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<z.infer<typeof taskSchema>>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
       subject: "",
       relatedTo: "",
-      lastReminder: "",
       name: "",
       assigned: "",
       taskDate: new Date(),
@@ -48,8 +48,9 @@ export default function Task() {
   const onSubmit = async (values: z.infer<typeof taskSchema>) => {
     setIsSubmitting(true);
     try {
+      // API call to create or update task
       const response = await fetch("http://localhost:8000/api/v1/task/createTask", {
-        method: "POST", 
+        method: "POST", // or PUT if updating
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
@@ -59,12 +60,13 @@ export default function Task() {
       if (!response.ok) {
         throw new Error(data.error || "Failed to submit the task.");
       }
-
+      
       toast({
         title: "Task Created",
         description: `Your task has been created successfully.`,
       });
-
+      router.push(`/task/table`);
+      // Redirect or reset form, depending on your requirements
     } catch (error) {
       toast({
         title: "Error",
@@ -216,8 +218,8 @@ export default function Task() {
                 <FormControl>
                   <select {...field} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
                     <option value="Resolved">Resolved</option>
+                    <option value="In Progress">In Progress</option>
                   </select>
                 </FormControl>
                 <FormMessage />

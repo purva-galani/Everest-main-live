@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -15,25 +16,26 @@ import { format } from "date-fns"
 
 const complaintSchema = z.object({
   companyName: z.string().min(2, { message: "Company name is required." }),
-  
+
   complainerName: z.string().min(2, { message: "Complainer name is required." }),
-  
+
   contactNumber: z.string().optional(),
-  
+
   emailAddress: z.string().email({ message: "Invalid email address." }),
-  
+
   subject: z.string().min(2, { message: "Subject is required." }),
-  
+
   date: z.date().optional(),
-  
+
   caseStatus: z.enum(["Pending", "Resolved", "In Progress"]),
-  
+
   priority: z.enum(["High", "Medium", "Low"]),
-  
+
   caseOrigin: z.string().optional(),
 });
 
 export default function ComplaintForm() {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<z.infer<typeof complaintSchema>>({
     resolver: zodResolver(complaintSchema),
@@ -69,8 +71,7 @@ export default function ComplaintForm() {
         title: "Complaint Created",
         description: "Your complaint has been submitted successfully.",
       });
-
-      // Redirect or reset form as needed
+      router.push("/complaint/table")
     } catch (error) {
       toast({
         title: "Error",
@@ -95,7 +96,7 @@ export default function ComplaintForm() {
                 <FormControl>
                   <Input placeholder="Enter company name" {...field} />
                 </FormControl>
-                <FormMessage/>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -108,7 +109,7 @@ export default function ComplaintForm() {
                 <FormControl>
                   <Input placeholder="Enter complainer name" {...field} />
                 </FormControl>
-                <FormMessage/>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -124,7 +125,7 @@ export default function ComplaintForm() {
                 <FormControl>
                   <Input placeholder="Enter contact number" {...field} />
                 </FormControl>
-                <FormMessage/>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -137,7 +138,7 @@ export default function ComplaintForm() {
                 <FormControl>
                   <Input placeholder="Enter email address" {...field} />
                 </FormControl>
-                <FormMessage/>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -205,7 +206,7 @@ export default function ComplaintForm() {
                     <option value="In Progress">In Progress</option>
                   </select>
                 </FormControl>
-                <FormMessage/>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -222,7 +223,7 @@ export default function ComplaintForm() {
                     <option value="Low">Low</option>
                   </select>
                 </FormControl>
-                <FormMessage/>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -237,7 +238,7 @@ export default function ComplaintForm() {
               <FormControl>
                 <Input placeholder="Enter case origin" {...field} />
               </FormControl>
-              <FormMessage/>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -246,6 +247,7 @@ export default function ComplaintForm() {
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <table/>
               Creating Complaint...
             </>
           ) : (

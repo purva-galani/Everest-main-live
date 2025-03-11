@@ -18,23 +18,18 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useRouter } from "next/navigation"; 
 import { Calendar } from "@/components/ui/calendar"
 
-interface Lead {
+interface Task {
     _id: string;
-    companyName: string;
-    customerName: string;
-    contactNumber: string;
-    emailAddress: string;
-    address: string;
-    productName: string;
-    amount: string;
-    gstNumber: string;
+    subject: string;
+    name: string;
+    relatedTo: string;
+    taskDate: string;
+    dueDate: string;
     status: string;
-    date: string;
-    endDate: string;
+    priority: string;
+    assigned: string;
     notes: string;
-    isActive: string;
 }
-
 
 const generateUniqueId = () => {
     return Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -42,76 +37,61 @@ const generateUniqueId = () => {
 
 const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return date.toISOString().split("T")[0]; // Returns "YYYY-MM-DD"
+    return date.toISOString().split("T")[0];
 };
 
 const columns = [
-    { name: "COMPANY", uid: "companyName", sortable: true, width: "120px" },
-    { name: "CUSTOMER", uid: "customerName", sortable: true, width: "120px" },
-    { name: "CONTACT", uid: "contactNumber", sortable: true, width: "100px" },
-    { name: "EMAIL", uid: "emailAddress", sortable: true, width: "150px" },
-    { name: "ADDRESS", uid: "address", sortable: true, width: "180px" },
-    { name: "PRODUCT", uid: "productName", sortable: true, width: "120px" },
-    { name: "AMOUNT", uid: "amount", sortable: true, width: "100px" },
-    { name: "GST", uid: "gstNumber", sortable: true, width: "100px" },
-    { name: "STATUS", uid: "status", sortable: true, width: "100px" },
+    { name: "TASK", uid: "subject", sortable: true, width: "120px" },
+    { name: "NAME", uid: "name", sortable: true, width: "120px" },
+    { name: "ASSIGNED TO", uid: "assigned", sortable: true, width: "150px" },
+    { name: "RELATED TO", uid: "relatedTo", sortable: true, width: "120px" },
     {
-        name: "DATE",
-        uid: "date",
+        name: "TASK DATE",
+        uid: "taskDate",
         sortable: true,
         width: "170px",
         render: (row: any) => formatDate(row.date),
-    }
-    ,
-    {
-        name: "END DATE",
-        uid: "endDate",
-        sortable: true,
-        width: "120px",
-        render: (row: any) => formatDate(row.endDate)
     },
     {
-        name: "NOTES",
-        uid: "notes",
+        name: "DUE DATE",
+        uid: "dueDate",
         sortable: true,
-        width: "180px"
+        width: "170px",
+        render: (row: any) => formatDate(row.date),
     },
+    { name: "STATUS", uid: "status", sortable: true, width: "100px" },
+    { name: "PRIORITY", uid: "priority", sortable: true, width: "100px" },
+    { name: "NOTES", uid: "notes", sortable: true, width: "100px" },
     { name: "ACTION", uid: "actions", sortable: true, width: "100px" },
 ];
-const INITIAL_VISIBLE_COLUMNS = ["companyName", "customerName", "contactNumber", "emailAddress", "address", "productName", "amount", "gstNumber", "status", "date", "endDate", "notes", "actions"];
 
-const formSchema = z.object({
-    companyName: z.string().min(2, { message: "Company name is required." }),
-    customerName: z.string().min(2, { message: "Customer name must be at least 2 characters." }),
-    contactNumber: z.string().optional(), // Optional field
-    emailAddress: z.string().email({ message: "Invalid email address" }),
-    address: z.string().min(2, { message: "Address is required." }),
-    productName: z.string().min(2, { message: "Product name is required." }),
-    amount: z.number().positive({ message: "Amount must be positive." }),
-    gstNumber: z.string().min(1, { message: "GST Number is required." }),
-    status: z.enum(["New", "Discussion", "Demo", "Proposal", "Decided"]),
-    date: z.string().refine((val) => !isNaN(Date.parse(val)), {
+const INITIAL_VISIBLE_COLUMNS = ["subject", "name", "assigned", "relatedTo", "taskDate","dueDate", "status", "priority", "notes","actions"];
+
+const taskSchema = z.object({
+    subject: z.string().min(2, { message: "Subject is required." }),
+    assigned: z.string().min(2, { message: "Assigned person is required." }),
+    relatedTo: z.string().min(2, { message: "Related to is required." }),
+    taskDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
         message: "Invalid date",
     }).transform((val) => new Date(val)),
-
-    endDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    dueDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
         message: "Invalid date",
-    }).transform((val) => new Date(val)),
+    }).transform((val) => new Date(val)), // ✅ Convert string to Date
+    status: z.enum(["New", "In Progress", "Completed", "Pending"]),
+    priority: z.enum(["Low", "Medium", "High"]),
     notes: z.string().optional(),
-    isActive: z.boolean(),
 })
 
-export default function LeadTable() {
-    const [leads, setLeads] = useState<Lead[]>([]);
+export default function TaskTable() {
+    const [tasks, setTasks] = useState<Task[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [selectedKeys, setSelectedKeys] = useState<Iterable<string> | 'all' | undefined>(undefined);
+    const router = useRouter(); 
 
-
-
-    const fetchLeads = async () => {
+    const fetchTasks = async () => {
         try {
             const response = await axios.get(
-                "http://localhost:8000/api/v1/lead/getAllLeads"
+                "http://localhost:8000/api/v1/task/getAllTasks"
             );
 
             // Log the response structure
@@ -123,44 +103,44 @@ export default function LeadTable() {
             });
 
             // Handle the response based on its structure
-            let leadsData;
+            let TaskData;
             if (typeof response.data === 'object' && 'data' in response.data) {
-                // Response format: { data: [...leads] }
-                leadsData = response.data.data;
+
+                TaskData = response.data.data;
             } else if (Array.isArray(response.data)) {
-                // Response format: [...leads]
-                leadsData = response.data;
+
+                TaskData = response.data;
             } else {
                 console.error('Unexpected response format:', response.data);
                 throw new Error('Invalid response format');
             }
 
             // Ensure leadsData is an array
-            if (!Array.isArray(leadsData)) {
-                leadsData = [];
+            if (!Array.isArray(TaskData)) {
+                TaskData = [];
             }
 
             // Map the data with safe key generation
-            const leadsWithKeys = leadsData.map((lead: Lead) => ({
-                ...lead,
-                key: lead._id || generateUniqueId()
+            const TaskWithKeys = TaskData.map((task: Task) => ({
+                ...task,
+                key: task._id || generateUniqueId()
             }));
 
-            setLeads(leadsWithKeys);
+            setTasks(TaskWithKeys);
             setError(null); // Clear any previous errors
         } catch (error) {
-            console.error("Error fetching leads:", error);
+            console.error("Error fetching tasks:", error);
             if (axios.isAxiosError(error)) {
-                setError(`Failed to fetch leads: ${error.response?.data?.message || error.message}`);
+                setError(`Failed to fetch tasks: ${error.response?.data?.message || error.message}`);
             } else {
-                setError("Failed to fetch leads.");
+                setError("Failed to fetch tasks.");
             }
-            setLeads([]); // Set empty array on error
+            setTasks([]); // Set empty array on error
         }
     };
 
     useEffect(() => {
-        fetchLeads();
+        fetchTasks();
     }, []);
 
     const [isAddNewOpen, setIsAddNewOpen] = useState(false);
@@ -169,31 +149,43 @@ export default function LeadTable() {
     const [statusFilter, setStatusFilter] = useState("all");
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [sortDescriptor, setSortDescriptor] = useState({
-        column: "companyName",
+        column: "subject",
         direction: "ascending",
     });
     const [page, setPage] = useState(1);
-    const router = useRouter(); 
 
-    // Form setup
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const handleSortChange = (column: string) => {
+        setSortDescriptor((prevState) => {
+            if (prevState.column === column) {
+                return {
+                    column,
+                    direction: prevState.direction === "ascending" ? "descending" : "ascending",
+                };
+            } else {
+                return {
+                    column,
+                    direction: "ascending",
+                };
+            }
+        });
+    };
+
+
+    const form = useForm<z.infer<typeof taskSchema>>({
+        resolver: zodResolver(taskSchema),
         defaultValues: {
-            companyName: "",
-            customerName: "",
-            emailAddress: "",
-            contactNumber: "",
-            address: "",
-            productName: "",
-            amount: 0,
-            gstNumber: "",
-            status: "New",
-            date: new Date(),
+            name: "",
+            subject: "",
+            assigned: "",
+            relatedTo: "",
+            taskDate: new Date(),
             endDate: undefined,
+            status: "New",
+            priority: "Medium",
             notes: "",
-            isActive: true,
         },
-    })
+    });
+
 
     const hasSearchFilter = Boolean(filterValue);
 
@@ -203,17 +195,16 @@ export default function LeadTable() {
     }, [visibleColumns]);
 
     const filteredItems = React.useMemo(() => {
-        let filteredLeads = [...leads];
+        let filteredTasks = [...tasks];
 
         if (hasSearchFilter) {
-            filteredLeads = filteredLeads.filter((lead) => {
+            filteredTasks = filteredTasks.filter((task) => {
                 const searchableFields = {
-                    companyName: lead.companyName,
-                    customerName: lead.customerName,
-                    emailAddress: lead.emailAddress,
-                    productName: lead.productName,
-                    status: lead.status,
-                    notes: lead.notes,
+                    subject: task.subject,
+                    assigned: task.assigned,
+                    relatedTo: task.relatedTo,
+                    status: task.status,
+                    priority: task.priority,
                 };
 
                 return Object.values(searchableFields).some(value =>
@@ -223,13 +214,13 @@ export default function LeadTable() {
         }
 
         if (statusFilter !== "all") {
-            filteredLeads = filteredLeads.filter((lead) =>
-                statusFilter === lead.status
+            filteredTasks = filteredTasks.filter((task) =>
+                statusFilter === task.status
             );
         }
 
-        return filteredLeads;
-    }, [leads, filterValue, statusFilter]);
+        return filteredTasks;
+    }, [tasks, filterValue, statusFilter]);
 
     const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
@@ -240,10 +231,11 @@ export default function LeadTable() {
         return filteredItems.slice(start, end);
     }, [page, filteredItems, rowsPerPage]);
 
+
     const sortedItems = React.useMemo(() => {
         return [...items].sort((a, b) => {
-            const first = a[sortDescriptor.column as keyof Lead];
-            const second = b[sortDescriptor.column as keyof Lead];
+            const first = a[sortDescriptor.column as keyof Task];
+            const second = b[sortDescriptor.column as keyof Task];
             const cmp = first < second ? -1 : first > second ? 1 : 0;
 
             return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -251,57 +243,52 @@ export default function LeadTable() {
     }, [sortDescriptor, items]);
 
     const [isEditOpen, setIsEditOpen] = useState(false);
-    const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
     // Function to handle edit button click
-    const handleEditClick = (lead: Lead) => {
-        setSelectedLead(lead);
-        // Pre-fill the form with lead data
+    const handleEditClick = (task: Task) => {
+        setSelectedTask(task);
         form.reset({
-            companyName: lead.companyName,
-            customerName: lead.customerName,
-            emailAddress: lead.emailAddress,
-            contactNumber: lead.contactNumber || "",
-            address: lead.address,
-            productName: lead.productName,
-            amount: parseFloat(lead.amount),
-            gstNumber: lead.gstNumber,
-            status: lead.status as "New" | "Discussion" | "Demo" | "Proposal" | "Decided",
-            date: lead.date ? new Date(lead.date) : undefined,
-            endDate: lead.endDate ? new Date(lead.endDate) : undefined,
-            notes: lead.notes || "",
-            isActive: lead.isActive === "true",
+            name: task.name,
+            subject: task.subject,
+            assigned: task.assigned,
+            relatedTo: task.relatedTo,
+            taskDate: task.taskDate ? new Date(task.taskDate) : undefined,
+            dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+            status: task.status,
+            priority: task.priority,
+            notes: task.notes,
         });
         setIsEditOpen(true);
     };
 
     // Function to handle delete button click
-    const handleDeleteClick = async (lead: Lead) => {
-        if (!window.confirm("Are you sure you want to delete this lead?")) {
+
+    const handleDeleteClick = async (task: Task) => {
+        if (!window.confirm("Are you sure you want to delete this task?")) {
             return;
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/lead/deleteLead/${lead._id}`, {
+            const response = await fetch(`http://localhost:8000/api/v1/task/deleteTask/${task._id}`, {
                 method: "DELETE",
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to delete lead");
+                throw new Error(errorData.message || "Failed to delete task");
             }
 
             toast({
-                title: "Lead Deleted",
-                description: "The lead has been successfully deleted.",
+                title: "Task Deleted",
+                description: "The task has been successfully deleted.",
             });
 
-            // Refresh the leads list
-            fetchLeads();
+            fetchTasks();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to delete lead",
+                description: error instanceof Error ? error.message : "Failed to delete task",
                 variant: "destructive",
             });
         }
@@ -313,12 +300,12 @@ export default function LeadTable() {
     const [isSubmitting, setIsSubmitting] = useState(false)
 
 
-    async function onEdit(values: z.infer<typeof formSchema>) {
-        if (!selectedLead?._id) return;
+    async function onEdit(values: z.infer<typeof taskSchema>) {
+        if (!selectedTask?._id) return;
 
         setIsSubmitting(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/lead/updateLead/${selectedLead._id}`, {
+            const response = await fetch(`http://localhost:8000/api/v1/task/updateTask/${selectedTask._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
@@ -326,21 +313,21 @@ export default function LeadTable() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to update lead");
+                throw new Error(errorData.message || "Failed to update task");
             }
 
             toast({
-                title: "Lead Updated",
-                description: "The lead has been successfully updated.",
+                title: "Task Updated",
+                description: "The task has been successfully updated.",
             });
 
             // Close dialog and reset form
             setIsEditOpen(false);
-            setSelectedLead(null);
+            setSelectedTask(null);
             form.reset();
 
             // Refresh the leads list
-            fetchLeads();
+            fetchTasks();
         } catch (error) {
             toast({
                 title: "Error",
@@ -352,24 +339,24 @@ export default function LeadTable() {
         }
     }
 
-    const renderCell = React.useCallback((lead: Lead, columnKey: string) => {
-        const cellValue = lead[columnKey as keyof Lead];
+    const renderCell = React.useCallback((tasks: Task, columnKey: string) => {
+        const cellValue = tasks[columnKey as keyof Task];
 
         if ((columnKey === "date" || columnKey === "endDate") && cellValue) {
             return formatDate(cellValue);
         }
-        
+
         if (columnKey === "notes") {
             return cellValue || "No note available";
         }
-        
+
         if (columnKey === "actions") {
             return (
                 <div className="relative flex items-center gap-2">
                     <Tooltip content="">
                         <span
                             className="text-lg text-default-400 cursor-pointer active:opacity-50"
-                            onClick={() => handleEditClick(lead)}
+                            onClick={() => handleEditClick(tasks)}
                         >
                             <Edit className="h-4 w-4" />
                         </span>
@@ -377,7 +364,7 @@ export default function LeadTable() {
                     <Tooltip color="danger" content="">
                         <span
                             className="text-lg text-danger cursor-pointer active:opacity-50"
-                            onClick={() => handleDeleteClick(lead)}
+                            onClick={() => handleDeleteClick(tasks)}
                         >
                             <Trash2 className="h-4 w-4" />
                         </span>
@@ -469,14 +456,14 @@ export default function LeadTable() {
                             variant="default"
                             size="default"
                             endContent={<PlusCircle />} // Add an icon at the end
-                            onClick={() => router.push("/lead")} 
+                            onClick={() => router.push("/task")} 
                         >
                             Add New
                         </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-default-400 text-small">Total {leads.length} leads</span>
+                    <span className="text-default-400 text-small">Total {tasks.length} leads</span>
                     <label className="flex items-center text-default-400 text-small">
                         Rows per page:
                         <select
@@ -496,7 +483,7 @@ export default function LeadTable() {
         statusFilter,
         visibleColumns,
         onRowsPerPageChange,
-        leads.length,
+        tasks.length,
         onSearchChange,
     ]);
 
@@ -591,9 +578,9 @@ export default function LeadTable() {
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                 <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
-                        <DialogTitle>Edit Lead</DialogTitle>
+                        <DialogTitle>Edit Task</DialogTitle>
                         <DialogDescription>
-                            Update the lead details.
+                            Update the task details.
                         </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
@@ -601,12 +588,12 @@ export default function LeadTable() {
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
-                                    name="companyName"
+                                    name="subject"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Company Name</FormLabel>
+                                            <FormLabel>Subject</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter company name" {...field} />
+                                                <Input placeholder="Enter task subject" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -614,41 +601,12 @@ export default function LeadTable() {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="customerName"
+                                    name="relatedTo"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Customer Name</FormLabel>
+                                            <FormLabel>Related To</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter customer name" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                <FormField
-                                    control={form.control}
-                                    name="emailAddress"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Email Address</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Enter email address" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="address"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Address</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Enter address" {...field} />
+                                                <Input placeholder="Enter what the task is related to" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -659,12 +617,12 @@ export default function LeadTable() {
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
-                                    name="productName"
+                                    name="name"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Product Name</FormLabel>
+                                            <FormLabel>Name</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter product name" {...field} />
+                                                <Input placeholder="Enter task name" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -672,20 +630,14 @@ export default function LeadTable() {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="amount"
+                                    name="assigned"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Amount</FormLabel>
+                                            <FormLabel>Assigned To</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="Enter amount"
-                                                    type="number"
-                                                    {...field}
-                                                    onChange={(e) => {
-                                                        const value = e.target.valueAsNumber || 0;
-                                                        field.onChange(value);
-                                                    }}
-                                                />
+                                                    placeholder="Enter assignee's name"
+                                                    {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -696,17 +648,69 @@ export default function LeadTable() {
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
-                                    name="gstNumber"
+                                    name="taskDate"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>GST Number</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Enter GST number" {...field} />
-                                            </FormControl>
+                                            <FormLabel>Date</FormLabel>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button
+                                                            variant={"outline"}
+                                                            className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                                                        >
+                                                            {field.value ? format(field.value, "dd-MM-yyyy") : <span>Pick a date</span>}
+                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar
+                                                        mode="single"
+                                                        onSelect={field.onChange}
+                                                        disabled={(date) => date > new Date()}
+                                                        initialFocus
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
+                                <FormField
+                                    control={form.control}
+                                    name="dueDate"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Due Date</FormLabel>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button
+                                                            variant={"outline"}
+                                                            className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                                                        >
+                                                            {field.value ? format(field.value, "dd-MM-yyyy") : <span>Pick a date</span>}
+                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar
+                                                        mode="single"
+                                                        onSelect={field.onChange}
+                                                        disabled={(date) => date < new Date()}
+                                                        initialFocus
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
                                     name="status"
@@ -714,15 +718,45 @@ export default function LeadTable() {
                                         <FormItem>
                                             <FormLabel>Status</FormLabel>
                                             <FormControl>
-                                                <select
+                                                <select {...field} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    <option value="Pending">Pending</option>
+                                                    <option value="Resolved">Resolved</option>
+                                                    <option value="In Progress">In Progress</option>
+                                                </select>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="notes"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Task Notes</FormLabel>
+                                            <FormControl>
+                                                <textarea
                                                     {...field}
-                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                >
-                                                    <option value="New">New</option>
-                                                    <option value="Discussion">Discussion</option>
-                                                    <option value="Demo">Demo</option>
-                                                    <option value="Proposal">Proposal</option>
-                                                    <option value="Decided">Decided</option>
+                                                    placeholder="Enter task notes"
+                                                    className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    value={field.value ? field.value.toString() : ''}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="priority"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Priority</FormLabel>
+                                            <FormControl>
+                                                <select {...field} className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    <option value="High">High</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="Low">Low</option>
                                                 </select>
                                             </FormControl>
                                             <FormMessage />
@@ -731,115 +765,14 @@ export default function LeadTable() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                <FormField
-                                    control={form.control}
-                                    name="contactNumber"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Contact Number</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Enter contact number" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                <FormField
-                                    control={form.control}
-                                    name="date"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Start Date</FormLabel>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <FormControl>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                                                        >
-                                                            {field.value ? format(field.value, "dd-MM-yyyy") : <span>Pick a date</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </Button>
-                                                    </FormControl>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0" align="start">
-                                                    <Calendar
-                                                        mode="single"
-                                                        
-                                                        onSelect={field.onChange}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="endDate"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>End Date</FormLabel>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <FormControl>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                                                        >
-                                                            {field.value ? format(field.value, "dd-MM-yyyy") : <span>Pick a date</span>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </Button>
-                                                    </FormControl>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0" align="start">
-                                                    <Calendar
-                                                        mode="single"
-                                                        
-                                                        onSelect={field.onChange}
-                                                        initialFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-
-                            <FormField
-                                control={form.control}
-                                name="notes"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Notes</FormLabel>
-                                        <FormControl>
-                                            <textarea
-                                                placeholder="Enter notes"
-                                                {...field}
-                                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
                             <Button type="submit" className="w-full" disabled={isSubmitting}>
                                 {isSubmitting ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Updating...
+                                        Creating Task...
                                     </>
                                 ) : (
-                                    "Update Lead"
+                                    "Update Task"
                                 )}
                             </Button>
                         </form>
