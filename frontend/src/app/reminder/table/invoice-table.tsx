@@ -441,17 +441,6 @@ export default function InvoiceTable() {
                             </DropdownMenu>
                         </Dropdown>
 
-
-                        <Button
-                            className="addButton"
-                            style={{ backgroundColor: 'hsl(339.92deg 91.04% 52.35%)' }}
-                            variant="default"
-                            size="default"
-                            endContent={<PlusCircle />} // Add an icon at the end
-                            onClick={() => router.push("/invoice")} 
-                        >
-                            Add New
-                        </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">

@@ -160,7 +160,7 @@ const Notification = () => {
                 {notifications.map((notification) => {
                   const targetPage =
                     notification.type === "reminder"
-                      ? "/reminder"
+                      ? "/reminder/table"
                       : notification.type === "calendar"
                       ? "/calendar"
                       : "#";
