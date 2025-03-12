@@ -1,4 +1,5 @@
 const Invoice = require("../model/invoiceSchema.model");
+const Owner = require('../model/OwnerSchema.model');
 const nodemailer = require("nodemailer");
 const { storeNotification } = require('./notification.controller');
 const cron = require('node-cron');
@@ -11,7 +12,13 @@ const remindEvent = async () => {
     console.log('Cron job running at (IST):', nowIST.toISOString());
 
     try {
-        // Fetch all unpaid invoices
+        // Fetch owner details (assuming there is only one owner)
+        const owner = await Owner.findOne(); // Fetch owner details
+
+        if (!owner) {
+            console.error("Owner details not found!");
+            return;
+        }
         const invoices = await Invoice.find({
             status: "Unpaid", // Only unpaid invoices
         });
@@ -76,13 +83,25 @@ const remindEvent = async () => {
 
                 await storeNotification(notificationData);
 
-                // Send email reminder
-                const emailMessage = `Dear ${invoice.customerName},\n\nThis is a reminder (${reminderDateType}) to pay your outstanding invoice of ₹${invoice.remainingAmount}. Please make the payment at your earliest convenience.`;
+                const emailMessage = `
+                <p>Dear ${invoice.customerName},</p>
+            
+                <p>I hope this email finds you well.This is a gentle reminder <strong>(${reminderDateType})</strong> to pay your outstanding invoice of <strong>₹${invoice.remainingAmount}</strong>.</p>
+            
+                <p>We kindly request you to make the payment at your earliest convenience to avoid any inconvenience.</p>
+            
+                <p>Thank you for your prompt attention to this matter.</p>
+            
+                <p><strong>Best regards,</strong><br/>
+                [${owner.companyName}]</p>
+            `;            
 
                 await sendEmailReminder({
-                    params: { id: invoice._id },
-                    body: { message: emailMessage },
+                    to: invoice.emailAddress, // Ensure this exists in the invoice schema
+                    subject: "Invoice Payment Reminder",
+                    message: emailMessage,
                 });
+                
                 console.log(`Email sent (${reminderDateType}) for invoice #${invoice._id}`);
             } else {
                 console.log(`No reminder needed for invoice #${invoice._id}`);
@@ -94,7 +113,7 @@ const remindEvent = async () => {
 };
 
 // Schedule the cron job to run every midnight (12:00 AM)
-cron.schedule('0 0 * * *', remindEvent, {
+cron.schedule('0 * * * *', remindEvent, {
     // timezone: "Asia/Kolkata", // Set the timezone to IST
 });
 
@@ -329,56 +348,20 @@ const transporter = nodemailer.createTransport({
 });
 
 
-const sendEmailReminder = async (req, res) => {
-    const { to, subject = "(No Subject)", message = "(No Message)" } = req.body; // Provide default values
-    const attachments = req.files; // Get uploaded files
-  
+const sendEmailReminder = async ({ to, subject = "(No Subject)", message = "(No Message)" }) => {
     if (!to) {
-        return res.status(400).json({
-            success: false,
-            message: "The recipient's email (to) is required.",
-        });
+        throw new Error("Recipient email (to) is required.");
     }
-  
-    try {
-        const mailOptions = {
-            from: "purvagalani@gmail.com",
-            to: to,
-            subject: subject || "(No Subject)", // Use default if empty
-            html: message || "(No Message)", // Use default if empty
-            attachments: attachments
-                ? attachments.map(file => ({
-                      filename: file.originalname,
-                      path: file.path,
-                  }))
-                : [], // Handle case where there are no attachments
-        };
-  
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error("Error sending email:", error.message);
-                return res.status(500).json({
-                    success: false,
-                    message: "Error sending email: " + error.message,
-                });
-            }
-  
-            console.log("Email sent successfully: " + info.response);
-            res.status(200).json({
-                success: true,
-                message: `Email sent successfully to ${to}`,
-                data: info.response,
-            });
-        });
-    } catch (error) {
-        console.error("Error sending email:", error.message);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error: " + error.message,
-        });
-    }
-  };
 
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to,
+        subject,
+        html: message,
+    };
+
+    return transporter.sendMail(mailOptions);
+};
 
 const sendWhatsAppReminder = async (req, res) => {
     const { id } = req.params;

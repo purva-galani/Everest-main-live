@@ -20,6 +20,7 @@ const accountSchema = z.object({
     bankName: z.string().min(2, { message: "Bank name is required." }),
     accountType: z.enum(["Current", "Savings", "Other"], { message: "Account type is required." }), 
     IFSCCode: z.string().min(2, { message: "IFSC code is required." }),
+    UpiId:z.string().min(2, { message: "UpiId is required." }),
 });
 
 export default function AccountForm() {
@@ -33,6 +34,7 @@ export default function AccountForm() {
         accountNumber: "",
         accountType: "Current",
         IFSCCode: "",
+        UpiId: "",
     },
   });
 
@@ -150,8 +152,21 @@ export default function AccountForm() {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="UpiId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>UPI ID</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your UPI ID" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         </div>
-
+        
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? (
             <>

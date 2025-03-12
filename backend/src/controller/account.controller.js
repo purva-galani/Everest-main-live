@@ -3,14 +3,15 @@ const nodemailer = require("nodemailer");
 
 const accountAdd = async (req, res) => {
     try {
-        const { accountHolderName, accountNumber, bankName, accountType, IFSCCode  } = req.body;
+        const { accountHolderName, accountNumber, bankName, accountType, IFSCCode, UpiId } = req.body;
 
         const newAccount = new Account({
             accountHolderName,
             accountNumber,
             bankName,
             accountType,
-            IFSCCode
+            IFSCCode,
+            UpiId
         });
 
         const savedAccount = await newAccount.save();

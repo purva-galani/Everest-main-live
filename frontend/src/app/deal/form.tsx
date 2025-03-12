@@ -73,7 +73,7 @@ export default function DealForm() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true)
         try {
-            const response = await fetch("http://localhost:8000/api/v1/deal/createLead", {
+            const response = await fetch("http://localhost:8000/api/v1/deal/createDeal", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),

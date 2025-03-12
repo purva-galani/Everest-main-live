@@ -7,6 +7,7 @@ const remindEvent = async () => {
   const io = require('../index');
   const now = new Date();
   const nowIST = new Date(now.getTime() + (5 * 60 + 30) * 60000);
+  const todayIST = nowIST.toISOString().split('T')[0]; // Today's date in IST (YYYY-MM-DD)
   console.log('Cron job running at (IST): ', nowIST.toISOString());
 
   try {
@@ -68,7 +69,7 @@ const remindEvent = async () => {
   }
 };
 
-cron.schedule('* * * * *', remindEvent);
+cron.schedule('0 0 * * *', remindEvent);
 
 const getAllData = async (req, res) => {
   try {

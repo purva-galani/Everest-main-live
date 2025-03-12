@@ -92,7 +92,7 @@ const data = {
       icon: BellMinus,
       
       items: [
-        { title: "List", url: "/reminder/list" },
+        { title: "List", url: "/reminder/table" },
         { title: "Email", url: "/reminder/reminderEmail" },
         { title: "Create", url: "/reminder" }
       ],

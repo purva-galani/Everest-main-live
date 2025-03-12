@@ -118,7 +118,9 @@ export default function InvoiceTable() {
     const fetchInvoices = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get("http://localhost:8000/api/v1/invoice/getAllInvoices");
+            const response = await axios.get(
+                "http://localhost:8000/api/v1/invoice/getUnpaidInvoices"
+            );
             const invoicesData = Array.isArray(response.data) ? response.data : response.data.data || [];
             setInvoices(invoicesData);
             setError(null);
@@ -149,10 +151,6 @@ export default function InvoiceTable() {
         direction: "ascending",
     });
     const [page, setPage] = useState(1);
-
-
-
-
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -295,11 +293,7 @@ export default function InvoiceTable() {
         }
     };
 
-
-
-
     const [isSubmitting, setIsSubmitting] = useState(false)
-
 
     async function onEdit(values: z.infer<typeof formSchema>) {
         if (!selectedInvoice?._id) return;
@@ -811,8 +805,6 @@ export default function InvoiceTable() {
                                     </FormItem>
                                 )}
                                 />
-
-
                             </div>
 
 

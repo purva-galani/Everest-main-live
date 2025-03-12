@@ -24,6 +24,7 @@ interface Account {
     accountNumber: string;
     accountType: string;
     IFSCCode: string;
+    UpiId: string;
     }
 
 const generateUniqueId = () => {
@@ -42,9 +43,10 @@ const columns = [
     { name: "BANK NAME", uid: "bankName", sortable: true, width: "120px" },
     { name: "ACCOUNT TYPE", uid: "accountType", sortable: true, width: "120px" },
     { name: "IFSC CODE", uid: "IFSCCode", sortable: true, width: "120px" },
+    { name: "UPI ID", uid: "UpiId", sortable: true, width: "100px" },
     { name: "ACTION", uid: "actions", sortable: true, width: "100px" },
 ];
-const INITIAL_VISIBLE_COLUMNS = ["accountHolderName", "accountNumber", "bankName", "accountType", "IFSCCode", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["accountHolderName", "accountNumber", "bankName", "accountType", "IFSCCode", "UpiId","actions" ];
 
 const accountSchema = z.object({
     accountHolderName: z.string().min(2, { message: "Account holder name is required." }),
@@ -52,6 +54,7 @@ const accountSchema = z.object({
     bankName: z.string().min(2, { message: "Bank name is required." }),
     accountType: z.enum(["Current", "Savings", "Other"], { message: "Account type is required." }), 
     IFSCCode: z.string().min(2, { message: "IFSC code is required." }),
+    UpiId:z.string().min(2, { message: "UpiId is required." }),
 });
 
 export default function AccountTable() {
@@ -59,7 +62,6 @@ export default function AccountTable() {
     const [error, setError] = useState<string | null>(null);
     const [selectedKeys, setSelectedKeys] = useState<Iterable<string> | 'all' | undefined>(undefined);
     const router = useRouter(); 
-
 
     const fetchAccounts = async () => {
         try {
@@ -112,7 +114,6 @@ export default function AccountTable() {
         }
     };
 
-
     useEffect(() => {
         fetchAccounts();
     }, []);
@@ -156,6 +157,7 @@ export default function AccountTable() {
         accountNumber: "",
         accountType: "Current",
         IFSCCode: "",
+        UpiId: "",
     },
     })
 
@@ -177,6 +179,7 @@ export default function AccountTable() {
                     bankName: account.bankName,
                     accountType: account.accountType,
                     IFSCCode: account.IFSCCode,
+                    UpiId: account.UpiId,
                 };
 
                 return Object.values(searchableFields).some(value =>
@@ -221,6 +224,7 @@ export default function AccountTable() {
             bankName: account.bankName,
             accountType: account.accountType,
             IFSCCode: account.IFSCCode,
+            UpiId: account.UpiId,
         });
         setIsEditOpen(true);
     };
@@ -627,6 +631,19 @@ export default function AccountTable() {
                                         </FormItem>
                                     )}
                                     />
+                                    <FormField
+                                        control={form.control}
+                                        name="UpiId"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                              <FormLabel>UPI ID</FormLabel>
+                                              <FormControl>
+                                                <Input placeholder="Enter your UPI ID" {...field} />
+                                              </FormControl>
+                                              <FormMessage />
+                                            </FormItem>
+                                        )}
+                                        />
                                     </div>
 
                                     <Button type="submit" className="w-full" disabled={isSubmitting}>
