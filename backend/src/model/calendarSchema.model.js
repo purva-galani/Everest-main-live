@@ -2,20 +2,17 @@ const mongoose = require("mongoose");
 
 const calenderSchema = new mongoose.Schema(
   {
-    title: {
-      type: String,
-      required: true,
-    },
     date: {
       type: Date,
+      required: true,
+    },
+    event: {
+      type: String,
       required: true,
     },
     calendarId: {
       type: Number,
       required: true,
-    },
-    event: {
-      type: String,
     },
   },
   { timestamps: true }

@@ -11,26 +11,51 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
+// Define Event and Calendar types
+interface Event {
+  _id: string; // Updated to match backend
+  event: string; // Changed from `title` to `event`
+  date: string;
+  calendarId: number;
+}
+
+interface Calendar {
+  id: number;
+  name: string;
+  color: string;
+}
+
 export default function CalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [events, setEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [showEventModal, setShowEventModal] = useState(false);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [events, setEvents] = useState<Event[]>([]); // Define state type
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showEventModal, setShowEventModal] = useState<boolean>(false);
+
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
-  const calendars = [
-    { id: 1, name: 'High', color: 'bg-yellow-500' },
-    { id: 2, name: 'Medium', color: 'bg-blue-500' },
-    { id: 3, name: 'Low', color: 'bg-green-500' },
+
+  const calendars: Calendar[] = [
+    { id: 1, name: 'High', color: 'bg-blue-500' },
+    { id: 2, name: 'Medium', color: 'bg-green-500' },
+    { id: 3, name: 'Low', color: 'bg-yellow-500' },
   ];
 
+  // Fetch events from the backend
   useEffect(() => {
-    const getEvent = async () => {
-      const response = await fetch('http://localhost:8000/api/v1/calender/getEvent');
-      const data = await response.json();
-      setEvents(data.data); // Ensure the response matches the frontend expectation
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/calendar/getAllData');
+        if (!response.ok) {
+          throw new Error('Failed to fetch events');
+        }
+        const data = await response.json();
+        setEvents(data.data);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
     };
-    getEvent();
+
+    fetchEvents();
   }, []);
 
   const handlePrevMonth = () => {
@@ -41,12 +66,12 @@ export default function CalendarPage() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
 
-  const handleMonthChange = (e) => {
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newMonth = parseInt(e.target.value);
     setCurrentDate(new Date(currentDate.getFullYear(), newMonth, 1));
   };
 
-  const handleYearChange = (e) => {
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newYear = parseInt(e.target.value);
     setCurrentDate(new Date(newYear, currentDate.getMonth(), 1));
   };
@@ -56,30 +81,54 @@ export default function CalendarPage() {
     setShowEventModal(true);
   };
 
-  const handleupdateEvent = async (newEvent) => {
-    const response = await fetch(`http://localhost:8000/api/v1/calender/updateEvent/${newEvent.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newEvent),
-    });
-    const data = await response.json();
-    setEvents(events.map((event) => (event.id === newEvent.id ? data.data : event)));
+  const handleUpdateEvent = async (newEvent: Event) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/v1/calendar/updateData/${newEvent._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newEvent),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update event');
+      }
+      const updatedEvent = await response.json();
+      setEvents(events.map((event) => (event._id === updatedEvent.data._id ? updatedEvent.data : event)));
+    } catch (error) {
+      console.error('Error updating event:', error);
+    }
   };
 
-
-  const handleDeleteEvent = async (eventId) => {
-    await fetch(`http://localhost:8000/api/v1/calender/deleteEvent/${eventId}`, { method: 'DELETE' });
-    setEvents(events.filter((event) => event.id !== eventId));
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/calendar/deleteData', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: eventId }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete event');
+      }
+      setEvents(events.filter((event) => event._id !== eventId));
+    } catch (error) {
+      console.error('Error deleting event:', error);
+    }
   };
 
-  const handlecreateEvent = async (newEvent) => {
-    const response = await fetch('http://localhost:8000/api/v1/calender/createEvent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newEvent),
-    });
-    const data = await response.json();
-    setEvents([...events, data.data]); // Ensure the response matches the frontend expectation
+  const handleCreateEvent = async (newEvent: Event) => {
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/calendar/createData', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newEvent),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create event');
+      }
+      const createdEvent = await response.json();
+      setEvents([...events, createdEvent.data]);
+    } catch (error) {
+      console.error('Error creating event:', error);
+    }
   };
 
   const renderCalendarDays = () => {
@@ -94,10 +143,9 @@ export default function CalendarPage() {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
       const isToday = date.toDateString() === today.toDateString();
       const dayEvents = events.filter((event) => {
-        const eventDate = new Date(event.date); // Ensure it's a Date object
+        const eventDate = new Date(event.date);
         return eventDate.toDateString() === date.toDateString();
       });
-      
 
       days.push(
         <div
@@ -109,14 +157,14 @@ export default function CalendarPage() {
           </div>
           {dayEvents.map((event) => (
             <div
-              key={event.id}
+              key={event._id}
               className={`${calendars.find((cal) => cal.id === event.calendarId)?.color} text-white p-1 mb-1 rounded cursor-pointer`}
               onClick={() => {
                 setSelectedEvent(event);
                 setShowEventModal(true);
-              }}              
+              }}
             >
-              {event.title}
+              {event.event} {/* Changed from `title` to `event` */}
             </div>
           ))}
         </div>
@@ -177,7 +225,7 @@ export default function CalendarPage() {
                   className="bg-lime-500 dark:bg-lime-700 p-2 rounded hover:bg-lime-600 dark:hover:bg-lime-800 focus:outline-none focus:ring-2 focus:ring-lime-400 dark:focus:ring-lime-500 text-white appearance-none"
                   style={{ width: '100px', overflowY: 'auto' }}
                 >
-                  {Array.from({ length: 2100 - 1900 + 1 }, (_, i) => 1900 + i).map((year) => (
+                  {years.map((year) => (
                     <option key={year} value={year} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                       {year}
                     </option>
@@ -222,7 +270,7 @@ export default function CalendarPage() {
           {showEventModal && (
             <EventModal
               event={selectedEvent}
-              onSave={selectedEvent ? handleupdateEvent : handlecreateEvent} // Use correct function
+              onSave={selectedEvent ? handleUpdateEvent : handleCreateEvent}
               onClose={() => setShowEventModal(false)}
               onDelete={handleDeleteEvent}
               calendars={calendars}
@@ -234,29 +282,28 @@ export default function CalendarPage() {
   );
 }
 
-const EventModal = ({ event, onSave, onClose, onDelete, calendars }) => {
-  const [title, setTitle] = useState(event ? event.title : '');
-  const [date, setDate] = useState(event ? new Date(event.date).toISOString().split('T')[0] : '');
-  const [calendarId, setCalendarId] = useState(event ? event.calendarId : calendars[0].id);
+const EventModal = ({ event, onSave, onClose, onDelete, calendars }: { event: Event | null, onSave: (newEvent: Event) => void, onClose: () => void, onDelete: (eventId: string) => void, calendars: Calendar[] }) => {
+  const [eventTitle, setEventTitle] = useState<string>(event ? event.event : ''); // Changed from `title` to `event`
+  const [date, setDate] = useState<string>(event ? new Date(event.date).toISOString().split('T')[0] : '');
+  const [calendarId, setCalendarId] = useState<number>(event ? event.calendarId : calendars[0].id);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newEvent = {
-      id: event?.id || Date.now(), // Generate ID for new events
-      title,
+    const newEvent: Event = {
+      _id: event?._id || Date.now().toString(), // Ensure _id is a string
+      event: eventTitle, // Changed from `title` to `event`
       date: new Date(date).toISOString(),
       calendarId,
     };
-  
-    onSave(newEvent); // Now using the correct function passed as a prop
+
+    onSave(newEvent);
     onClose();
   };
-  
 
   const handleDelete = () => {
     if (event) {
-      onDelete(event.id); // Directly remove the event from the state without confirmation
-      onClose(); // Close the modal after deletion
+      onDelete(event._id);
+      onClose();
     }
   };
 
@@ -268,14 +315,14 @@ const EventModal = ({ event, onSave, onClose, onDelete, calendars }) => {
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="title" className="block mb-2 text-gray-900 dark:text-white">
-              Title
+            <label htmlFor="event" className="block mb-2 text-gray-900 dark:text-white">
+              Event
             </label>
             <input
               type="text"
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              id="event"
+              value={eventTitle}
+              onChange={(e) => setEventTitle(e.target.value)}
               className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
@@ -314,7 +361,7 @@ const EventModal = ({ event, onSave, onClose, onDelete, calendars }) => {
             {event && (
               <button
                 type="button"
-                onClick={handleDelete} // Directly delete the event without confirmation
+                onClick={handleDelete}
                 className="bg-red-500 text-white p-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
               >
                 Delete

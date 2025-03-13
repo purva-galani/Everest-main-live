@@ -11,7 +11,7 @@ const taskRouts=require("./task.routs")
 const scheduledRouts=require("./scheduled.routs")
 const complaintRouts=require("./complaint.routes")
 const contactRouts=require("./contactrouts.routes")
-const calandarRouts=require("./calender.routes")
+const calendarRouts=require("./calendar.routes")
 const notificationRoutes = require("./notification.routes")
 const usersdRoutes = require("./users.routs")
 const ownerRoutes=require("./Owner.routes")
@@ -27,7 +27,7 @@ router.use("/task",taskRouts)
 router.use("/scheduledEvents",scheduledRouts)
 router.use("/complaint",complaintRouts)
 router.use("/contact",contactRouts)
-router.use("/calender",calandarRouts)
+router.use("/calendar",calendarRouts)
 router.use("/notification", notificationRoutes);
 router.use("/user", usersdRoutes);
 router.use("/owner",ownerRoutes);
