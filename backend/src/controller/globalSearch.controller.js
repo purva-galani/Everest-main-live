@@ -20,12 +20,10 @@ const Search = async (req, res) => {
     // const reminder = await Invoice.find({ $or: [{ companyName: regex },{ customerName: regex }, { emailAddress: regex }, { contactNumber: regex }, { address: regex } , {gstNumber : regex} , {customerName: regex} , {productName: regex} , {amount : regex} , {status : regex}] }).limit(5);
     const deals = await Deal.find({ $or: [{ companyName: regex },{ customerName: regex }, { emailAddress: regex }, { contactNumber: regex }, { address: regex }, { productName: regex }, { amount: regex }, { gstNumber: regex }, { status: regex }, { date: regex }, { endDate: regex }, { notes: regex }] }).limit(5);
     const tasks = await Task.find({ $or: [{ name: regex },{ subject: regex }, { assigned: regex }, { relatedTo: regex }, { taskDate: regex }, { dueDate: regex }, { status: regex }, { priority: regex }, { notes: regex} ] }).limit(5);
-    
-    const complaint = await Complaint.find({$or: [{ complainerName: regex },{companyName:regex} , { contactNumber: regex }, { emailAddress: regex } ,{subject:regex} , {caseStatus : regex} , {caaseOrigin : regex}] }).limit(5);
-    const contacts = await Contact.find({ $or: [{ companyName: regex },{ customerName: regex }, { emailAddress: regex }, { contactNumber: regex }, { address: regex } , {gstNumber : regex}] }).limit(5);
-    const accounts = await Account.find({ $or: [ {accountName:regex} ,{ contactName: regex }, { emailAddress: regex }, { contactNumber: regex }, { accountType1: regex } , {industry : regex} , {status: regex} , {accountManager : regex} , {address:regex} , {companyName : regex} , {bankDetails : regex}] }).limit(5);
-    
-    const schedules = await Scheduled.find({ $or: [{ subject: regex }, { assignedUser: regex }, { customer: regex }, { address: regex }] }).limit(5);
+    const complaint = await Complaint.find({$or: [{ complainerName: regex },{companyName:regex} , { contactNumber: regex }, { emailAddress: regex } ,{subject:regex} , {date:regex} , {caseStatus:regex} , {priority:regex} , {caseOrigin:regex}] }).limit(5);
+    const contacts = await Contact.find({ $or: [{ companyName: regex },{ customerName: regex }, { emailAddress: regex }, { contactNumber: regex }, { address: regex } , {gstNumber : regex}, {description : regex}] }).limit(5);
+    const accounts = await Account.find({ $or: [ {accountHolderName: regex}, {accountNumber: regex}, {bankName: regex}, {accountType: regex}, {IFSCCode: regex}] }).limit(5);
+    const schedules = await Scheduled.find({ $or: [{ subject: regex }, { assignedUser: regex }, { customer: regex }, { location: regex }, { status: regex }, { eventType: regex }, { priority: regex }, { description: regex }, { recurrence: regex }, { date: regex }] }).limit(5);
 
     let suggestions = [];
     if (leads.length > 0) suggestions.push({ page: "Leads", path: "/lead" });
