@@ -20,14 +20,12 @@ const createComplaint = async (req, res) => {
       caseOrigin,
     });
 
-    // Save to DB
     const savedComplaint = await newComplaint.save();
 
-    // Return saved complaint as response
     return res.status(201).json({
       success: true,
       message: 'Complaint created successfully',
-      complaint: savedComplaint, // This is the key to return
+      complaint: savedComplaint, 
     });
   } catch (error) {
     console.error('Error creating complaint:', error);
@@ -38,11 +36,9 @@ const createComplaint = async (req, res) => {
   }
 };
 
-
-// Get all complaints
 const getAllComplaints = async (req, res) => {
   try {
-    const complaints = await Complaint.find(); // Fetch all complaints from the database
+    const complaints = await Complaint.find(); 
     res.status(200).json({
       success: true,
       complaints,
@@ -56,9 +52,8 @@ const getAllComplaints = async (req, res) => {
   }
 };
 
-// Get a specific complaint by ID
 const getComplaintById = async (req, res) => {
-  const { id } = req.params; // Extract ID from URL params
+  const { id } = req.params; 
   try {
     const complaint = await Complaint.findById(id);
     if (!complaint) {
@@ -81,28 +76,23 @@ const getComplaintById = async (req, res) => {
   }
 };
 
-// Update a specific complaint by ID
 const updateComplaint = async (req, res) => {
-  const { id } = req.params; // Get complaint ID from URL
-  const updatedData = req.body; // Get updated complaint data from the request body
+  const { id } = req.params; 
+  const updatedData = req.body; 
 
   try {
-    // Find the complaint by ID and update it
     const complaint = await Complaint.findById(id);
 
     if (!complaint) {
       return res.status(404).json({ message: 'Complaint not found' });
     }
 
-    // Update the complaint with the new data
     Object.keys(updatedData).forEach((key) => {
-      complaint[key] = updatedData[key]; // Update each field in the complaint object
+      complaint[key] = updatedData[key];
     });
 
-    // Save the updated complaint to the database
     await complaint.save();
 
-    // Return a success message with the updated complaint
     res.status(200).json({ success: true, message: 'Complaint updated successfully!', data: complaint });
   } catch (error) {
     console.error(error);
@@ -110,7 +100,6 @@ const updateComplaint = async (req, res) => {
   }
 };
 
-// Delete a specific complaint by ID
 const deleteComplaint = async (req, res) => {
   const { id } = req.params;
   try {
@@ -136,60 +125,16 @@ const deleteComplaint = async (req, res) => {
 };
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",  // Or another service like SendGrid
+    service: "gmail",  
     auth: {
-        user: process.env.EMAIL_USER,  // Get email from .env
-        pass: process.env.EMAIL_PASS,  // Get password from .env
+        user: process.env.EMAIL_USER,  
+        pass: process.env.EMAIL_PASS,  
     },
 });
 
-// const sendEmailComplaint = async (req, res) => {
-//     const { to, subject, message } = req.body; 
-
-//     if (!to || !subject || !message) {
-//         return res.status(400).json({
-//             success: false,
-//             message: "All fields (to, subject, message) are required.",
-//         });
-//     }
-
-//     try {
-        
-//         const mailOptions = {
-//             from: "purvagalani@gmail.com", 
-//             to: to, 
-//             subject: subject, 
-//             text: message, 
-//         };
-
-//         transporter.sendMail(mailOptions, (error, info) => {
-//             if (error) {
-//                 console.error("Error sending email:", error.message);
-//                 return res.status(500).json({
-//                     success: false,
-//                     message: "Error sending email: " + error.message,
-//                 });
-//             }
-
-//             console.log("Email sent successfully: " + info.response);
-//             res.status(200).json({
-//                 success: true,
-//                 message: `Email sent successfully to ${to}`,
-//                 data: info.response, 
-//             });
-//         });
-//     } catch (error) {
-//         console.error("Error sending email:", error.message);
-//         res.status(500).json({
-//             success: false,
-//             message: "Internal server error: " + error.message,
-//         });
-//     }
-// };
-
 const sendEmailComplaint = async (req, res) => {
-  const { to, subject = "(No Subject)", message = "(No Message)" } = req.body; // Provide default values
-  const attachments = req.files; // Get uploaded files
+  const { to, subject = "(No Subject)", message = "(No Message)" } = req.body; 
+  const attachments = req.files; 
 
   if (!to) {
       return res.status(400).json({
@@ -202,14 +147,14 @@ const sendEmailComplaint = async (req, res) => {
       const mailOptions = {
           from: "purvagalani@gmail.com",
           to: to,
-          subject: subject || "(No Subject)", // Use default if empty
-          html: message || "(No Message)", // Use default if empty
+          subject: subject || "(No Subject)", 
+          html: message || "(No Message)", 
           attachments: attachments
               ? attachments.map(file => ({
                     filename: file.originalname,
                     path: file.path,
                 }))
-              : [], // Handle case where there are no attachments
+              : [], 
       };
 
       transporter.sendMail(mailOptions, (error, info) => {

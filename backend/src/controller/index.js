@@ -1,4 +1,3 @@
-// module.exports.UserController=require("./user.controller")
 module.exports.InvoiceController=require("./invoice.controller")
 module.exports.LeadController=require("./lead.controller")
 module.exports.DealController=require("./deal.controller")

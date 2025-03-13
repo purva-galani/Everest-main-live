@@ -146,20 +146,6 @@ const getPaidAccounts = async (req, res) => {
 
     try {
         const paidAccounts = await Account.find({ status: 'Paid' });
-
-        // Map to extract only the desired fields
-        // const response = unpaidAccounts.map(account => ({
-        //     companyName: account.companyName,
-        //     withGstAmount:account.withGstAmount,
-        //     mobile:account.mobile,
-        //     productName: account.productName,
-        //     endDate: account.date // Assuming 'date' is your end date
-        // }));
-
-        // res.status(200).json({
-        //     success: true,
-        //     data: response
-        // });
         res.status(200).json({
             success: true,
             data: paidAccounts
@@ -174,18 +160,17 @@ const getPaidAccounts = async (req, res) => {
 };
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",  // Or another service like SendGrid
+    service: "gmail",  
     auth: {
-        user: process.env.EMAIL_USER,  // Get email from .env
-        pass: process.env.EMAIL_PASS,  // Get password from .env
+        user: process.env.EMAIL_USER,  
+        pass: process.env.EMAIL_PASS,  
     },
 });
 
 const sendEmailReminder = async (req, res) => {
-    const { id } = req.params; // Extract the contact ID from the request parameters
-    const { message } = req.body; // Extract the message from the request body
+    const { id } = req.params; 
+    const { message } = req.body; 
 
-    // Validate the message field
     if (!message) {
         return res.status(400).json({
             success: false,
@@ -194,14 +179,12 @@ const sendEmailReminder = async (req, res) => {
     }
 
     try {
-        // Find the account by ID
         const account = await Account.findById(id);
 
         if (!account) {
             return res.status(404).json({ success: false, message: "Account not found" });
         }
 
-        // Validate the email address
         if (!account.emailAddress) {
             return res.status(400).json({
                 success: false,
@@ -209,15 +192,13 @@ const sendEmailReminder = async (req, res) => {
             });
         }
 
-        // Define the email options
         const mailOptions = {
-            from: "your-email@gmail.com", // Your email address
-            to: account.emailAddress, // Recipient's email address from the database
-            subject: `Payment Reminder for Account #${account.id}`, // Subject of the email
-            text: message, // The message the user wrote
+            from: "your-email@gmail.com", 
+            to: account.emailAddress, 
+            subject: `Payment Reminder for Account #${account.id}`, 
+            text: message, 
         };
 
-        // Send the email using Nodemailer
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 console.error("Error sending email:", error.message);
@@ -231,7 +212,7 @@ const sendEmailReminder = async (req, res) => {
             res.status(200).json({
                 success: true,
                 message: `Email sent successfully to ${account.emailAddress}`,
-                data: info.response, // Return the email info (optional)
+                data: info.response, 
             });
         });
     } catch (error) {
@@ -248,13 +229,11 @@ const sendWhatsAppReminder = async (req, res) => {
     const { id } = req.params;
 
     try {
-        // Find the account by ID
         const account = await Account.findById(id);
         if (!account) {
             return res.status(404).json({ success: false, message: "Account not found" });
         }
 
-        // Construct the recipient's WhatsApp number
         const countryCode = '+91';
         const customerNumber = account.contactNumber;
         if (!customerNumber) {
@@ -262,20 +241,16 @@ const sendWhatsAppReminder = async (req, res) => {
         }
         const formattedNumber = `${countryCode}${customerNumber}`;
 
-        // Construct the reminder message
         const message = `Hello ${account.customerName},\n\nThis is a reminder to pay your outstanding account of ₹${account.remainingAmount}. Please make the payment at your earliest convenience.`;
 
-        // Simulate sending a WhatsApp message
         console.log(`Sending WhatsApp message to: ${formattedNumber}`);
         console.log(`Message: ${message}`);
 
-        // Respond with success
         res.status(200).json({
             success: true,
             message: "WhatsApp reminder sent successfully",
         });
     } catch (error) {
-        // Handle errors
         console.error("Error sending WhatsApp reminder:", error);
         res.status(500).json({
             success: false,

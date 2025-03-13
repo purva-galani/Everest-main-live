@@ -1,10 +1,8 @@
 const mongoose = require("mongoose");
 const Task = require("../model/taskSchema.model");
 
-// Utility function to validate ObjectId
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-// Create a new task
 const createTask = async (req, res) => {
   try {
     const taskData = req.body;
@@ -24,7 +22,6 @@ const createTask = async (req, res) => {
   }
 };
 
-// Get all tasks
 const getAllTasks = async (req, res) => {
   try {
     const tasks = await Task.find({});
@@ -41,7 +38,6 @@ const getAllTasks = async (req, res) => {
   }
 };
 
-// Get a task by ID
 const getTaskById = async (req, res) => {
   const { id } = req.params;
 
@@ -68,12 +64,10 @@ const getTaskById = async (req, res) => {
   }
 };
 
-// Update a task by ID
 const updateTask = async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
 
-  // Validate the ObjectId
   if (!isValidObjectId(id)) {
     return res.status(400).json({
       success: false,
@@ -82,7 +76,6 @@ const updateTask = async (req, res) => {
   }
 
   try {
-    // Attempt to find the task by ID first
     const task = await Task.findById(id);
     if (!task) {
       return res.status(404).json({
@@ -91,10 +84,9 @@ const updateTask = async (req, res) => {
       });
     }
 
-    // Proceed to update the task
     const updatedTask = await Task.findByIdAndUpdate(id, updates, {
-      new: true, // Return the updated document
-      runValidators: true, // Ensure validation is applied on the update
+      new: true, 
+      runValidators: true, 
     });
 
     res.status(200).json({
@@ -111,11 +103,9 @@ const updateTask = async (req, res) => {
   }
 };
 
-// Delete a task by ID
 const deleteTask = async (req, res) => {
   const { id } = req.params;
 
-  // Validate the ObjectId
   if (!isValidObjectId(id)) {
     return res.status(400).json({
       success: false,
@@ -124,7 +114,6 @@ const deleteTask = async (req, res) => {
   }
 
   try {
-    // Attempt to delete the task by its ID
     const deletedTask = await Task.findByIdAndDelete(id);
 
     if (!deletedTask) {
@@ -148,7 +137,6 @@ const deleteTask = async (req, res) => {
   }
 };
 
-// Get all resolved tasks
 const getResolvedTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ status: "Resolved" });

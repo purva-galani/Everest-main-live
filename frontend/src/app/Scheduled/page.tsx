@@ -38,7 +38,8 @@ export default function CertificatePage() {
                             </BreadcrumbItem>
                             <BreadcrumbSeparator className="hidden md:block" />
                                 <BreadcrumbItem>
-                                <BreadcrumbLink href="/Scheduled">
+                                <BreadcrumbLink href="/Sche
+                                duled">
                                 Create
                                 </BreadcrumbLink>              
                                 </BreadcrumbItem>

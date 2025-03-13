@@ -1,12 +1,10 @@
 const Contact = require('../model/contactSchema.model');
 const nodemailer = require("nodemailer");
 
-// Send SMS Function
 const sendSMS = async (req, res) => {
-  const { id } = req.params;  // Extract the contact ID from the request parameters
-  const { message } = req.body;  // Extract the message from the request body
+  const { id } = req.params;  
+  const { message } = req.body;  
 
-  // Validate that a message is provided
   if (!message) {
     return res.status(400).json({
       success: false,
@@ -14,16 +12,14 @@ const sendSMS = async (req, res) => {
     });
   }
   }
-// Initialize Nodemailer with hardcoded email ID and app password
 const transporter = nodemailer.createTransport({
-    service: "gmail",  // Or another service like SendGrid
+    service: "gmail",  
     auth: {
-        user: process.env.EMAIL_USER,  // Get email from .env
-        pass: process.env.EMAIL_PASS,  // Get password from .env
+        user: process.env.EMAIL_USER,  
+        pass: process.env.EMAIL_PASS,  
     },
 });
 
-// Create Contact
 const createContact = async (req, res) => {
   const { companyName, customerName, emailAddress, contactNumber, address, gstNumber, description } = req.body;
 
@@ -46,10 +42,9 @@ const createContact = async (req, res) => {
 };
 
 const sendEmailReminder = async (req, res) => {
-  const { id } = req.params;  // Extract the contact ID from the request parameters
-  const { message } = req.body;  // Extract the message from the request body
+  const { id } = req.params;  
+  const { message } = req.body;  
 
-  // Validate the message field
   if (!message) {
     return res.status(400).json({
       success: false,
@@ -58,22 +53,19 @@ const sendEmailReminder = async (req, res) => {
   }
 
   try {
-    // Find the contact by ID
     const contact = await Contact.findById(id);
     
     if (!contact) {
       return res.status(404).json({ success: false, message: 'Contact not found' });
     }
 
-    // Define the email options
     const mailOptions = {
-      from: "your-email@gmail.com",  // Your email address
-      to: contact.emailAddress, // Recipient's email address from the database
-      subject: "",  // Subject of the email
-      text: message,  // The message the user wrote
+      from: "your-email@gmail.com",  
+      to: contact.emailAddress, 
+      subject: "",  
+      text: message,  
     };
 
-    // Send the email using Nodemailer
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error("Error sending email:", error.message);
@@ -87,7 +79,7 @@ const sendEmailReminder = async (req, res) => {
       res.status(200).json({
         success: true,
         message: `Email sent successfully to ${contact.email}`,
-        data: info.response,  // Return the email info (optional)
+        data: info.response, 
       });
     });
   } catch (error) {
@@ -99,7 +91,6 @@ const sendEmailReminder = async (req, res) => {
   }
 };
 
-// Get All Contacts
 const getAllContacts = async (req, res) => {
   try {
     const contacts = await Contact.find();
@@ -110,7 +101,6 @@ const getAllContacts = async (req, res) => {
   }
 };
 
-// Update Contact
 const updateContact = async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
@@ -136,7 +126,6 @@ const updateContact = async (req, res) => {
   }
 };
 
-// Delete Contact
 const deleteContact = async (req, res) => {
   const { id } = req.params;
 
@@ -154,7 +143,6 @@ const deleteContact = async (req, res) => {
   }
 };
 
-// Get Contact By ID
 const getContactById = async (req, res) => {
   const { id } = req.params;
 
@@ -175,16 +163,15 @@ const getContactById = async (req, res) => {
 };
 
 const createCallLink = async (req, res) => {
-  const fixedPhoneNumber = "+123456789"; // Replace this with your phone number
+  const fixedPhoneNumber = "+123456789"; 
 
   try {
-    // Generate the call link using the fixed phone number
     const callLink = `tel:${fixedPhoneNumber}`;
 
     res.status(200).json({
       success: true,
       message: 'Call link generated successfully',
-      callLink: callLink, // Return the call link
+      callLink: callLink, 
     });
   } catch (error) {
     console.error('Error generating call link:', error.message);
@@ -197,8 +184,8 @@ const createCallLink = async (req, res) => {
 
 
 const sendEmailContact = async (req, res) => {
-  const { to, subject = "(No Subject)", message = "(No Message)" } = req.body; // Provide default values
-  const attachments = req.files; // Get uploaded files
+  const { to, subject = "(No Subject)", message = "(No Message)" } = req.body; 
+  const attachments = req.files; 
 
   if (!to) {
       return res.status(400).json({
@@ -211,14 +198,14 @@ const sendEmailContact = async (req, res) => {
       const mailOptions = {
           from: "purvagalani@gmail.com",
           to: to,
-          subject: subject || "(No Subject)", // Use default if empty
-          html: message || "(No Message)", // Use default if empty
+          subject: subject || "(No Subject)", 
+          html: message || "(No Message)", 
           attachments: attachments
               ? attachments.map(file => ({
                     filename: file.originalname,
                     path: file.path,
                 }))
-              : [], // Handle case where there are no attachments
+              : [], 
       };
 
       transporter.sendMail(mailOptions, (error, info) => {
