@@ -50,32 +50,6 @@ const getAllScheduledEvents = async (req, res) => {
     }
 };
 
-const getScheduledEventById = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const event = await Scheduled.findById(id);
-
-        if (!event) {
-            return res.status(404).json({
-                success: false,
-                message: "Scheduled event not found"
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            data: event
-        });
-    } catch (error) {
-        console.error("Error fetching scheduled event:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error: " + error.message
-        });
-    }
-};
-
 const updateScheduledEvent = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
@@ -134,103 +108,9 @@ const deleteScheduledEvent = async (req, res) => {
     }
 };
 
-const searchByMonth = async (req, res) => {
-    const { month, year } = req.query;
-
-    if (!month || !year) {
-        return res.status(400).json({
-            success: false,
-            message: "Both month and year are required"
-        });
-    }
-
-    const parsedMonth = parseInt(month, 10);
-    const parsedYear = parseInt(year, 10);
-
-    if (isNaN(parsedMonth) || parsedMonth < 1 || parsedMonth > 12) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid month. It must be between 1 and 12."
-        });
-    }
-    if (isNaN(parsedYear)) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid year."
-        });
-    }
-
-    try {
-        const startDate = new Date(parsedYear, parsedMonth - 1, 1);
-        const endDate = new Date(parsedYear, parsedMonth, 1);
-        const events = await Scheduled.find({
-            followUp: {
-                $gte: startDate,
-                $lt: endDate
-            }
-        });
-
-        res.status(200).json({
-            success: true,
-            data: events
-        });
-    } catch (error) {
-        console.error("Error searching by month:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error: " + error.message
-        });
-    }
-};
-
-const searchByYear = async (req, res) => {
-    const { year } = req.query;
-
-    if (!year) {
-        return res.status(400).json({
-            success: false,
-            message: "Year is required"
-        });
-    }
-
-    const parsedYear = parseInt(year, 10);
-
-    if (isNaN(parsedYear)) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid year."
-        });
-    }
-
-    try {
-        const startDate = new Date(parsedYear, 0, 1);
-        const endDate = new Date(parsedYear + 1, 0, 1);
-        const events = await Scheduled.find({
-            followUp: {
-                $gte: startDate,
-                $lt: endDate
-            }
-        });
-
-        res.status(200).json({
-            success: true,
-            data: events
-        });
-    } catch (error) {
-        console.error("Error searching by year:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error: " + error.message
-        });
-    }
-};
-
 module.exports = {
     createScheduledEvent,
     getAllScheduledEvents,
-    getScheduledEventById,
     updateScheduledEvent,
     deleteScheduledEvent,
-    searchByMonth,
-    searchByYear,
 };

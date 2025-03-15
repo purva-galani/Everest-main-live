@@ -106,11 +106,8 @@ const remindEvent = async () => {
     }
 };
 
-cron.schedule('0 * * * *', remindEvent, {
+cron.schedule('0 0 * * *', remindEvent, {
 });
-
-console.log('Cron job scheduled to run every midnight (12:00 AM IST).');
-
 
 const invoiceAdd = async (req, res) => {
     try {
@@ -330,58 +327,6 @@ const sendEmailReminder = async ({ to, subject = "(No Subject)", message = "(No 
     return transporter.sendMail(mailOptions);
 };
 
-const sendWhatsAppReminder = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const invoice = await Invoice.findById(id);
-        if (!invoice) {
-            return res.status(404).json({ success: false, message: "Invoice not found" });
-        }
-
-        const countryCode = '+91';
-        const customerNumber = invoice.contactNumber;
-        if (!customerNumber) {
-            return res.status(400).json({ success: false, message: "Customer contact number not found" });
-        }
-        const formattedNumber = `${countryCode}${customerNumber}`;
-
-        const message = `Hello ${invoice.customerName},\n\nThis is a reminder to pay your outstanding invoice of ₹${invoice.remainingAmount}. Please make the payment at your earliest convenience.`;
-
-        console.log(`Sending WhatsApp message to: ${formattedNumber}`);
-        console.log(`Message: ${message}`);
-
-        res.status(200).json({
-            success: true,
-            message: "WhatsApp reminder sent successfully",
-        });
-    } catch (error) {
-        console.error("Error sending WhatsApp reminder:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error: " + error.message,
-        });
-    }
-};
-
-const updateCustomMessage = async(req,res)=>{
-    try {
-        const { customMessage } = req.body;
-        const invoiceId = req.params.invoiceId;
-    
-        const updatedInvoice = await Invoice.findByIdAndUpdate(invoiceId, { customMessage }, { new: true });
-    
-        if (!updatedInvoice) {
-          return res.status(404).json({ message: 'Invoice not found' });
-        }
-    
-        return res.json({ data: updatedInvoice });
-      } catch (error) {
-        console.error('Error saving custom message:', error);
-        res.status(500).json({ message: 'Failed to save custom message' });
-      }
-}
-
 const getInvoicesByStatus = async (req, res) => {
     const { status } = req.query;
   
@@ -428,8 +373,6 @@ module.exports = {
     getUnpaidInvoices,
     getPaidInvoices,
     sendEmailReminder,
-    sendWhatsAppReminder,
-    updateCustomMessage,
     getInvoicesByStatus,
     updateStatus
 };

@@ -3,7 +3,6 @@ const cron = require('node-cron');
 const nodemailer = require("nodemailer");
 const multer = require('multer');
 
-
 const createComplaint = async (req, res) => {
   try {
     const { companyName, complainerName, contactNumber, emailAddress, subject, date, caseStatus, priority, caseOrigin,} = req.body;
@@ -45,30 +44,6 @@ const getAllComplaints = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching complaints:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error: ' + error.message,
-    });
-  }
-};
-
-const getComplaintById = async (req, res) => {
-  const { id } = req.params; 
-  try {
-    const complaint = await Complaint.findById(id);
-    if (!complaint) {
-      return res.status(404).json({
-        success: false,
-        message: 'Complaint not found',
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      complaint,
-    });
-  } catch (error) {
-    console.error('Error fetching complaint:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error: ' + error.message,
@@ -185,7 +160,6 @@ const sendEmailComplaint = async (req, res) => {
 module.exports = {
   createComplaint,
   getAllComplaints,
-  getComplaintById,
   updateComplaint,
   deleteComplaint,
   sendEmailComplaint

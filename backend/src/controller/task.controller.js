@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const Task = require("../model/taskSchema.model");
-
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const createTask = async (req, res) => {
@@ -31,32 +30,6 @@ const getAllTasks = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching tasks:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error: " + error.message,
-    });
-  }
-};
-
-const getTaskById = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const task = await Task.findById(id);
-
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        message: "Task not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: task,
-    });
-  } catch (error) {
-    console.error("Error fetching task:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error: " + error.message,
@@ -137,30 +110,6 @@ const deleteTask = async (req, res) => {
   }
 };
 
-const getResolvedTasks = async (req, res) => {
-  try {
-    const tasks = await Task.find({ status: "Resolved" });
-
-    if (tasks.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No resolved tasks found.",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: tasks,
-    });
-  } catch (error) {
-    console.error("Error fetching resolved tasks:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error: " + error.message,
-    });
-  }
-};
-
 const updateStatus = async (req, res) => {
   const { taskId, status } = req.body;
 
@@ -183,9 +132,7 @@ const updateStatus = async (req, res) => {
 module.exports = {
   createTask,
   getAllTasks,
-  getTaskById,
   updateTask,
   deleteTask,
-  getResolvedTasks,
   updateStatus
 };

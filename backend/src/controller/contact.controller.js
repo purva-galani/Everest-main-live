@@ -1,17 +1,6 @@
 const Contact = require('../model/contactSchema.model');
 const nodemailer = require("nodemailer");
 
-const sendSMS = async (req, res) => {
-  const { id } = req.params;  
-  const { message } = req.body;  
-
-  if (!message) {
-    return res.status(400).json({
-      success: false,
-      message: 'Message content is required',
-    });
-  }
-  }
 const transporter = nodemailer.createTransport({
     service: "gmail",  
     auth: {
@@ -37,56 +26,6 @@ const createContact = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Internal server error: ' + error.message,
-    });
-  }
-};
-
-const sendEmailReminder = async (req, res) => {
-  const { id } = req.params;  
-  const { message } = req.body;  
-
-  if (!message) {
-    return res.status(400).json({
-      success: false,
-      message: 'Message content is required',
-    });
-  }
-
-  try {
-    const contact = await Contact.findById(id);
-    
-    if (!contact) {
-      return res.status(404).json({ success: false, message: 'Contact not found' });
-    }
-
-    const mailOptions = {
-      from: "your-email@gmail.com",  
-      to: contact.emailAddress, 
-      subject: "",  
-      text: message,  
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Error sending email:", error.message);
-        return res.status(500).json({
-          success: false,
-          message: "Error sending email: " + error.message,
-        });
-      }
-
-      console.log("Email sent successfully: " + info.response);
-      res.status(200).json({
-        success: true,
-        message: `Email sent successfully to ${contact.email}`,
-        data: info.response, 
-      });
-    });
-  } catch (error) {
-    console.error("Error sending email:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error: " + error.message,
     });
   }
 };
@@ -143,46 +82,6 @@ const deleteContact = async (req, res) => {
   }
 };
 
-const getContactById = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const contact = await Contact.findById(id);
-    if (!contact) {
-      return res.status(404).json({ success: false, message: 'Contact not found' });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: contact,
-    });
-  } catch (error) {
-    console.error('Error fetching contact:', error);
-    res.status(500).json({ success: false, message: 'Internal server error: ' + error.message });
-  }
-};
-
-const createCallLink = async (req, res) => {
-  const fixedPhoneNumber = "+123456789"; 
-
-  try {
-    const callLink = `tel:${fixedPhoneNumber}`;
-
-    res.status(200).json({
-      success: true,
-      message: 'Call link generated successfully',
-      callLink: callLink, 
-    });
-  } catch (error) {
-    console.error('Error generating call link:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error: ' + error.message,
-    });
-  }
-};
-
-
 const sendEmailContact = async (req, res) => {
   const { to, subject = "(No Subject)", message = "(No Message)" } = req.body; 
   const attachments = req.files; 
@@ -234,14 +133,10 @@ const sendEmailContact = async (req, res) => {
 };
 
 module.exports = {
-  sendSMS,
   createContact,
   updateContact,
   deleteContact,
   getAllContacts,
-  getContactById,
-  sendEmailReminder,
-  createCallLink, 
   sendEmailContact
 };
 

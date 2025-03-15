@@ -60,8 +60,6 @@ const handleRemoveAttachment = (index: number) => {
         }
     };
 
-    
-
     const applyFormatting = (command: string, value?: string) => {
         document.execCommand(command, false, value || "");
     };

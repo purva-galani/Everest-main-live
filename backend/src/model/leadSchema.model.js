@@ -38,11 +38,10 @@ const leadSchema = new mongoose.Schema(
     },
     gstNumber: {
       type: String,
-      // required: true,
     },
     status: {
       type: String,
-      enum: ["New", "Discussion", "Demo", "Proposal", "Decided"], // Add your statuses here
+      enum: ["New", "Discussion", "Demo", "Proposal", "Decided"],
     },
     date: {
       type: Date,

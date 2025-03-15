@@ -556,8 +556,8 @@ export default function ContactTable() {
                                 </DialogDescription>
                             </DialogHeader>
                             <Form {...form}>
-                                <form onSubmit={form.handleSubmit((values) => handleEditClick(values))} className="space-y-6">
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <form onSubmit={form.handleSubmit(onEdit)} className="space-y-6">
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                         <FormField
                                             control={form.control}
                                             name="companyName"

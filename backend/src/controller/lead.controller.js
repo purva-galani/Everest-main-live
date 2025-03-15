@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 const Lead = require("../model/leadSchema.model");
 
-
 const createLead = async (req, res) => {
     try {
         const { companyName, customerName, amount, productName, emailAddress, address, date, status } = req.body;
@@ -38,7 +37,6 @@ const createLead = async (req, res) => {
     }
 };
 
-
 const getAllLeads = async (req, res) => {
     try {
         const leads = await Lead.find({});
@@ -56,32 +54,6 @@ const getAllLeads = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching leads:", error);  
-        res.status(500).json({
-            success: false,
-            message: "Internal server error: " + error.message,
-        });
-    }
-};
-
-const getLeadById = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const lead = await Lead.findById(id);
-        
-        if (!lead) {
-            return res.status(404).json({
-                success: false,
-                message: "Lead not found"
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            data: lead
-        });
-    } catch (error) {
-        console.error("Error fetching lead:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error: " + error.message,
@@ -137,7 +109,6 @@ const updateLead = async (req, res) => {
     }
 };
 
-
 const deleteLead = async (req, res) => {
     const { id } = req.params;
 
@@ -162,134 +133,6 @@ const deleteLead = async (req, res) => {
             success: false,
             message: "Internal server error: " + error.message,
         });
-    }
-};
-
-const getNewLeads = async (req, res) => {
-    try {
-        const leads = await Lead.find({ status: 'New' }, 'Name email amount');
-        res.status(200).json({
-            success: true,
-            data: leads
-        });
-    } catch (error) {
-        console.error("Error fetching New leads:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error: " + error.message,
-        });
-    }
-};
-
-const getDiscussionLeads = async (req, res) => {
-    try {
-        const leads = await Lead.find({ status: 'Discussion' }, 'Name email amount');
-        res.status(200).json({
-            success: true,
-            data: leads
-        });
-    } catch (error) {
-        console.error("Error fetching Discussion leads:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error: " + error.message,
-        });
-    }
-};
-
-const getDemoLeads = async (req, res) => {
-    try {
-        const leads = await Lead.find({ status: 'Demo' }, ' email amount');
-        res.status(200).json({
-            success: true,
-            data: leads
-        });
-    } catch (error) {
-        console.error("Error fetching Demo leads:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error: " + error.message,
-        });
-    }
-};
-
-const getProposalLeads = async (req, res) => {
-    try {
-        const leads = await Lead.find({ status: 'Proposal' }, 'Name email amount');
-        res.status(200).json({
-            success: true,
-            data: leads
-        });
-    } catch (error) {
-        console.error("Error fetching Proposal leads:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error: " + error.message,
-        });
-    }
-};
-
-const getDecidedLeads = async (req, res) => {
-    try {
-        const leads = await Lead.find({ status: 'Decided' });
-        res.status(200).json({
-            success: true,
-            data: leads
-        });
-    } catch (error) {
-        console.error("Error fetching Decided leads:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error: " + error.message,
-        });
-    }
-};
-
-const searchByMonth = async (req, res) => {
-    const { month, year } = req.query;
-
-    try {
-        const leads = await Lead.find({
-            date: {
-                $gte: new Date(year, month - 1, 1),
-                $lt: new Date(year, month, 1)
-            }
-        });
-        res.json(leads);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-const searchByYear = async (req, res) => {
-    const { year } = req.query;
-
-    try {
-        const leads = await Lead.find({
-            date: {
-                $gte: new Date(year, 0, 1),
-                $lt: new Date(year + 1, 0, 1)
-            }
-        });
-        res.json(leads);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-const searchByDate = async (req, res) => {
-    const { date } = req.query;
-
-    try {
-        const leads = await Lead.find({
-            date: {
-                $gte: new Date(date),
-                $lt: new Date(new Date(date).setDate(new Date(date).getDate() + 1))
-            }
-        });
-        res.json(leads);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
     }
 };
 
@@ -330,21 +173,11 @@ const getLeadsByStatus = async (req, res) => {
     }
   };
   
-
 module.exports = {
     createLead,
     getAllLeads,
-    getLeadById,
     updateLead,
     deleteLead,
-    getNewLeads,
-    getDiscussionLeads,
-    getDemoLeads,
-    getProposalLeads,
-    getDecidedLeads,
     updateStatus,
-    searchByMonth,
-    searchByYear,
-    searchByDate,
     getLeadsByStatus
 };
