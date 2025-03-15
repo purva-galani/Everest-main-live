@@ -19,7 +19,7 @@ const leadSchema = new mongoose.Schema(
 
       validate: {
         validator: function (v) {
-          return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v); // Email validation
+          return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v); 
         },
         message: (props) => `${props.value} is not a valid email!`,
       },

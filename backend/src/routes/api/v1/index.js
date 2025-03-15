@@ -1,10 +1,5 @@
 const express=require("express")
-
 const router = express.Router();
-
-
-
-// const userRouts=require("./users.routs")
 const invoiceRouts=require("./invoice.routs")
 const leadRouts=require("./lead.routs")
 const taskRouts=require("./task.routs")
@@ -20,7 +15,6 @@ const accountRoutes = require("./account.routes")
 const globalRoutes =  require('./search.routes')
 const fileFolderRoutes = require("./fileFolder.routes");
 
-// router.use("/user",userRouts)
 router.use("/invoice",invoiceRouts)
 router.use("/lead",leadRouts)
 router.use("/task",taskRouts)
