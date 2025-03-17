@@ -55,21 +55,7 @@ export default function LeadTablePage() {
                         </div>
                     </div>
                 </header>
-                
-                <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-12 pt-15">
-                    {/* Increase width by changing max-w-2xl to max-w-4xl or max-w-7xl */}
-                    <Card className="max-w-6xl mx-auto">
-                        <CardHeader>
-                            <CardTitle className="text-3xl font-bold text-center">Complaint Manager</CardTitle>
-                            <CardDescription className="text-center">
-                                Manage and track your complaints effectively.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ComplaintTable />
-                        </CardContent>
-                    </Card>
-                </div>
+                <ComplaintTable/>
             </SidebarInset>
         </SidebarProvider>
     )

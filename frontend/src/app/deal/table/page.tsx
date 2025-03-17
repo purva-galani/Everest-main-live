@@ -54,20 +54,7 @@ export default function DealTablePage() {
                         </div>
                     </div>
                 </header>
-                <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-12 pt-15">
-                    {/* Increase width by changing max-w-2xl to max-w-4xl or max-w-7xl */}
-                    <Card className="max-w-6xl mx-auto">
-                        <CardHeader>
-                            <CardTitle className="text-3xl font-bold text-center">Deal Manager</CardTitle>
-                            <CardDescription className="text-center">
-                                Manage and track your deals effectively.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <DealTable/>
-                        </CardContent>
-                    </Card>
-                </div>
+                    <DealTable/>
             </SidebarInset>
         </SidebarProvider>
     )

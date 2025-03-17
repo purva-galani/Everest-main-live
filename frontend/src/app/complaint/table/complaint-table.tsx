@@ -247,7 +247,7 @@ export default function ComplaintTable() {
                 description: "The deal has been successfully deleted.",
             });
 
-            // Refresh the leads list
+            // Refresh the complaints list
             fetchComplaints();
         } catch (error) {
             toast({
@@ -285,7 +285,7 @@ export default function ComplaintTable() {
             setSelectedcomplaint(null);
             form.reset();
 
-            // Refresh the leads list
+            // Refresh the complaints list
             fetchComplaints();
         } catch (error) {
             toast({
@@ -373,21 +373,25 @@ export default function ComplaintTable() {
     const topContent = React.useMemo(() => {
         return (
             <div className="flex flex-col gap-4">
-                <div className="flex justify-between gap-3 items-end">
-                    <Input
+                <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
+                <div className="relative w-full sm:max-w-[20%]">
+                  <Input
                         isClearable
-                        className="w-full sm:max-w-[80%]" // Full width on small screens, 44% on larger screens
+                        className="w-full pr-12 sm:pr-14 pl-12" // Extra padding for clear button
+                        startContent={
+                          <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+                      }
                         placeholder="Search by name..."
-                        startContent={<SearchIcon className="h-4 w-10 text-muted-foreground" />}
                         value={filterValue}
                         onChange={(e) => setFilterValue(e.target.value)}
                         onClear={() => setFilterValue("")}
                     />
+                </div>
 
                     <div className="flex gap-3">
                         <Dropdown>
-                            <DropdownTrigger className="hidden sm:flex">
-                                <Button endContent={<ChevronDownIcon className="text-small" />} variant="default">
+                            <DropdownTrigger className="flex">
+                                <Button endContent={<ChevronDownIcon className="text-small" />} variant="default" className="px-3 py-2 text-sm sm:text-base">
                                     Columns
                                 </Button>
                             </DropdownTrigger>
@@ -401,7 +405,8 @@ export default function ComplaintTable() {
                                     const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
                                     setVisibleColumns(newKeys);
                                 }}
-                                style={{ backgroundColor: "#f0f0f0", color: "#000000" }}  // Set background and font color
+                                className="min-w-[150px] sm:min-w-[200px]"
+                                style={{ backgroundColor: "#f0f0f0", color: "#000000" }}
                             >
                                 {columns.map((column) => (
                                     <DropdownItem key={column.uid} className="capitalize" style={{ color: "#000000" }}>
@@ -410,72 +415,60 @@ export default function ComplaintTable() {
                                 ))}
                             </DropdownMenu>
                         </Dropdown>
-
-
                         <Button
                             className="addButton"
                             style={{ backgroundColor: 'hsl(339.92deg 91.04% 52.35%)' }}
                             variant="default"
                             size="default"
-                            endContent={<PlusCircle />} // Add an icon at the end
-                            onClick={() => router.push("/complaint")} 
+                            endContent={<PlusCircle />}
+                            onClick={() => router.push("/complaint")}
                         >
                             Add New
                         </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-default-400 text-small">Total {complaints.length} complaints</span>
-                    <label className="flex items-center text-default-400 text-small">
-                        Rows per page:
-                        <select
-                            className="bg-transparent dark:bg-gray-800 outline-none text-default-400 text-small"
-                            onChange={onRowsPerPageChange}
-                        >
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="15">15</option>
-                        </select>
-                    </label>
-                </div>
+                  <span className="text-default-400 text-small">Total {complaints.length} complaints</span>
+                  <label className="flex items-center text-default-400 text-small gap-2">
+                      Rows per page:
+                      <div className="relative">
+                          <select
+                              className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
+                              onChange={onRowsPerPageChange}
+                          >
+                              <option value="5">5</option>
+                              <option value="10">10</option>
+                              <option value="15">15</option>
+                          </select>
+                      </div>
+                  </label>
+              </div>
             </div>
         );
-    }, [
-        filterValue,
-        statusFilter,
-        visibleColumns,
-        onRowsPerPageChange,
-        complaints.length,
-        onSearchChange,
-    ]);
+    }, [filterValue, visibleColumns, onRowsPerPageChange, complaints.length, onSearchChange]);
 
     const bottomContent = React.useMemo(() => {
         return (
             <div className="py-2 px-2 flex justify-between items-center">
-                <span className="w-[30%] text-small text-default-400">
-
-                </span>
+                <span className="w-[30%] text-small text-default-400"></span>
                 <Pagination
                     isCompact
-                    // showControls
                     showShadow
                     color="success"
                     page={page}
                     total={pages}
                     onChange={setPage}
                     classNames={{
-                        // base: "gap-2 rounded-2xl shadow-lg p-2 dark:bg-default-100",
                         cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
                         item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
                     }}
                 />
-
                 <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
                     <Button
                         className="bg-[hsl(339.92deg_91.04%_52.35%)]"
                         variant="default"
                         size="sm"
-                        disabled={pages === 1} // Use the `disabled` prop
+                        disabled={pages === 1}
                         onClick={onPreviousPage}
                     >
                         Previous
@@ -484,60 +477,60 @@ export default function ComplaintTable() {
                         className="bg-[hsl(339.92deg_91.04%_52.35%)]"
                         variant="default"
                         size="sm"
-                        onClick={onNextPage} // Use `onClick` instead of `onPress`
+                        onClick={onNextPage}
                     >
                         Next
                     </Button>
-
                 </div>
             </div>
         );
     }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
     return (
-        <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
-            <Table
-                isHeaderSticky
-                aria-label="Leads table with custom cells, pagination and sorting"
-                bottomContent={bottomContent}
-                bottomContentPlacement="outside"
-                classNames={{
-                    wrapper: "max-h-[382px] ower-flow-y-auto",
-                }}
-                selectedKeys={selectedKeys}
-                sortDescriptor={sortDescriptor}
-                topContent={topContent}
-                topContentPlacement="outside"
-                onSelectionChange={setSelectedKeys}
-                onSortChange={(descriptor) => {
-                    setSortDescriptor({
-                        column: descriptor.column as string,
-                        direction: descriptor.direction as "ascending" | "descending",
-                    });
-                }}
-            >
-                <TableHeader columns={headerColumns}>
-                    {(column) => (
+      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
+        <div className="rounded-xl border bg-card text-card-foreground shadow">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-12">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                    <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Complaint Manager</h1>
+                    <Table
+                        isHeaderSticky
+                        aria-label="Leads table with custom cells, pagination and sorting"
+                        bottomContent={bottomContent}
+                        bottomContentPlacement="outside"
+                        classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
+                        topContent={topContent}
+                        topContentPlacement="outside"
+                        onSelectionChange={setSelectedKeys}
+                        onSortChange={setSortDescriptor}
+                    >
+                    <TableHeader columns={headerColumns}>
+                      {(column) => (
                         <TableColumn
-                            key={column.uid}
-                            align={column.uid === "actions" ? "center" : "start"}
-                            allowsSorting={column.sortable}
+                          key={column.uid}
+                          align={column.uid === "actions" ? "center" : "start"}
+                          allowsSorting={column.sortable}
                         >
-                            {column.name}
+                          {column.name}
                         </TableColumn>
-                    )}
-                </TableHeader>
-                <TableBody emptyContent={"No lead found"} items={sortedItems}>
-                    {(item) => (
+                      )}
+                    </TableHeader>
+                    <TableBody emptyContent={"No complaints found"} items={sortedItems}>
+                      {(item) => (
                         <TableRow key={item._id}>
-                            {(columnKey) => <TableCell style={{ fontSize: "12px", padding: "8px" }}>{renderCell(item, columnKey as string)}</TableCell>}
+                          {(columnKey) => (
+                            <TableCell style={{ fontSize: "12px", padding: "8px" }}>
+                              {renderCell(item, columnKey)}
+                            </TableCell>
+                          )}
                         </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-
-
-            
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </div>
+            </div> 
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                         <DialogContent className="sm:max-w-[600px]">
                             <DialogHeader>

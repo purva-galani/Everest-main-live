@@ -125,8 +125,8 @@ export default function InvoiceTable() {
             setInvoices(invoicesData);
             setError(null);
         } catch (error) {
-            console.error("Error fetching invoices:", error);
-            setError(error instanceof Error ? error.message : "Failed to fetch invoices");
+            console.error("Error fetching reminders:", error);
+            setError(error instanceof Error ? error.message : "Failed to fetch reminders");
             setInvoices([]);
         } finally {
             setIsLoading(false);
@@ -263,7 +263,7 @@ export default function InvoiceTable() {
 
     // Function to handle delete button click
     const handleDeleteClick = async (invoice: Invoice) => {
-        if (!window.confirm("Are you sure you want to delete this invoice?")) {
+        if (!window.confirm("Are you sure you want to delete this reminder?")) {
             return;
         }
 
@@ -274,20 +274,20 @@ export default function InvoiceTable() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to delete invoice");
+                throw new Error(errorData.message || "Failed to delete reminder");
             }
 
             toast({
                 title: "Invoice Deleted",
-                description: "The invoice has been successfully deleted.",
+                description: "The reminder has been successfully deleted.",
             });
 
-            // Refresh the invoices list
+            // Refresh the reminders list
             fetchInvoices();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to delete invoice",
+                description: error instanceof Error ? error.message : "Failed to delete reminder",
                 variant: "destructive",
             });
         }
@@ -308,12 +308,12 @@ export default function InvoiceTable() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to update invoice");
+                throw new Error(errorData.message || "Failed to update reminder");
             }
 
             toast({
                 title: "Invoice Updated",
-                description: "The invoice has been successfully updated.",
+                description: "The reminder has been successfully updated.",
             });
 
             // Close dialog and reset form
@@ -321,12 +321,12 @@ export default function InvoiceTable() {
             setSelectedInvoice(null);
             form.reset();
 
-            // Refresh the invoices list
+            // Refresh the reminders list
             fetchInvoices();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to update invoice",
+                description: error instanceof Error ? error.message : "Failed to update reminder",
                 variant: "destructive",
             });
         } finally {
@@ -401,122 +401,122 @@ export default function InvoiceTable() {
     }, []);
 
     const topContent = React.useMemo(() => {
-        return (
-            <div className="flex flex-col gap-4">
-                <div className="flex justify-between gap-3 items-end">
-                    <Input
-                        isClearable
-                        className="w-full sm:max-w-[80%]" // Full width on small screens, 44% on larger screens
-                        placeholder="Search by name..."
-                        startContent={<SearchIcon className="h-4 w-10 text-muted-foreground" />}
-                        value={filterValue}
-                        onChange={(e) => setFilterValue(e.target.value)}
-                        onClear={() => setFilterValue("")}
-                    />
-
-                    <div className="flex gap-3">
-                        <Dropdown>
-                            <DropdownTrigger className="hidden sm:flex">
-                                <Button endContent={<ChevronDownIcon className="text-small" />} variant="default">
-                                    Columns
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                disallowEmptySelection
-                                aria-label="Table Columns"
-                                closeOnSelect={false}
-                                selectedKeys={visibleColumns}
-                                selectionMode="multiple"
-                                onSelectionChange={(keys) => {
-                                    const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
-                                    setVisibleColumns(newKeys);
-                                }}
-                                style={{ backgroundColor: "#f0f0f0", color: "#000000" }}  // Set background and font color
-                            >
-                                {columns.map((column) => (
-                                    <DropdownItem key={column.uid} className="capitalize" style={{ color: "#000000" }}>
-                                        {column.name}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownMenu>
-                        </Dropdown>
-
-                    </div>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span className="text-default-400 text-small">Total {invoices.length} leads</span>
-                    <label className="flex items-center text-default-400 text-small">
-                        Rows per page:
-                        <select
-                            className="bg-transparent dark:bg-gray-800 outline-none text-default-400 text-small"
-                            onChange={onRowsPerPageChange}
-                        >
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="15">15</option>
-                        </select>
-                    </label>
-                </div>
-            </div>
-        );
-    }, [
-        filterValue,
-        statusFilter,
-        visibleColumns,
-        onRowsPerPageChange,
-        invoices.length,
-        onSearchChange,
-    ]);
-
-    const bottomContent = React.useMemo(() => {
-        return (
-            <div className="py-2 px-2 flex justify-between items-center">
-                <span className="w-[30%] text-small text-default-400">
-
-                </span>
-                <Pagination
-                    isCompact
-                    // showControls
-                    showShadow
-                    color="success"
-                    page={page}
-                    total={pages}
-                    onChange={setPage}
-                    classNames={{
-                        // base: "gap-2 rounded-2xl shadow-lg p-2 dark:bg-default-100",
-                        cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
-                        item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
-                    }}
-                />
-
-                <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
-                    <Button
-                        className="bg-[hsl(339.92deg_91.04%_52.35%)]"
-                        variant="default"
-                        size="sm"
-                        disabled={pages === 1} // Use the `disabled` prop
-                        onClick={onPreviousPage}
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        className="bg-[hsl(339.92deg_91.04%_52.35%)]"
-                        variant="default"
-                        size="sm"
-                        onClick={onNextPage} // Use `onClick` instead of `onPress`
-                    >
-                        Next
-                    </Button>
-
-                </div>
-            </div>
-        );
-    }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
-
-
+           return (
+               <div className="flex flex-col gap-4">
+                   <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
+                   <div className="relative w-full sm:max-w-[20%]">
+                     <Input
+                           isClearable
+                           className="w-full pr-12 sm:pr-14 pl-12" 
+                           startContent={
+                             <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+                         }
+                           placeholder="Search by name..."
+                           value={filterValue}
+                           onChange={(e) => setFilterValue(e.target.value)}
+                           onClear={() => setFilterValue("")}
+                       />
+                   </div>
+   
+                       <div className="flex gap-3">
+                           <Dropdown>
+                               <DropdownTrigger className="flex">
+                                   <Button endContent={<ChevronDownIcon className="text-small" />} variant="default" className="px-3 py-2 text-sm sm:text-base">
+                                       Columns
+                                   </Button>
+                               </DropdownTrigger>
+                               <DropdownMenu
+                                   disallowEmptySelection
+                                   aria-label="Table Columns"
+                                   closeOnSelect={false}
+                                   selectedKeys={visibleColumns}
+                                   selectionMode="multiple"
+                                   onSelectionChange={(keys) => {
+                                       const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
+                                       setVisibleColumns(newKeys);
+                                   }}
+                                   className="min-w-[150px] sm:min-w-[200px]"
+                                   style={{ backgroundColor: "#f0f0f0", color: "#000000" }}
+                               >
+                                   {columns.map((column) => (
+                                       <DropdownItem key={column.uid} className="capitalize" style={{ color: "#000000" }}>
+                                           {column.name}
+                                       </DropdownItem>
+                                   ))}
+                               </DropdownMenu>
+                           </Dropdown>
+                           <Button
+                               className="addButton"
+                               style={{ backgroundColor: 'hsl(339.92deg 91.04% 52.35%)' }}
+                               variant="default"
+                               size="default"
+                               endContent={<PlusCircle />}
+                               onClick={() => router.push("/reminder")}
+                           >
+                               Add New
+                           </Button>
+                       </div>
+                   </div>
+                   <div className="flex justify-between items-center">
+                     <span className="text-default-400 text-small">Total {invoices.length} reminders</span>
+                     <label className="flex items-center text-default-400 text-small gap-2">
+                         Rows per page:
+                         <div className="relative">
+                             <select
+                                 className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
+                                 onChange={onRowsPerPageChange}
+                             >
+                                 <option value="5">5</option>
+                                 <option value="10">10</option>
+                                 <option value="15">15</option>
+                             </select>
+                         </div>
+                     </label>
+                 </div>
+               </div>
+           );
+       }, [filterValue, visibleColumns, onRowsPerPageChange, invoices.length, onSearchChange]);
+   
+       const bottomContent = React.useMemo(() => {
+           return (
+               <div className="py-2 px-2 flex justify-between items-center">
+                   <span className="w-[30%] text-small text-default-400"></span>
+                   <Pagination
+                       isCompact
+                       showShadow
+                       color="success"
+                       page={page}
+                       total={pages}
+                       onChange={setPage}
+                       classNames={{
+                           cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
+                           item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
+                       }}
+                   />
+                   <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
+                       <Button
+                           className="bg-[hsl(339.92deg_91.04%_52.35%)]"
+                           variant="default"
+                           size="sm"
+                           disabled={pages === 1}
+                           onClick={onPreviousPage}
+                       >
+                           Previous
+                       </Button>
+                       <Button
+                           className="bg-[hsl(339.92deg_91.04%_52.35%)]"
+                           variant="default"
+                           size="sm"
+                           onClick={onNextPage}
+                       >
+                           Next
+                       </Button>
+                   </div>
+               </div>
+           );
+       }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+   
     const { watch, setValue } = form;
-
-
     const amount = watch("amount") ?? 0;
     const discount = watch("discount") ?? 0;
     const gstRate = watch("gstRate") ?? 0;
@@ -556,53 +556,57 @@ export default function InvoiceTable() {
     };
 
     return (
-        <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
-            <Table
-                isHeaderSticky
-                aria-label="Leads table with custom cells, pagination and sorting"
-                bottomContent={bottomContent}
-                bottomContentPlacement="outside"
-                classNames={{
-                    wrapper: "max-h-[382px] ower-flow-y-auto",
-                }}
-                selectedKeys={selectedKeys}
-                sortDescriptor={sortDescriptor}
-                topContent={topContent}
-                topContentPlacement="outside"
-                onSelectionChange={setSelectedKeys}
-                onSortChange={(descriptor) => {
-                    setSortDescriptor({
-                        column: descriptor.column as string,
-                        direction: descriptor.direction as "ascending" | "descending",
-                    });
-                }}
-            >
-                <TableHeader columns={headerColumns}>
+      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
+      <div className="rounded-xl border bg-card text-card-foreground shadow">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-12">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                  <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Reminder Manager</h1>
+                  <Table
+                      isHeaderSticky
+                      aria-label="Leads table with custom cells, pagination and sorting"
+                      bottomContent={bottomContent}
+                      bottomContentPlacement="outside"
+                      classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
+                      topContent={topContent}
+                      topContentPlacement="outside"
+                      onSelectionChange={setSelectedKeys}
+                      onSortChange={setSortDescriptor}
+                  >
+                  <TableHeader columns={headerColumns}>
                     {(column) => (
-                        <TableColumn
-                            key={column.uid}
-                            align={column.uid === "actions" ? "center" : "start"}
-                            allowsSorting={column.sortable}
-                        >
-                            {column.name}
-                        </TableColumn>
+                      <TableColumn
+                        key={column.uid}
+                        align={column.uid === "actions" ? "center" : "start"}
+                        allowsSorting={column.sortable}
+                      >
+                        {column.name}
+                      </TableColumn>
                     )}
-                </TableHeader>
-                <TableBody emptyContent={"No lead found"} items={sortedItems}>
+                  </TableHeader>
+                  <TableBody emptyContent={"No reminders found"} items={sortedItems}>
                     {(item) => (
-                        <TableRow key={item._id}>
-                            {(columnKey) => <TableCell style={{ fontSize: "12px", padding: "8px" }}>{renderCell(item, columnKey as string)}</TableCell>}
-                        </TableRow>
+                      <TableRow key={item._id}>
+                        {(columnKey) => (
+                          <TableCell style={{ fontSize: "12px", padding: "8px" }}>
+                            {renderCell(item, columnKey)}
+                          </TableCell>
+                        )}
+                      </TableRow>
                     )}
-                </TableBody>
-            </Table>
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </div>
+          </div>
 
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
                         <DialogTitle>Edit Invoice</DialogTitle>
                         <DialogDescription>
-                            Update the invoice details.
+                            Update the reminder details.
                         </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
@@ -874,8 +878,6 @@ export default function InvoiceTable() {
                 </DialogContent>
             </Dialog>
         </div>
-
-
 
     );
 }

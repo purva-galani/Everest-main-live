@@ -80,17 +80,17 @@ export default function AccountTable() {
             // Handle the response based on its structure
             let accountsData;
             if (typeof response.data === 'object' && 'data' in response.data) {
-                // Response format: { data: [...leads] }
+                // Response format: { data: [...accounts] }
                 accountsData = response.data.data;
             } else if (Array.isArray(response.data)) {
-                // Response format: [...leads]
+                // Response format: [...accounts]
                 accountsData = response.data;
             } else {
                 console.error('Unexpected response format:', response.data);
                 throw new Error('Invalid response format');
             }
 
-            // Ensure leadsData is an array
+            // Ensure accountsData is an array
             if (!Array.isArray(accountsData)) {
                 accountsData = [];
             }
@@ -216,7 +216,7 @@ export default function AccountTable() {
     // Function to handle edit button click
     const handleEditClick = (account: Account) => {
         setSelectedAccount(account);
-        // Pre-fill the form with lead data
+        // Pre-fill the form with account data
         form.reset({
             _id: account._id,
             accountHolderName: account.accountHolderName,
@@ -229,10 +229,9 @@ export default function AccountTable() {
         setIsEditOpen(true);
     };
     
-
     // Function to handle delete button click
     const handleDeleteClick = async (account: Account) => {
-        if (!window.confirm("Are you sure you want to delete this lead?")) {
+        if (!window.confirm("Are you sure you want to delete this account?")) {
             return;
         }
 
@@ -251,12 +250,12 @@ export default function AccountTable() {
                 description: "The account has been successfully deleted.",
             });
 
-            // Refresh the leads list
+            // Refresh the accounts list
             fetchAccounts();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to delete lead",
+                description: error instanceof Error ? error.message : "Failed to delete account",
                 variant: "destructive",
             });
         }
@@ -289,7 +288,7 @@ export default function AccountTable() {
             setSelectedAccount(null);
             form.reset();
 
-            // Refresh the leads list
+            // Refresh the accounts list
             fetchAccounts();
         } catch (error) {
             toast({
@@ -318,7 +317,7 @@ export default function AccountTable() {
         if (columnKey === "actions") {
             return (
                 <div className="relative flex items-center gap-2">
-                    <Tooltip content="Edit lead">
+                    <Tooltip content="Edit account">
                         <span
                             className="text-lg text-default-400 cursor-pointer active:opacity-50"
                             onClick={() => handleEditClick(account)}
@@ -326,7 +325,7 @@ export default function AccountTable() {
                             <Edit className="h-4 w-4" />
                         </span>
                     </Tooltip>
-                    <Tooltip color="danger" content="Delete lead">
+                    <Tooltip color="danger" content="Delete account">
                         <span
                             className="text-lg text-danger cursor-pointer active:opacity-50"
                             onClick={() => handleDeleteClick(account)}
@@ -377,21 +376,25 @@ export default function AccountTable() {
     const topContent = React.useMemo(() => {
         return (
             <div className="flex flex-col gap-4">
-                <div className="flex justify-between gap-3 items-end">
-                    <Input
+                <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
+                <div className="relative w-full sm:max-w-[20%]">
+                  <Input
                         isClearable
-                        className="w-full sm:max-w-[80%]" // Full width on small screens, 44% on larger screens
+                        className="w-full pr-12 sm:pr-14 pl-12" // Extra padding for clear button
+                        startContent={
+                          <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+                      }
                         placeholder="Search by name..."
-                        startContent={<SearchIcon className="h-4 w-10 text-muted-foreground" />}
                         value={filterValue}
                         onChange={(e) => setFilterValue(e.target.value)}
                         onClear={() => setFilterValue("")}
                     />
+                </div>
 
                     <div className="flex gap-3">
                         <Dropdown>
-                            <DropdownTrigger className="hidden sm:flex">
-                                <Button endContent={<ChevronDownIcon className="text-small" />} variant="default">
+                            <DropdownTrigger className="flex">
+                                <Button endContent={<ChevronDownIcon className="text-small" />} variant="default" className="px-3 py-2 text-sm sm:text-base">
                                     Columns
                                 </Button>
                             </DropdownTrigger>
@@ -405,7 +408,8 @@ export default function AccountTable() {
                                     const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
                                     setVisibleColumns(newKeys);
                                 }}
-                                style={{ backgroundColor: "#f0f0f0", color: "#000000" }}  // Set background and font color
+                                className="min-w-[150px] sm:min-w-[200px]"
+                                style={{ backgroundColor: "#f0f0f0", color: "#000000" }}
                             >
                                 {columns.map((column) => (
                                     <DropdownItem key={column.uid} className="capitalize" style={{ color: "#000000" }}>
@@ -414,72 +418,60 @@ export default function AccountTable() {
                                 ))}
                             </DropdownMenu>
                         </Dropdown>
-
-
                         <Button
                             className="addButton"
                             style={{ backgroundColor: 'hsl(339.92deg 91.04% 52.35%)' }}
                             variant="default"
                             size="default"
-                            endContent={<PlusCircle />} 
-                            onClick={() => router.push("/Account")} 
-                            >
+                            endContent={<PlusCircle />}
+                            onClick={() => router.push("/Account")}
+                        >
                             Add New
                         </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-default-400 text-small">Total {accounts.length} complaints</span>
-                    <label className="flex items-center text-default-400 text-small">
-                        Rows per page:
-                        <select
-                            className="bg-transparent dark:bg-gray-800 outline-none text-default-400 text-small"
-                            onChange={onRowsPerPageChange}
-                        >
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="15">15</option>
-                        </select>
-                    </label>
-                </div>
+                  <span className="text-default-400 text-small">Total {accounts.length} accounts</span>
+                  <label className="flex items-center text-default-400 text-small gap-2">
+                      Rows per page:
+                      <div className="relative">
+                          <select
+                              className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
+                              onChange={onRowsPerPageChange}
+                          >
+                              <option value="5">5</option>
+                              <option value="10">10</option>
+                              <option value="15">15</option>
+                          </select>
+                      </div>
+                  </label>
+              </div>
             </div>
         );
-    }, [
-        filterValue,
-        statusFilter,
-        visibleColumns,
-        onRowsPerPageChange,
-        accounts.length,
-        onSearchChange,
-    ]);
+    }, [filterValue, visibleColumns, onRowsPerPageChange, accounts.length, onSearchChange]);
 
     const bottomContent = React.useMemo(() => {
         return (
             <div className="py-2 px-2 flex justify-between items-center">
-                <span className="w-[30%] text-small text-default-400">
-
-                </span>
+                <span className="w-[30%] text-small text-default-400"></span>
                 <Pagination
                     isCompact
-                    // showControls
                     showShadow
                     color="success"
                     page={page}
                     total={pages}
                     onChange={setPage}
                     classNames={{
-                        // base: "gap-2 rounded-2xl shadow-lg p-2 dark:bg-default-100",
                         cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
                         item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
                     }}
                 />
-
                 <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
                     <Button
                         className="bg-[hsl(339.92deg_91.04%_52.35%)]"
                         variant="default"
                         size="sm"
-                        disabled={pages === 1} // Use the `disabled` prop
+                        disabled={pages === 1}
                         onClick={onPreviousPage}
                     >
                         Previous
@@ -488,60 +480,61 @@ export default function AccountTable() {
                         className="bg-[hsl(339.92deg_91.04%_52.35%)]"
                         variant="default"
                         size="sm"
-                        onClick={onNextPage} // Use `onClick` instead of `onPress`
+                        onClick={onNextPage}
                     >
                         Next
                     </Button>
-
                 </div>
             </div>
         );
     }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
     return (
-        <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
-            <Table
-                isHeaderSticky
-                aria-label="Leads table with custom cells, pagination and sorting"
-                bottomContent={bottomContent}
-                bottomContentPlacement="outside"
-                classNames={{
-                    wrapper: "max-h-[382px] ower-flow-y-auto",
-                }}
-                selectedKeys={selectedKeys}
-                sortDescriptor={sortDescriptor}
-                topContent={topContent}
-                topContentPlacement="outside"
-                onSelectionChange={setSelectedKeys}
-                onSortChange={(descriptor) => {
-                    setSortDescriptor({
-                        column: descriptor.column as string,
-                        direction: descriptor.direction as "ascending" | "descending",
-                    });
-                }}
-            >
-                <TableHeader columns={headerColumns}>
-                    {(column) => (
+      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
+        <div className="rounded-xl border bg-card text-card-foreground shadow">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-12">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                    <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Account Manager</h1>
+                    <Table
+                        isHeaderSticky
+                        aria-label="Leads table with custom cells, pagination and sorting"
+                        bottomContent={bottomContent}
+                        bottomContentPlacement="outside"
+                        classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
+                        topContent={topContent}
+                        topContentPlacement="outside"
+                        onSelectionChange={setSelectedKeys}
+                        onSortChange={setSortDescriptor}
+                    >
+                    <TableHeader columns={headerColumns}>
+                      {(column) => (
                         <TableColumn
-                            key={column.uid}
-                            align={column.uid === "actions" ? "center" : "start"}
-                            allowsSorting={column.sortable}
+                          key={column.uid}
+                          align={column.uid === "actions" ? "center" : "start"}
+                          allowsSorting={column.sortable}
                         >
-                            {column.name}
+                          {column.name}
                         </TableColumn>
-                    )}
-                </TableHeader>
-                <TableBody emptyContent={"No account found"} items={sortedItems}>
-                    {(item) => (
+                      )}
+                    </TableHeader>
+                    <TableBody emptyContent={"No accounts found"} items={sortedItems}>
+                      {(item) => (
                         <TableRow key={item._id}>
-                            {(columnKey) => <TableCell style={{ fontSize: "12px", padding: "8px" }}>{renderCell(item, columnKey as string)}</TableCell>}
+                          {(columnKey) => (
+                            <TableCell style={{ fontSize: "12px", padding: "8px" }}>
+                              {renderCell(item, columnKey)}
+                            </TableCell>
+                          )}
                         </TableRow>
-                    )}
-                </TableBody>
-            </Table>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </div>
+            </div>
 
-
-            
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                         <DialogContent className="sm:max-w-[600px]">
                             <DialogHeader>
