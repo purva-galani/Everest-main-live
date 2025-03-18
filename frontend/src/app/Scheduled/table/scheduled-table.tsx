@@ -15,7 +15,7 @@ import axios from "axios";
 import { format } from "date-fns"
 import { Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Pagination, Tooltip, User } from "@heroui/react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { Calendar } from "@/components/ui/calendar"
 
 interface ScheduledEvents {
@@ -42,45 +42,44 @@ const formatDate = (dateString: string): string => {
 };
 
 const columns = [
-    { name: "SUBJECT", uid: "subject", sortable: true, width: "120px" },
-    { name: "ASSINGNED USER", uid: "assignedUser", sortable: true, width: "120px" },
-    { name: "CUSTOMER NAME", uid: "customer", sortable: true, width: "100px" },
-    { name: "LOCATION", uid: "location", sortable: true, width: "150px" },
-    { name: "STATUS", uid: "status", sortable: true, width: "180px" },
-    { name: "EVENT TYPE", uid: "eventType", sortable: true, width: "120px" },
-    { name: "PRIORITY", uid: "priority", sortable: true, width: "100px" },
-    { name: "DESCRIPTION", uid: "description", sortable: true, width: "100px" },
-    { name: "RECURRENCE", uid: "recurrence", sortable: true, width: "100px" },
+    { name: "Subject", uid: "subject", sortable: true, width: "120px" },
+    { name: "Event or Meeting Location", uid: "location", sortable: true, width: "150px" },
+    { name: "Hosted By", uid: "assignedUser", sortable: true, width: "120px" },
+    { name: "Member Name", uid: "customer", sortable: true, width: "100px" },
+    { name: "Event Type", uid: "eventType", sortable: true, width: "120px" },
+    { name: "Recurrence", uid: "recurrence", sortable: true, width: "100px" },
+    { name: "Status", uid: "status", sortable: true, width: "180px" },
+    { name: "Priority", uid: "priority", sortable: true, width: "100px" },
     {
-        name: "DATE",
+        name: "Event Date",
         uid: "date",
         sortable: true,
         width: "150px",
         render: (row: any) => formatDate(row.date),
     },
-    { name: "ACTION", uid: "actions", sortable: true, width: "100px" },
+    { name: "Notes", uid: "description", sortable: true, width: "100px" },
+    { name: "Action", uid: "actions", sortable: true, width: "100px" },
 ];
 const INITIAL_VISIBLE_COLUMNS = ["subject", "assignedUser", "customer", "location", "status", "eventType", "priority", "description", "recurrence", "date", "actions"];
 
 const eventSchema = z.object({
     subject: z.string().min(2, { message: "Subject is required." }),
-    assignedUser: z.string().min(2, { message: "Assigned user is required." }),
-    customer: z.string().min(2, { message: "Customer is required." }),
-    location: z.string().min(2, { message: "Location is required." }),
-    status: z.enum(["Scheduled", "Completed", "Cancelled", "Postpone"], { message: "Status is required." }),
+    assignedUser: z.string().optional(),
+    location: z.string().optional(),
+    customer: z.string().optional(),
     eventType: z.enum(["call", "Call", "Meeting", "meeting", "Demo", "demo", "Follow-Up", "follow-up"], { message: "Event type is required." }),
-    priority: z.enum(["Low", "low", "Medium", "medium", "High", "high"], { message: "Priority is required." }),
-    description: z.string().optional(),
     recurrence: z.enum(["one-time", "Daily", "Weekly", "Monthly", "Yearly"], { message: "Recurrence is required." }),
-    date: z.string().min(2, { message: "Date is required." }),
-    isActive: z.boolean(),
-})
+    status: z.enum(["Scheduled", "Completed", "Cancelled", "Postpone"], { message: "Status is required." }),
+    priority: z.enum(["Low", "low", "Medium", "medium", "High", "high"], { message: "Priority is required." }),
+    date: z.date().optional(),
+    description: z.string().optional(),
+});
 
 export default function ScheduledEvents() {
     const [scheduledEvents, setScheduledEvents] = useState<ScheduledEvents[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [selectedKeys, setSelectedKeys] = useState<Iterable<string> | 'all' | undefined>(undefined);
-    const router = useRouter(); 
+    const router = useRouter();
 
     const fetchScheduledEvents = async () => {
         try {
@@ -99,17 +98,17 @@ export default function ScheduledEvents() {
             // Handle the response based on its structure
             let scheduledEventsData;
             if (typeof response.data === 'object' && 'data' in response.data) {
-                // Response format: { data: [...scheduleds] }
+                // Response format: { data: [...leads] }
                 scheduledEventsData = response.data.data;
             } else if (Array.isArray(response.data)) {
-                // Response format: [...scheduleds]
+                // Response format: [...leads]
                 scheduledEventsData = response.data;
             } else {
                 console.error('Unexpected response format:', response.data);
                 throw new Error('Invalid response format');
             }
 
-            // Ensure scheduledsData is an array
+            // Ensure leadsData is an array
             if (!Array.isArray(scheduledEventsData)) {
                 scheduledEventsData = [];
             }
@@ -191,7 +190,7 @@ export default function ScheduledEvents() {
         if (visibleColumns.size === columns.length) return columns; // Check if all columns are selected
         return columns.filter((column) => visibleColumns.has(column.uid));
     }, [visibleColumns]);
-    
+
     const filteredItems = React.useMemo(() => {
         let filteredScheduledEvents = [...scheduledEvents];
 
@@ -251,7 +250,7 @@ export default function ScheduledEvents() {
     // Function to handle edit button click
     const handleEditClick = (scheduledEvents: ScheduledEvents) => {
         setSelectedScheduledEvents(scheduledEvents);
-        // Pre-fill the form with scheduled data
+        // Pre-fill the form with lead data
         form.reset({
             id: scheduledEvents.id,
             subject: scheduledEvents.subject,
@@ -268,7 +267,7 @@ export default function ScheduledEvents() {
         });
         setIsEditOpen(true);
     };
-    
+
 
     // Function to handle delete button click
     const handleDeleteClick = async (scheduledEvents: ScheduledEvents) => {
@@ -292,12 +291,12 @@ export default function ScheduledEvents() {
                 description: "The scheduled has been successfully deleted.",
             });
 
-            // Refresh the scheduleds list
+            // Refresh the leads list
             fetchScheduledEvents();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to delete scheduled",
+                description: error instanceof Error ? error.message : "Failed to delete lead",
                 variant: "destructive",
             });
         }
@@ -330,7 +329,7 @@ export default function ScheduledEvents() {
             setSelectedScheduledEvents(null);
             form.reset();
 
-            // Refresh the scheduleds list
+            // Refresh the leads list
             fetchScheduledEvents();
         } catch (error) {
             toast({
@@ -358,7 +357,7 @@ export default function ScheduledEvents() {
         if (columnKey === "actions") {
             return (
                 <div className="relative flex items-center gap-2">
-                    <Tooltip content="">
+                    <Tooltip content="Update">
                         <span
                             className="text-lg text-default-400 cursor-pointer active:opacity-50"
                             onClick={() => handleEditClick(scheduledEvents)}
@@ -366,7 +365,7 @@ export default function ScheduledEvents() {
                             <Edit className="h-4 w-4" />
                         </span>
                     </Tooltip>
-                    <Tooltip color="danger" content="">
+                    <Tooltip color="danger" content="Delete">
                         <span
                             className="text-lg text-danger cursor-pointer active:opacity-50"
                             onClick={() => handleDeleteClick(scheduledEvents)}
@@ -414,374 +413,377 @@ export default function ScheduledEvents() {
         setPage(1);
     }, []);
 
-   const topContent = React.useMemo(() => {
-           return (
-               <div className="flex flex-col gap-4">
-                   <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
-                   <div className="relative w-full sm:max-w-[20%]">
-                     <Input
-                           isClearable
-                           className="w-full pr-12 sm:pr-14 pl-12" // Extra padding for clear button
-                           startContent={
-                             <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
-                         }
-                           placeholder="Search by name..."
-                           value={filterValue}
-                           onChange={(e) => setFilterValue(e.target.value)}
-                           onClear={() => setFilterValue("")}
-                       />
-                   </div>
-   
-                       <div className="flex gap-3">
-                           <Dropdown>
-                               <DropdownTrigger className="flex">
-                                   <Button endContent={<ChevronDownIcon className="text-small" />} variant="default" className="px-3 py-2 text-sm sm:text-base">
-                                       Columns
-                                   </Button>
-                               </DropdownTrigger>
-                               <DropdownMenu
-                                   disallowEmptySelection
-                                   aria-label="Table Columns"
-                                   closeOnSelect={false}
-                                   selectedKeys={visibleColumns}
-                                   selectionMode="multiple"
-                                   onSelectionChange={(keys) => {
-                                       const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
-                                       setVisibleColumns(newKeys);
-                                   }}
-                                   className="min-w-[150px] sm:min-w-[200px]"
-                                   style={{ backgroundColor: "#f0f0f0", color: "#000000" }}
-                               >
-                                   {columns.map((column) => (
-                                       <DropdownItem key={column.uid} className="capitalize" style={{ color: "#000000" }}>
-                                           {column.name}
-                                       </DropdownItem>
-                                   ))}
-                               </DropdownMenu>
-                           </Dropdown>
-                           <Button
-                               className="addButton"
-                               style={{ backgroundColor: 'hsl(339.92deg 91.04% 52.35%)' }}
-                               variant="default"
-                               size="default"
-                               endContent={<PlusCircle />}
-                               onClick={() => router.push("/Scheduled")}
-                           >
-                               Add New
-                           </Button>
-                       </div>
-                   </div>
-                   <div className="flex justify-between items-center">
-                     <span className="text-default-400 text-small">Total {scheduledEvents.length} scheduleds</span>
-                     <label className="flex items-center text-default-400 text-small gap-2">
-                         Rows per page:
-                         <div className="relative">
-                             <select
-                                 className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
-                                 onChange={onRowsPerPageChange}
-                             >
-                                 <option value="5">5</option>
-                                 <option value="10">10</option>
-                                 <option value="15">15</option>
-                             </select>
-                         </div>
-                     </label>
-                 </div>
-               </div>
-           );
-       }, [filterValue, visibleColumns, onRowsPerPageChange, scheduledEvents.length, onSearchChange]);
-   
-       const bottomContent = React.useMemo(() => {
-           return (
-               <div className="py-2 px-2 flex justify-between items-center">
-                   <span className="w-[30%] text-small text-default-400"></span>
-                   <Pagination
-                       isCompact
-                       showShadow
-                       color="success"
-                       page={page}
-                       total={pages}
-                       onChange={setPage}
-                       classNames={{
-                           cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
-                           item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
-                       }}
-                   />
-                   <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
-                       <Button
-                           className="bg-[hsl(339.92deg_91.04%_52.35%)]"
-                           variant="default"
-                           size="sm"
-                           disabled={pages === 1}
-                           onClick={onPreviousPage}
-                       >
-                           Previous
-                       </Button>
-                       <Button
-                           className="bg-[hsl(339.92deg_91.04%_52.35%)]"
-                           variant="default"
-                           size="sm"
-                           onClick={onNextPage}
-                       >
-                           Next
-                       </Button>
-                   </div>
-               </div>
-           );
-       }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
-    
+    const topContent = React.useMemo(() => {
+        return (
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
+                    <div className="relative w-full sm:max-w-[20%]">
+                        <Input
+                            isClearable
+                            className="w-full pr-12 sm:pr-14 pl-12"
+                            startContent={
+                                <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+                            }
+                            placeholder="Search"
+                            value={filterValue}
+                            onChange={(e) => setFilterValue(e.target.value)}
+                            onClear={() => setFilterValue("")}
+                        />
+                    </div>
+<div className="flex flex-col sm:flex-row sm:justify-end gap-3 w-full">
+                        <Dropdown>
+                            <DropdownTrigger className="w-full sm:w-auto">
+                                <Button
+                                    endContent={<ChevronDownIcon className="text-small" />}
+                                    variant="default"
+                                    className="px-3 py-2 text-sm sm:text-base w-full sm:w-auto flex items-center justify-between"
+                                >
+                                    Hide Columns
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                                disallowEmptySelection
+                                aria-label="Table Columns"
+                                closeOnSelect={false}
+                                selectedKeys={visibleColumns}
+                                selectionMode="multiple"
+                                onSelectionChange={(keys) => {
+                                    const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
+                                    setVisibleColumns(newKeys);
+                                }}
+                                className="min-w-[180px] sm:min-w-[220px] max-h-96 overflow-auto rounded-lg shadow-lg p-2 bg-white border border-gray-300"
+                            >
+                                {columns.map((column) => (
+                                    <DropdownItem 
+                                        key={column.uid} 
+                                        className="capitalize px-4 py-2 rounded-md text-gray-800 hover:bg-gray-200 transition-all"
+                                    >
+                                        {column.name}
+                                    </DropdownItem>
+                                ))}
+                            </DropdownMenu>
+                        </Dropdown>
+
+                        <Button
+                            className="addButton w-full sm:w-auto flex items-center justify-between"
+                            style={{ backgroundColor: 'hsl(339.92deg 91.04% 52.35%)' }}
+                            variant="default"
+                            size="default"
+                            endContent={<PlusCircle />}
+                            onClick={() => router.push("/Scheduled")}
+                        >
+                            Create Event or Meeting
+                        </Button>
+                    </div>
+                </div>
+                <div className="flex justify-between items-center">
+                    <span className="text-default-400 text-small">Total {scheduledEvents.length} event or meeting</span>
+                    <label className="flex items-center text-default-400 text-small gap-2">
+                        Rows per page
+                        <div className="relative">
+                            <select
+                                className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
+                                onChange={onRowsPerPageChange}
+                            >
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                            </select>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        );
+    }, [filterValue, visibleColumns, onRowsPerPageChange, scheduledEvents.length, onSearchChange]);
+
+    const bottomContent = React.useMemo(() => {
+        return (
+            <div className="py-2 px-2 flex justify-between items-center">
+                <span className="w-[30%] text-small text-default-400"></span>
+                <Pagination
+                    isCompact
+                    showShadow
+                    color="success"
+                    page={page}
+                    total={pages}
+                    onChange={setPage}
+                    classNames={{
+                        cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
+                        item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
+                    }}
+                />
+                <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
+                    <Button
+                        className="bg-[hsl(339.92deg_91.04%_52.35%)]"
+                        variant="default"
+                        size="sm"
+                        disabled={pages === 1}
+                        onClick={onPreviousPage}
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        className="bg-[hsl(339.92deg_91.04%_52.35%)]"
+                        variant="default"
+                        size="sm"
+                        onClick={onNextPage}
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+        );
+    }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
     return (
-      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
-        <div className="rounded-xl border bg-card text-card-foreground shadow">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-12">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                    <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Scheduled Manager</h1>
-                    <Table
-                        isHeaderSticky
-                        aria-label="Leads table with custom cells, pagination and sorting"
-                        bottomContent={bottomContent}
-                        bottomContentPlacement="outside"
-                        classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
-                        topContent={topContent}
-                        topContentPlacement="outside"
-                        onSelectionChange={setSelectedKeys}
-                        onSortChange={setSortDescriptor}
-                    >
-                    <TableHeader columns={headerColumns}>
-                      {(column) => (
-                        <TableColumn
-                          key={column.uid}
-                          align={column.uid === "actions" ? "center" : "start"}
-                          allowsSorting={column.sortable}
-                        >
-                          {column.name}
-                        </TableColumn>
-                      )}
-                    </TableHeader>
-                    <TableBody emptyContent={"No scheduleds found"} items={sortedItems}>
-                      {(item) => (
-                        <TableRow key={item._id}>
-                          {(columnKey) => (
-                            <TableCell style={{ fontSize: "12px", padding: "8px" }}>
-                              {renderCell(item, columnKey)}
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
+        <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
+            <div className="rounded-xl border bg-card text-card-foreground shadow">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-12">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                            <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Event or Meeting Record</h1>
+                            <Table
+                                isHeaderSticky
+                                aria-label="Leads table with custom cells, pagination and sorting"
+                                bottomContent={bottomContent}
+                                bottomContentPlacement="outside"
+                                classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
+                                topContent={topContent}
+                                topContentPlacement="outside"
+                                onSelectionChange={setSelectedKeys}
+                                onSortChange={setSortDescriptor}
+                            >
+                                <TableHeader columns={headerColumns}>
+                                    {(column) => (
+                                        <TableColumn
+                                            key={column.uid}
+                                            align={column.uid === "actions" ? "center" : "start"}
+                                            allowsSorting={column.sortable}
+                                        >
+                                            {column.name}
+                                        </TableColumn>
+                                    )}
+                                </TableHeader>
+                                <TableBody emptyContent={"Create event or meeting and add data"} items={sortedItems}>
+                                    {(item) => (
+                                        <TableRow key={item._id}>
+                                            {(columnKey) => (
+                                                <TableCell style={{ fontSize: "12px", padding: "8px" }}>
+                                                    {renderCell(item, columnKey)}
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-            </div>
+
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                        <DialogContent className="sm:max-w-[600px]">
-                            <DialogHeader>
-                                <DialogTitle>Edit Scheduled event</DialogTitle>
-                                <DialogDescription>
-                                    Update the scheduled details.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onEdit)} className="space-y-6">
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        <FormField
-                                            control={form.control}
-                                            name="subject"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Subject</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter subject" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="assignedUser"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Assigned User</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter assigned user" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
+                <DialogContent className="sm:max-w-[700px] max-h-[80vh] sm:max-h-[700px] overflow-auto hide-scrollbar p-4">
+                    <DialogHeader>
+                        <DialogTitle>Update Event or Meeting</DialogTitle>
+                    </DialogHeader>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onEdit)} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="subject"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Subject</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter subject" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="location"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Event or Meeting Location</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter event or meeting location" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        <FormField
-                                            control={form.control}
-                                            name="customer"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Customer</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter customer" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="location"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Location</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter location" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <FormField
+                                    control={form.control}
+                                    name="assignedUser"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Hosted By</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter event or meeting, host name or host company name" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="customer"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Member Name</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter member name who is going to attend by your company side" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        <FormField
-                                            control={form.control}
-                                            name="status"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Status</FormLabel>
-                                                    <FormControl>
-                                                        <select
-                                                            {...field}
-                                                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        >
-                                                            <option value="Scheduled">Scheduled</option>
-                                                            <option value="Completed">Completed</option>
-                                                            <option value="Cancelled">Cancelled</option>
-                                                            <option value="Postpone">Postpone</option>
-                                                        </select>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="eventType"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Event Type</FormLabel>
-                                                    <FormControl>
-                                                        <select
-                                                            {...field}
-                                                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        >
-                                                            <option value="call">Call</option>
-                                                            <option value="Meeting">Meeting</option>
-                                                            <option value="Demo">Demo</option>
-                                                            <option value="Follow-Up">Follow-Up</option>
-                                                        </select>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <FormField
+                                    control={form.control}
+                                    name="eventType"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Event Type</FormLabel>
+                                            <FormControl>
+                                                <select
+                                                    {...field}
+                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="call">Call</option>
+                                                    <option value="Meeting">Meeting</option>
+                                                    <option value="Demo">Demo</option>
+                                                    <option value="Follow-Up">Follow Up</option>
+                                                </select>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="recurrence"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Recurrence</FormLabel>
+                                            <FormControl>
+                                                <select
+                                                    {...field}
+                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="one-time">One Time</option>
+                                                    <option value="Daily">Daily</option>
+                                                    <option value="Weekly">Weekly</option>
+                                                    <option value="Monthly">Monthly</option>
+                                                    <option value="Yearly">Yearly</option>
+                                                </select>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        <FormField
-                                            control={form.control}
-                                            name="priority"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Priority</FormLabel>
-                                                    <FormControl>
-                                                        <select
-                                                            {...field}
-                                                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        >
-                                                            <option value="Low">Low</option>
-                                                            <option value="Medium">Medium</option>
-                                                            <option value="High">High</option>
-                                                        </select>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <FormField
+                                    control={form.control}
+                                    name="status"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Status</FormLabel>
+                                            <FormControl>
+                                                <select
+                                                    {...field}
+                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="Scheduled">Schedule</option>
+                                                    <option value="Postpone">Postpone</option>
+                                                    <option value="Completed">Complete</option>
+                                                    <option value="Cancelled">Cancel</option>
+                                                </select>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="priority"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Priority</FormLabel>
+                                            <FormControl>
+                                                <select
+                                                    {...field}
+                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="High">High</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="Low">Low</option>
+                                                </select>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        <FormField
-                                            control={form.control}
-                                            name="recurrence"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Recurrence</FormLabel>
-                                                    <FormControl>
-                                                        <select
-                                                            {...field}
-                                                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        >
-                                                            <option value="one-time">One-Time</option>
-                                                            <option value="Daily">Daily</option>
-                                                            <option value="Weekly">Weekly</option>
-                                                            <option value="Monthly">Monthly</option>
-                                                            <option value="Yearly">Yearly</option>
-                                                        </select>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="date"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Date</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="date" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <FormField
+                                    control={form.control}
+                                    name="date"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Event Date</FormLabel>
+                                            <FormControl>
+                                                <Input type="date" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                                    <FormField
-                                        control={form.control}
-                                        name="description"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Description</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Enter description" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-
-                                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                                        {isSubmitting ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Updating...
-                                            </>
-                                        ) : (
-                                            "Update Lead"
-                                        )}
-                                    </Button>
-                                </form>
-                            </Form>
-                        </DialogContent>
-                    </Dialog>
-
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Notes (Optional)</FormLabel>
+                                        <FormControl>
+                                            <textarea
+                                                placeholder="Enter more details here..."
+                                                {...field}
+                                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                                rows={3}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    "Update Event or Meeting"
+                                )}
+                            </Button>
+                        </form>
+                    </Form>
+                </DialogContent>
+            </Dialog>
         </div>
-
     );
 }
-

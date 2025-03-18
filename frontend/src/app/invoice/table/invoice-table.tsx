@@ -15,7 +15,7 @@ import axios from "axios";
 import { format } from "date-fns"
 import { Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Pagination, Tooltip, User } from "@heroui/react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { Calendar } from "@/components/ui/calendar"
 
 interface Invoice {
@@ -39,28 +39,25 @@ interface Invoice {
 }
 
 export const invoiceSchema = z.object({
-    companyName: z.string().min(2, { message: "Company name is required." }),
-    customerName: z.string().min(2, { message: "Customer name must be at least 2 characters." }),
-    contactNumber: z.string().min(10, { message: "Contact number is required." }),
-    emailAddress: z.string().email({ message: "Invalid email address" }),
-    address: z.string().min(2, { message: "Address is required." }),
-    gstNumber: z.string().min(1, { message: "GST number is required." }),
-    productName: z.string().min(2, { message: "Product name is required." }),
-    amount: z.coerce.number().positive({ message: "Amount must be positive." }),
-    discount: z.coerce.number().min(0).default(0),
-    gstRate: z.coerce.number().min(0).default(0),
-    status: z.enum(["Unpaid", "Paid", "Pending"]).default("Unpaid"),
-    date: z.string().refine((val) => !isNaN(Date.parse(val)), {
-        message: "Invalid date",
-    }).transform((val) => new Date(val)),  // ✅ Convert string to Date
-
-    endDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
-        message: "Invalid date",
-    }).transform((val) => new Date(val)),  // ✅ Convert string to Date
-    totalWithoutGst: z.coerce.number().min(0).default(0),
-    totalWithGst: z.coerce.number().min(0).default(0),
-    paidAmount: z.coerce.number().min(0).default(0),
-    remainingAmount: z.coerce.number().min(0).default(0)
+    companyName: z.string().nonempty({ message: "Company name is required" }),
+    customerName: z.string().nonempty({ message: "Customer name is required" }),
+    contactNumber: z
+        .string()
+        .regex(/^\d*$/, { message: "Contact number must be numeric" })
+        .optional(),
+    emailAddress: z.string().optional(),
+    address: z.string().optional(),
+    gstNumber: z.string().optional(),
+    productName: z.string().nonempty({ message: "Product name is required" }),
+    amount: z.number().positive({ message: "Product amount is required" }),
+    discount: z.number().optional(),
+    gstRate: z.number().optional(),
+    status: z.enum(["Paid", "Unpaid"]),
+    date: z.date().refine((val) => !isNaN(val.getTime()), { message: "Invoice Date is required" }),
+    paidAmount: z.string().optional(),
+    remainingAmount: z.number().optional(),
+    totalWithoutGst: z.number().optional(),
+    totalWithGst: z.number().optional(),
 });
 
 const generateUniqueId = () => {
@@ -75,29 +72,29 @@ const formatDate = (date: any) => {
 };
 
 const columns = [
-    { name: "COMPANY", uid: "companyName", sortable: true },
-    { name: "CUSTOMER", uid: "customerName", sortable: true },
-    { name: "CONTACT", uid: "contactNumber", sortable: true },
-    { name: "EMAIL", uid: "emailAddress", sortable: true },
-    { name: "ADDRESS", uid: "address", sortable: true },
-    { name: "GST NUMBER", uid: "gstNumber", sortable: true },
-    { name: "PRODUCT", uid: "productName", sortable: true },
-    { name: "AMOUNT", uid: "amount", sortable: true },
-    { name: "DISCOUNT", uid: "discount", sortable: true },
-    { name: "GST RATE", uid: "gstRate", sortable: true },
-    { name: "STATUS", uid: "status", sortable: true },
+    { name: "Company Name", uid: "companyName", sortable: true },
+    { name: "Client / Customer Name", uid: "customerName", sortable: true },
+    { name: "Contact Number", uid: "contactNumber", sortable: true },
+    { name: "Email Address", uid: "emailAddress", sortable: true },
+    { name: "Company Address", uid: "address", sortable: true },
+    { name: "GST Number", uid: "gstNumber", sortable: true },
+    { name: "Product Name", uid: "productName", sortable: true },
+    { name: "Product Amount", uid: "amount", sortable: true },
+    { name: "Discount", uid: "discount", sortable: true },
+    { name: "Before GST", uid: "totalWithoutGst", sortable: true },
+    { name: "GST Rate", uid: "gstRate", sortable: true },
+    { name: "After GST", uid: "totalWithGst", sortable: true },
     {
-        name: "DATE",
+        name: "Invoice Date",
         uid: "date",
         sortable: true,
-        render: (row: any) => formatDate(row.date) // Ensure only date is shown
+        render: (row: any) => formatDate(row.date)
     },
 
-    { name: "TOTAL (WITHOUT GST)", uid: "totalWithoutGst", sortable: true },
-    { name: "TOTAL (WITH GST)", uid: "totalWithGst", sortable: true },
-    { name: "PAID AMOUNT", uid: "paidAmount", sortable: true },
-    { name: "REMAINING AMOUNT", uid: "remainingAmount", sortable: true },
-    { name: "ACTION", uid: "actions", sortable: true }
+    { name: "Paid Amount", uid: "paidAmount", sortable: true },
+    { name: "Remaining Amount", uid: "remainingAmount", sortable: true },
+    { name: "Status", uid: "status", sortable: true },
+    { name: "Action", uid: "actions", sortable: true }
 ];
 
 const INITIAL_VISIBLE_COLUMNS = ["companyName", "customerName", "contactNumber", "emailAddress", "address", "gstNumber", "productName", "amount", "discount", "gstRate", "status", "date", "endDate", "totalWithoutGst", "totalWithGst", "paidAmount", "remainingAmount", "actions"];
@@ -113,7 +110,7 @@ export default function InvoiceTable() {
     const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const router = useRouter(); 
+    const router = useRouter();
 
     const fetchInvoices = async () => {
         setIsLoading(true);
@@ -171,7 +168,7 @@ export default function InvoiceTable() {
             date: new Date(),
             totalWithoutGst: 0,
             totalWithGst: 0,
-            paidAmount: 0,
+            paidAmount: "",
             remainingAmount: 0,
         }
     })
@@ -253,7 +250,7 @@ export default function InvoiceTable() {
             amount: invoice.amount,
             discount: invoice.discount || 0,
             gstRate: invoice.gstRate || 0,
-            status: invoice.status as "Unpaid" | "Paid" | "Pending",
+            status: invoice.status as "Unpaid" | "Paid",
             date: invoice.date ? new Date(invoice.date) : undefined,
             totalWithoutGst: invoice.totalWithoutGst || 0,
             totalWithGst: invoice.totalWithGst || 0,
@@ -295,7 +292,11 @@ export default function InvoiceTable() {
         }
     };
 
+
+
+
     const [isSubmitting, setIsSubmitting] = useState(false)
+
 
     async function onEdit(values: z.infer<typeof formSchema>) {
         if (!selectedInvoice?._id) return;
@@ -343,7 +344,7 @@ export default function InvoiceTable() {
             case "actions":
                 return (
                     <div className="relative flex items-center gap-2">
-                        <Tooltip>
+                        <Tooltip content="Update">
                             <span
                                 className="text-lg text-default-400 cursor-pointer active:opacity-50"
                                 onClick={() => handleEditClick(invoice)}
@@ -351,7 +352,7 @@ export default function InvoiceTable() {
                                 <Edit className="h-4 w-4" />
                             </span>
                         </Tooltip>
-                        <Tooltip color="danger">
+                        <Tooltip color="danger" content="Delete">
                             <span
                                 className="text-lg text-danger cursor-pointer active:opacity-50"
                                 onClick={() => handleDeleteClick(invoice)}
@@ -369,6 +370,7 @@ export default function InvoiceTable() {
                 return cellValue;
         }
     }, []);
+
 
     const onNextPage = React.useCallback(() => {
         if (page < pages) {
@@ -405,25 +407,28 @@ export default function InvoiceTable() {
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
-                <div className="relative w-full sm:max-w-[20%]">
-                  <Input
-                        isClearable
-                        className="w-full pr-12 sm:pr-14 pl-12" // Extra padding for clear button
-                        startContent={
-                          <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
-                      }
-                        placeholder="Search by name..."
-                        value={filterValue}
-                        onChange={(e) => setFilterValue(e.target.value)}
-                        onClear={() => setFilterValue("")}
-                    />
-                </div>
-
-                    <div className="flex gap-3">
+                    <div className="relative w-full sm:max-w-[20%]">
+                        <Input
+                            isClearable
+                            className="w-full pr-12 sm:pr-14 pl-12"
+                            startContent={
+                                <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+                            }
+                            placeholder="Search"
+                            value={filterValue}
+                            onChange={(e) => setFilterValue(e.target.value)}
+                            onClear={() => setFilterValue("")}
+                        />
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-end gap-3 w-full">
                         <Dropdown>
-                            <DropdownTrigger className="flex">
-                                <Button endContent={<ChevronDownIcon className="text-small" />} variant="default" className="px-3 py-2 text-sm sm:text-base">
-                                    Columns
+                            <DropdownTrigger className="w-full sm:w-auto">
+                                <Button
+                                    endContent={<ChevronDownIcon className="text-small" />}
+                                    variant="default"
+                                    className="px-3 py-2 text-sm sm:text-base w-full sm:w-auto flex items-center justify-between"
+                                >
+                                    Hide Columns
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu
@@ -436,44 +441,48 @@ export default function InvoiceTable() {
                                     const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
                                     setVisibleColumns(newKeys);
                                 }}
-                                className="min-w-[150px] sm:min-w-[200px]"
-                                style={{ backgroundColor: "#f0f0f0", color: "#000000" }}
+                                className="min-w-[180px] sm:min-w-[220px] max-h-96 overflow-auto rounded-lg shadow-lg p-2 bg-white border border-gray-300"
                             >
                                 {columns.map((column) => (
-                                    <DropdownItem key={column.uid} className="capitalize" style={{ color: "#000000" }}>
+                                    <DropdownItem 
+                                        key={column.uid} 
+                                        className="capitalize px-4 py-2 rounded-md text-gray-800 hover:bg-gray-200 transition-all"
+                                    >
                                         {column.name}
                                     </DropdownItem>
                                 ))}
                             </DropdownMenu>
                         </Dropdown>
+
                         <Button
-                            className="addButton"
+                            className="addButton w-full sm:w-auto flex items-center justify-between"
                             style={{ backgroundColor: 'hsl(339.92deg 91.04% 52.35%)' }}
                             variant="default"
                             size="default"
                             endContent={<PlusCircle />}
                             onClick={() => router.push("/invoice")}
                         >
-                            Add New
+                            Create Invoice
                         </Button>
                     </div>
+
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-default-400 text-small">Total {invoices.length} invoices</span>
-                  <label className="flex items-center text-default-400 text-small gap-2">
-                      Rows per page:
-                      <div className="relative">
-                          <select
-                              className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
-                              onChange={onRowsPerPageChange}
-                          >
-                              <option value="5">5</option>
-                              <option value="10">10</option>
-                              <option value="15">15</option>
-                          </select>
-                      </div>
-                  </label>
-              </div>
+                    <span className="text-default-400 text-small">Total {invoices.length} invoice</span>
+                    <label className="flex items-center text-default-400 text-small gap-2">
+                        Rows per page
+                        <div className="relative">
+                            <select
+                                className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
+                                onChange={onRowsPerPageChange}
+                            >
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                            </select>
+                        </div>
+                    </label>
+                </div>
             </div>
         );
     }, [filterValue, visibleColumns, onRowsPerPageChange, invoices.length, onSearchChange]);
@@ -553,63 +562,60 @@ export default function InvoiceTable() {
     };
 
     return (
-      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
-      <div className="rounded-xl border bg-card text-card-foreground shadow">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-12">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                  <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Invoice Manager</h1>
-                  <Table
-                      isHeaderSticky
-                      aria-label="Leads table with custom cells, pagination and sorting"
-                      bottomContent={bottomContent}
-                      bottomContentPlacement="outside"
-                      classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
-                      topContent={topContent}
-                      topContentPlacement="outside"
-                      onSelectionChange={setSelectedKeys}
-                      onSortChange={setSortDescriptor}
-                  >
-                  <TableHeader columns={headerColumns}>
-                    {(column) => (
-                      <TableColumn
-                        key={column.uid}
-                        align={column.uid === "actions" ? "center" : "start"}
-                        allowsSorting={column.sortable}
-                      >
-                        {column.name}
-                      </TableColumn>
-                    )}
-                  </TableHeader>
-                  <TableBody emptyContent={"No invoices found"} items={sortedItems}>
-                    {(item) => (
-                      <TableRow key={item._id}>
-                        {(columnKey) => (
-                          <TableCell style={{ fontSize: "12px", padding: "8px" }}>
-                            {renderCell(item, columnKey)}
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+        <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
+            <div className="rounded-xl border bg-card text-card-foreground shadow">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-12">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                            <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Invoice Record</h1>
+                            <Table
+                                isHeaderSticky
+                                aria-label="Leads table with custom cells, pagination and sorting"
+                                bottomContent={bottomContent}
+                                bottomContentPlacement="outside"
+                                classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
+                                topContent={topContent}
+                                topContentPlacement="outside"
+                                onSelectionChange={setSelectedKeys}
+                                onSortChange={setSortDescriptor}
+                            >
+                                <TableHeader columns={headerColumns}>
+                                    {(column) => (
+                                        <TableColumn
+                                            key={column.uid}
+                                            align={column.uid === "actions" ? "center" : "start"}
+                                            allowsSorting={column.sortable}
+                                        >
+                                            {column.name}
+                                        </TableColumn>
+                                    )}
+                                </TableHeader>
+                                <TableBody emptyContent={"Create Invoice and add data"} items={sortedItems}>
+                                    {(item) => (
+                                        <TableRow key={item._id}>
+                                            {(columnKey) => (
+                                                <TableCell style={{ fontSize: "12px", padding: "8px" }}>
+                                                    {renderCell(item, columnKey)}
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          </div>
 
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="sm:max-w-[600px]">
+                <DialogContent className="sm:max-w-[700px] max-h-[80vh] sm:max-h-[700px] overflow-auto hide-scrollbar p-4">
                     <DialogHeader>
-                        <DialogTitle>Edit Invoice</DialogTitle>
-                        <DialogDescription>
-                            Update the invoice details.
-                        </DialogDescription>
+                        <DialogTitle>Update Invoice</DialogTitle>
                     </DialogHeader>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onEdit)} className="space-y-6">
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                <FormField
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField
                                     control={form.control}
                                     name="companyName"
                                     render={({ field }) => (
@@ -627,9 +633,9 @@ export default function InvoiceTable() {
                                     name="customerName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Customer Name</FormLabel>
+                                            <FormLabel>Client / Customer Name</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter customer name" {...field} />
+                                                <Input placeholder="Enter client / customer name" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -643,9 +649,17 @@ export default function InvoiceTable() {
                                     name="contactNumber"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Contact Number</FormLabel>
+                                            <FormLabel>Contact Number (Optional)</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter contact number" {...field} />
+                                                <Input
+                                                    placeholder="Enter contact number"
+                                                    type="tel"
+                                                    {...field}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value.replace(/[^0-9]/g, '');
+                                                        field.onChange(value);
+                                                    }}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -656,9 +670,9 @@ export default function InvoiceTable() {
                                     name="emailAddress"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Email Address</FormLabel>
+                                            <FormLabel>Email Address (Optional)</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter email address" {...field} />
+                                                <Input placeholder="Enter valid email address" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -672,9 +686,9 @@ export default function InvoiceTable() {
                                     name="address"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Address</FormLabel>
+                                            <FormLabel>Company Address (Optional)</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter address" {...field} />
+                                                <Input placeholder="Enter full company address" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -685,7 +699,7 @@ export default function InvoiceTable() {
                                     name="gstNumber"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>GST Number</FormLabel>
+                                            <FormLabel>GST Number (Optional)</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Enter GST number" {...field} />
                                             </FormControl>
@@ -714,9 +728,9 @@ export default function InvoiceTable() {
                                     name="amount"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Amount</FormLabel>
+                                            <FormLabel>Product Amount</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter amount" type="number" {...field} />
+                                                <Input placeholder="Enter product amount" type="number" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -730,7 +744,7 @@ export default function InvoiceTable() {
                                     name="discount"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Discount</FormLabel>
+                                            <FormLabel>Discount (Optional)</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Enter discount" type="number" {...field} />
                                             </FormControl>
@@ -743,84 +757,22 @@ export default function InvoiceTable() {
                                     name="gstRate"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>GST Rate (%)</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Enter GST rate" type="number" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                <FormField
-                                    control={form.control}
-                                    name="status"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Status</FormLabel>
+                                            <FormLabel>GST Rate (Optional)</FormLabel>
                                             <FormControl>
                                                 <select
                                                     {...field}
+                                                    value={field.value}
+                                                    onChange={(e) => field.onChange(Number(e.target.value))}
                                                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                 >
-                                                    <option value="Unpaid">Unpaid</option>
-                                                    <option value="Paid">Paid</option>
-                                                    <option value="Pending">Pending</option>
+                                                    <option value="">Select GST Rate</option>
+                                                    <option value="0">0%</option>
+                                                    <option value="5">5%</option>
+                                                    <option value="12">12%</option>
+                                                    <option value="18">18%</option>
+                                                    <option value="28">28%</option>
+                                                    <option value="35">35%</option>
                                                 </select>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                control={form.control}
-                                name="date"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Invoice Date</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                        type="date"
-                                        value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
-                                        onChange={(e) => {
-                                            const selectedDate = e.target.value ? new Date(e.target.value) : null;
-                                            field.onChange(selectedDate);
-                                        }}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                                />
-
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                <FormField
-                                    control={form.control}
-                                    name="totalWithoutGst"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Total Without GST</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Enter total without GST" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="totalWithGst"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Total With GST</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Enter total with GST" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -842,7 +794,6 @@ export default function InvoiceTable() {
                                         </FormItem>
                                     )}
                                 />
-
                                 <FormField
                                     control={form.control}
                                     name="remainingAmount"
@@ -850,8 +801,61 @@ export default function InvoiceTable() {
                                         <FormItem>
                                             <FormLabel>Remaining Amount</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter remaining amount" {...field} />
+                                                <Input type="number" {...field} readOnly />
                                             </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <FormField
+                                    control={form.control}
+                                    name="status"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Status</FormLabel>
+                                            <FormControl>
+                                                <select
+                                                    {...field}
+                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="Paid">Paid</option>
+                                                    <option value="Unpaid">Unpaid</option>
+                                                </select>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="date"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Invoice Date</FormLabel>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button
+                                                            variant={"outline"}
+                                                            className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                                                        >
+                                                            {field.value ? format(field.value, "dd-MM-yyyy") : <span>Pick a date</span>}
+                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar
+                                                        mode="single"
+                                                        selected={field.value}
+                                                        onSelect={field.onChange}
+                                                        initialFocus
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -873,7 +877,5 @@ export default function InvoiceTable() {
                 </DialogContent>
             </Dialog>
         </div>
-
     );
 }
-

@@ -1,21 +1,18 @@
 "use client";
 import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import {  Edit, Trash2, Loader2, PlusCircle, SearchIcon, ChevronDownIcon } from "lucide-react"
+import { Edit, Trash2, Loader2, PlusCircle, SearchIcon, ChevronDownIcon } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { z } from "zod"
-import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react"
 import axios from "axios";
-import { format } from "date-fns"
-import { Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Pagination, Tooltip, User } from "@heroui/react"
+import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Pagination, Tooltip, User } from "@heroui/react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar } from "@/components/ui/calendar"
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 
 interface Account {
     _id: string;
@@ -24,8 +21,8 @@ interface Account {
     accountNumber: string;
     accountType: string;
     IFSCCode: string;
-    UpiId: string;
-    }
+    UpiID: string;
+}
 
 const generateUniqueId = () => {
     return Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -38,30 +35,32 @@ const formatDate = (dateString: string): string => {
 
 
 const columns = [
-    { name: "ACCOUNT HOLDER NAME", uid: "accountHolderName", sortable: true, width: "120px" },
-    { name: "ACCOUNT NUMBER", uid: "accountNumber", sortable: true, width: "120px" },
-    { name: "BANK NAME", uid: "bankName", sortable: true, width: "120px" },
-    { name: "ACCOUNT TYPE", uid: "accountType", sortable: true, width: "120px" },
-    { name: "IFSC CODE", uid: "IFSCCode", sortable: true, width: "120px" },
-    { name: "UPI ID", uid: "UpiId", sortable: true, width: "100px" },
-    { name: "ACTION", uid: "actions", sortable: true, width: "100px" },
+    { name: "Bank Name", uid: "bankName", sortable: true, width: "120px" },
+    { name: "Bank IFSC Code", uid: "IFSCCode", sortable: true, width: "120px" },
+    { name: "Bank Account Holder Name", uid: "accountHolderName", sortable: true, width: "120px" },
+    { name: "Bank Account Number", uid: "accountNumber", sortable: true, width: "120px" },
+    { name: "Account Type", uid: "accountType", sortable: true, width: "120px" },
+    { name: "UPI ID", uid: "UpiID", sortable: true, width: "100px" },
+    { name: "Action", uid: "actions", sortable: true, width: "100px" },
+
 ];
-const INITIAL_VISIBLE_COLUMNS = ["accountHolderName", "accountNumber", "bankName", "accountType", "IFSCCode", "UpiId","actions" ];
+const INITIAL_VISIBLE_COLUMNS = ["accountHolderName", "accountNumber", "bankName", "accountType", "IFSCCode", "UpiID", "actions"];
 
 const accountSchema = z.object({
-    accountHolderName: z.string().min(2, { message: "Account holder name is required." }),
-    accountNumber: z.string().min(2, { message: "Account number is required." }),
     bankName: z.string().min(2, { message: "Bank name is required." }),
-    accountType: z.enum(["Current", "Savings", "Other"], { message: "Account type is required." }), 
-    IFSCCode: z.string().min(2, { message: "IFSC code is required." }),
-    UpiId:z.string().min(2, { message: "UpiId is required." }),
+    IFSCCode: z.string().min(2, { message: "Bank IFSC code is required." }),
+    accountHolderName: z.string().min(2, { message: "Bank account holder name is required." }),
+    accountNumber: z.string().min(2, { message: "Bank account number is required." }),
+    accountType: z.enum(["Current", "Savings", "Other"], { message: "Account type is required." }),
+    UpiId: z.string().min(2, { message: "UpiId is required." }),
 });
 
 export default function AccountTable() {
     const [accounts, setLeads] = useState<Account[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [selectedKeys, setSelectedKeys] = useState<Iterable<string> | 'all' | undefined>(undefined);
-    const router = useRouter(); 
+    const router = useRouter();
+
 
     const fetchAccounts = async () => {
         try {
@@ -80,17 +79,17 @@ export default function AccountTable() {
             // Handle the response based on its structure
             let accountsData;
             if (typeof response.data === 'object' && 'data' in response.data) {
-                // Response format: { data: [...accounts] }
+                // Response format: { data: [...leads] }
                 accountsData = response.data.data;
             } else if (Array.isArray(response.data)) {
-                // Response format: [...accounts]
+                // Response format: [...leads]
                 accountsData = response.data;
             } else {
                 console.error('Unexpected response format:', response.data);
                 throw new Error('Invalid response format');
             }
 
-            // Ensure accountsData is an array
+            // Ensure leadsData is an array
             if (!Array.isArray(accountsData)) {
                 accountsData = [];
             }
@@ -114,6 +113,7 @@ export default function AccountTable() {
         }
     };
 
+
     useEffect(() => {
         fetchAccounts();
     }, []);
@@ -132,7 +132,7 @@ export default function AccountTable() {
     const handleSortChange = (column: string) => {
         setSortDescriptor((prevState) => {
             if (prevState.column === column) {
-                
+
                 return {
                     column,
                     direction: prevState.direction === "ascending" ? "descending" : "ascending",
@@ -150,15 +150,15 @@ export default function AccountTable() {
 
     // Form setup
     const form = useForm<z.infer<typeof accountSchema>>({
-    resolver: zodResolver(accountSchema),
-    defaultValues: {
-        accountHolderName: "",
-        bankName: "",
-        accountNumber: "",
-        accountType: "Current",
-        IFSCCode: "",
-        UpiId: "",
-    },
+        resolver: zodResolver(accountSchema),
+        defaultValues: {
+            accountHolderName: "",
+            bankName: "",
+            accountNumber: "",
+            accountType: "Current",
+            IFSCCode: "",
+            UpiID: ""
+        },
     })
 
     const hasSearchFilter = Boolean(filterValue);
@@ -179,7 +179,7 @@ export default function AccountTable() {
                     bankName: account.bankName,
                     accountType: account.accountType,
                     IFSCCode: account.IFSCCode,
-                    UpiId: account.UpiId,
+                    UpiID: account.UpiID
                 };
 
                 return Object.values(searchableFields).some(value =>
@@ -216,7 +216,7 @@ export default function AccountTable() {
     // Function to handle edit button click
     const handleEditClick = (account: Account) => {
         setSelectedAccount(account);
-        // Pre-fill the form with account data
+        // Pre-fill the form with lead data
         form.reset({
             _id: account._id,
             accountHolderName: account.accountHolderName,
@@ -224,14 +224,15 @@ export default function AccountTable() {
             bankName: account.bankName,
             accountType: account.accountType,
             IFSCCode: account.IFSCCode,
-            UpiId: account.UpiId,
+            UpiID: account.UpiID
         });
         setIsEditOpen(true);
     };
-    
+
+
     // Function to handle delete button click
     const handleDeleteClick = async (account: Account) => {
-        if (!window.confirm("Are you sure you want to delete this account?")) {
+        if (!window.confirm("Are you sure you want to delete this lead?")) {
             return;
         }
 
@@ -250,12 +251,12 @@ export default function AccountTable() {
                 description: "The account has been successfully deleted.",
             });
 
-            // Refresh the accounts list
+            // Refresh the leads list
             fetchAccounts();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to delete account",
+                description: error instanceof Error ? error.message : "Failed to delete lead",
                 variant: "destructive",
             });
         }
@@ -288,7 +289,7 @@ export default function AccountTable() {
             setSelectedAccount(null);
             form.reset();
 
-            // Refresh the accounts list
+            // Refresh the leads list
             fetchAccounts();
         } catch (error) {
             toast({
@@ -317,7 +318,7 @@ export default function AccountTable() {
         if (columnKey === "actions") {
             return (
                 <div className="relative flex items-center gap-2">
-                    <Tooltip content="Edit account">
+                    <Tooltip content="Update">
                         <span
                             className="text-lg text-default-400 cursor-pointer active:opacity-50"
                             onClick={() => handleEditClick(account)}
@@ -325,7 +326,7 @@ export default function AccountTable() {
                             <Edit className="h-4 w-4" />
                         </span>
                     </Tooltip>
-                    <Tooltip color="danger" content="Delete account">
+                    <Tooltip color="danger" content="Delete">
                         <span
                             className="text-lg text-danger cursor-pointer active:opacity-50"
                             onClick={() => handleDeleteClick(account)}
@@ -377,25 +378,29 @@ export default function AccountTable() {
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
-                <div className="relative w-full sm:max-w-[20%]">
-                  <Input
-                        isClearable
-                        className="w-full pr-12 sm:pr-14 pl-12" // Extra padding for clear button
-                        startContent={
-                          <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
-                      }
-                        placeholder="Search by name..."
-                        value={filterValue}
-                        onChange={(e) => setFilterValue(e.target.value)}
-                        onClear={() => setFilterValue("")}
-                    />
-                </div>
+                    <div className="relative w-full sm:max-w-[20%]">
+                        <Input
+                            isClearable
+                            className="w-full pr-12 sm:pr-14 pl-12"
+                            startContent={
+                                <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+                            }
+                            placeholder="Search"
+                            value={filterValue}
+                            onChange={(e) => setFilterValue(e.target.value)}
+                            onClear={() => setFilterValue("")}
+                        />
+                    </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row sm:justify-end gap-3 w-full">
                         <Dropdown>
-                            <DropdownTrigger className="flex">
-                                <Button endContent={<ChevronDownIcon className="text-small" />} variant="default" className="px-3 py-2 text-sm sm:text-base">
-                                    Columns
+                            <DropdownTrigger className="w-full sm:w-auto">
+                                <Button
+                                    endContent={<ChevronDownIcon className="text-small" />}
+                                    variant="default"
+                                    className="px-3 py-2 text-sm sm:text-base w-full sm:w-auto flex items-center justify-between"
+                                >
+                                    Hide Columns
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu
@@ -408,44 +413,47 @@ export default function AccountTable() {
                                     const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
                                     setVisibleColumns(newKeys);
                                 }}
-                                className="min-w-[150px] sm:min-w-[200px]"
-                                style={{ backgroundColor: "#f0f0f0", color: "#000000" }}
+                                className="min-w-[180px] sm:min-w-[220px] max-h-96 overflow-auto rounded-lg shadow-lg p-2 bg-white border border-gray-300"
                             >
                                 {columns.map((column) => (
-                                    <DropdownItem key={column.uid} className="capitalize" style={{ color: "#000000" }}>
+                                    <DropdownItem 
+                                        key={column.uid} 
+                                        className="capitalize px-4 py-2 rounded-md text-gray-800 hover:bg-gray-200 transition-all"
+                                    >
                                         {column.name}
                                     </DropdownItem>
                                 ))}
                             </DropdownMenu>
                         </Dropdown>
+
                         <Button
-                            className="addButton"
+                            className="addButton w-full sm:w-auto flex items-center justify-between"
                             style={{ backgroundColor: 'hsl(339.92deg 91.04% 52.35%)' }}
                             variant="default"
                             size="default"
                             endContent={<PlusCircle />}
                             onClick={() => router.push("/Account")}
                         >
-                            Add New
+                            Create Account
                         </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-default-400 text-small">Total {accounts.length} accounts</span>
-                  <label className="flex items-center text-default-400 text-small gap-2">
-                      Rows per page:
-                      <div className="relative">
-                          <select
-                              className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
-                              onChange={onRowsPerPageChange}
-                          >
-                              <option value="5">5</option>
-                              <option value="10">10</option>
-                              <option value="15">15</option>
-                          </select>
-                      </div>
-                  </label>
-              </div>
+                    <span className="text-default-400 text-small">Total {accounts.length} account</span>
+                    <label className="flex items-center text-default-400 text-small gap-2">
+                        Rows per page
+                        <div className="relative">
+                            <select
+                                className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
+                                onChange={onRowsPerPageChange}
+                            >
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                            </select>
+                        </div>
+                    </label>
+                </div>
             </div>
         );
     }, [filterValue, visibleColumns, onRowsPerPageChange, accounts.length, onSearchChange]);
@@ -490,172 +498,167 @@ export default function AccountTable() {
     }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
     return (
-      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
-        <div className="rounded-xl border bg-card text-card-foreground shadow">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-12">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                    <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Account Manager</h1>
-                    <Table
-                        isHeaderSticky
-                        aria-label="Leads table with custom cells, pagination and sorting"
-                        bottomContent={bottomContent}
-                        bottomContentPlacement="outside"
-                        classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
-                        topContent={topContent}
-                        topContentPlacement="outside"
-                        onSelectionChange={setSelectedKeys}
-                        onSortChange={setSortDescriptor}
-                    >
-                    <TableHeader columns={headerColumns}>
-                      {(column) => (
-                        <TableColumn
-                          key={column.uid}
-                          align={column.uid === "actions" ? "center" : "start"}
-                          allowsSorting={column.sortable}
-                        >
-                          {column.name}
-                        </TableColumn>
-                      )}
-                    </TableHeader>
-                    <TableBody emptyContent={"No accounts found"} items={sortedItems}>
-                      {(item) => (
-                        <TableRow key={item._id}>
-                          {(columnKey) => (
-                            <TableCell style={{ fontSize: "12px", padding: "8px" }}>
-                              {renderCell(item, columnKey)}
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
+        <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
+            <div className="rounded-xl border bg-card text-card-foreground shadow">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-12">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                            <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Account Record</h1>
+                            <Table
+                                isHeaderSticky
+                                aria-label="Leads table with custom cells, pagination and sorting"
+                                bottomContent={bottomContent}
+                                bottomContentPlacement="outside"
+                                classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
+                                topContent={topContent}
+                                topContentPlacement="outside"
+                                onSelectionChange={setSelectedKeys}
+                                onSortChange={setSortDescriptor}
+                            >
+                                <TableHeader columns={headerColumns}>
+                                    {(column) => (
+                                        <TableColumn
+                                            key={column.uid}
+                                            align={column.uid === "actions" ? "center" : "start"}
+                                            allowsSorting={column.sortable}
+                                        >
+                                            {column.name}
+                                        </TableColumn>
+                                    )}
+                                </TableHeader>
+                                <TableBody emptyContent={"Create account and add data"} items={sortedItems}>
+                                    {(item) => (
+                                        <TableRow key={item._id}>
+                                            {(columnKey) => (
+                                                <TableCell style={{ fontSize: "12px", padding: "8px" }}>
+                                                    {renderCell(item, columnKey)}
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
                 </div>
-              </div>
-            </div>
             </div>
 
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                        <DialogContent className="sm:max-w-[600px]">
-                            <DialogHeader>
-                                <DialogTitle>Edit Account</DialogTitle>
-                                <DialogDescription>
-                                    Update the account details.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onEdit)} className="space-y-6">
-                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                    <FormField
-                                        control={form.control}
-                                        name="accountHolderName"
-                                        render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Account Holder Name</FormLabel>
-                                            <FormControl>
-                                            <Input placeholder="Enter account holder name" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="accountNumber"
-                                        render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Account Number</FormLabel>
-                                            <FormControl>
-                                            <Input placeholder="Enter account number" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                        )}
-                                    />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                    <FormField
-                                        control={form.control}
-                                        name="bankName"
-                                        render={({ field }) => (
+                <DialogContent className="sm:max-w-[700px] max-h-[80vh] sm:max-h-[700px] overflow-auto hide-scrollbar p-4">
+                    <DialogHeader>
+                        <DialogTitle>Update Account</DialogTitle>
+                    </DialogHeader>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onEdit)} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="bankName"
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Bank Name</FormLabel>
                                             <FormControl>
-                                            <Input placeholder="Enter bank name" {...field} />
+                                                <Input placeholder="Enter bank name" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="accountType"
-                                        render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Account Type</FormLabel>
-                                            <FormControl>
-                                            <select
-                                                {...field}
-                                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            >
-                                                <option value="Current">Current</option>
-                                                <option value="Savings">Savings</option>
-                                                <option value="Other">Other</option>
-                                            </select>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                        )}
-                                    />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                    <FormField
+                                    )}
+                                />
+                                <FormField
                                     control={form.control}
                                     name="IFSCCode"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>IFSC Code</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Enter IFSC code" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
+                                            <FormLabel>Bank IFSC Code</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter bank IFSC code" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="UpiId"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                              <FormLabel>UPI ID</FormLabel>
-                                              <FormControl>
-                                                <Input placeholder="Enter your UPI ID" {...field} />
-                                              </FormControl>
-                                              <FormMessage />
-                                            </FormItem>
-                                        )}
-                                        />
-                                    </div>
+                                />
+                            </div>
 
-                                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                                        {isSubmitting ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Creating Account...
-                                            </>
-                                        ) : (
-                                            " Account"
-                                        )}
-                                    </Button>
-                                </form>
-                            </Form>
-                        </DialogContent>
-                    </Dialog>
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <FormField
+                                    control={form.control}
+                                    name="accountHolderName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Bank Account Holder Name</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter bank account holder name" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="accountNumber"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Bank Account Number</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter bank account number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <FormField
+                                    control={form.control}
+                                    name="accountType"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Account Type</FormLabel>
+                                            <FormControl>
+                                                <select
+                                                    {...field}
+                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="Savings">Savings</option>
+                                                    <option value="Current">Current</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="UpiID"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>UPI ID (Optional)</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter UPI ID" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    "Update Account"
+                                )}
+                            </Button>
+                        </form>
+                    </Form>
+                </DialogContent>
+            </Dialog>
 
         </div>
 
     );
 }
-

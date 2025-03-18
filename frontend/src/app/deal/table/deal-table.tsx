@@ -15,7 +15,7 @@ import axios from "axios";
 import { format } from "date-fns"
 import { Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Pagination, Tooltip, User } from "@heroui/react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { Calendar } from "@/components/ui/calendar"
 
 interface Deal {
@@ -46,17 +46,16 @@ const formatDate = (dateString: string): string => {
 };
 
 const columns = [
-    { name: "COMPANY", uid: "companyName", sortable: true, width: "120px" },
-    { name: "CUSTOMER", uid: "customerName", sortable: true, width: "120px" },
-    { name: "CONTACT", uid: "contactNumber", sortable: true, width: "100px" },
-    { name: "EMAIL", uid: "emailAddress", sortable: true, width: "150px" },
-    { name: "ADDRESS", uid: "address", sortable: true, width: "180px" },
-    { name: "PRODUCT", uid: "productName", sortable: true, width: "120px" },
-    { name: "AMOUNT", uid: "amount", sortable: true, width: "100px" },
-    { name: "GST", uid: "gstNumber", sortable: true, width: "100px" },
-    { name: "STATUS", uid: "status", sortable: true, width: "100px" },
+    { name: "Company Name", uid: "companyName", sortable: true, width: "120px" },
+    { name: "Client / Customer Name", uid: "customerName", sortable: true, width: "120px" },
+    { name: "Contact Number", uid: "contactNumber", sortable: true, width: "100px" },
+    { name: "Email Address", uid: "emailAddress", sortable: true, width: "150px" },
+    { name: "Company Address", uid: "address", sortable: true, width: "180px" },
+    { name: "GST Number", uid: "gstNumber", sortable: true, width: "100px" },
+    { name: "Product Name", uid: "productName", sortable: true, width: "120px" },
+    { name: "Product Amount", uid: "amount", sortable: true, width: "100px" },
     {
-        name: "DATE",
+        name: "Deal Date",
         uid: "date",
         sortable: true,
         width: "170px",
@@ -64,48 +63,47 @@ const columns = [
     }
     ,
     {
-        name: "END DATE",
+        name: "Final Date",
         uid: "endDate",
         sortable: true,
         width: "120px",
         render: (row: any) => formatDate(row.endDate)
     },
     {
-        name: "NOTES",
+        name: "Notes",
         uid: "notes",
         sortable: true,
         width: "180px"
     },
-    { name: "ACTION", uid: "actions", sortable: true, width: "100px" },
+    { name: "Status", uid: "status", sortable: true, width: "100px" },
+    { name: "Action", uid: "actions", sortable: true, width: "100px" },
 ];
 const INITIAL_VISIBLE_COLUMNS = ["companyName", "customerName", "contactNumber", "emailAddress", "address", "productName", "amount", "gstNumber", "status", "date", "endDate", "notes", "actions"];
 
 const formSchema = z.object({
-    companyName: z.string().min(2, { message: "Company name is required." }),
-    customerName: z.string().min(2, { message: "Customer name must be at least 2 characters." }),
-    contactNumber: z.string().optional(), // Optional field
+    companyName: z.string().nonempty({ message: "Company name is required" }),
+    customerName: z.string().nonempty({ message: "Customer name is required" }),
+    contactNumber: z
+        .string()
+        .regex(/^\d*$/, { message: "Contact number must be numeric" })
+        .nonempty({ message: "Contact number is required" }),
     emailAddress: z.string().email({ message: "Invalid email address" }),
-    address: z.string().min(2, { message: "Address is required." }),
-    productName: z.string().min(2, { message: "Product name is required." }),
-    amount: z.number().positive({ message: "Amount must be positive." }),
-    gstNumber: z.string().min(1, { message: "GST Number is required." }),
-    status: z.enum(["New", "Discussion", "Demo", "Proposal", "Decided"]),
-    date: z.string().refine((val) => !isNaN(Date.parse(val)), {
-        message: "Invalid date",
-    }).transform((val) => new Date(val)),
-
-    endDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
-        message: "Invalid date",
-    }).transform((val) => new Date(val)),
+    address: z.string().nonempty({ message: "Company address is required" }),
+    productName: z.string().nonempty({ message: "Product name is required" }),
+    amount: z.number().positive({ message: "Product amount is required" }),
+    gstNumber: z.string().nonempty({ message: "GST number is required" }),
+    status: z.enum(["Proposal", "New", "Discussion", "Demo", "Decided"]),
+    date: z.date().refine((val) => !isNaN(val.getTime()), { message: "Lead Date is required" }),
+    endDate: z.date().refine((val) => !isNaN(val.getTime()), { message: "Final Date is required" }),
     notes: z.string().optional(),
     isActive: z.boolean(),
-})
+});
 
 export default function DealTable() {
     const [Deals, setDeals] = useState<Deal[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [selectedKeys, setSelectedKeys] = useState<Iterable<string> | 'all' | undefined>(undefined);
-    const router = useRouter(); 
+    const router = useRouter();
 
     const fetchdeal = async () => {
         try {
@@ -253,7 +251,7 @@ export default function DealTable() {
     }, [sortDescriptor, items]);
 
     const [isEditOpen, setIsEditOpen] = useState(false);
-    const [selectedLead, setSelectedLead] = useState<Deal| null>(null);
+    const [selectedLead, setSelectedLead] = useState<Deal | null>(null);
 
     // Function to handle edit button click
     const handleEditClick = (Deals: Deal) => {
@@ -303,7 +301,7 @@ export default function DealTable() {
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to delete deal",
+                description: error instanceof Error ? error.message : "Failed to delete lead",
                 variant: "destructive",
             });
         }
@@ -360,15 +358,15 @@ export default function DealTable() {
         if ((columnKey === "date" || columnKey === "endDate") && cellValue) {
             return formatDate(cellValue);
         }
-        
+
         if (columnKey === "notes") {
             return cellValue || "No note available";
         }
-        
+
         if (columnKey === "actions") {
             return (
                 <div className="relative flex items-center gap-2">
-                    <Tooltip content="">
+                    <Tooltip content="Update">
                         <span
                             className="text-lg text-default-400 cursor-pointer active:opacity-50"
                             onClick={() => handleEditClick(Deals)}
@@ -376,7 +374,7 @@ export default function DealTable() {
                             <Edit className="h-4 w-4" />
                         </span>
                     </Tooltip>
-                    <Tooltip color="danger" content="">
+                    <Tooltip color="danger" content="Delete">
                         <span
                             className="text-lg text-danger cursor-pointer active:opacity-50"
                             onClick={() => handleDeleteClick(Deals)}
@@ -423,29 +421,32 @@ export default function DealTable() {
         setPage(1);
     }, []);
 
-const topContent = React.useMemo(() => {
+    const topContent = React.useMemo(() => {
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
-                <div className="relative w-full sm:max-w-[20%]">
-                  <Input
-                        isClearable
-                        className="w-full pr-12 sm:pr-14 pl-12" // Extra padding for clear button
-                        startContent={
-                          <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
-                      }
-                        placeholder="Search by name..."
-                        value={filterValue}
-                        onChange={(e) => setFilterValue(e.target.value)}
-                        onClear={() => setFilterValue("")}
-                    />
-                </div>
-
-                    <div className="flex gap-3">
+                    <div className="relative w-full sm:max-w-[20%]">
+                        <Input
+                            isClearable
+                            className="w-full pr-12 sm:pr-14 pl-12" // Extra padding for clear button
+                            startContent={
+                                <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+                            }
+                            placeholder="Search"
+                            value={filterValue}
+                            onChange={(e) => setFilterValue(e.target.value)}
+                            onClear={() => setFilterValue("")}
+                        />
+                    </div>
+<div className="flex flex-col sm:flex-row sm:justify-end gap-3 w-full">
                         <Dropdown>
-                            <DropdownTrigger className="flex">
-                                <Button endContent={<ChevronDownIcon className="text-small" />} variant="default" className="px-3 py-2 text-sm sm:text-base">
-                                    Columns
+                            <DropdownTrigger className="w-full sm:w-auto">
+                                <Button
+                                    endContent={<ChevronDownIcon className="text-small" />}
+                                    variant="default"
+                                    className="px-3 py-2 text-sm sm:text-base w-full sm:w-auto flex items-center justify-between"
+                                >
+                                    Hide Columns
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu
@@ -458,44 +459,47 @@ const topContent = React.useMemo(() => {
                                     const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
                                     setVisibleColumns(newKeys);
                                 }}
-                                className="min-w-[150px] sm:min-w-[200px]"
-                                style={{ backgroundColor: "#f0f0f0", color: "#000000" }}
+                                className="min-w-[180px] sm:min-w-[220px] max-h-96 overflow-auto rounded-lg shadow-lg p-2 bg-white border border-gray-300"
                             >
                                 {columns.map((column) => (
-                                    <DropdownItem key={column.uid} className="capitalize" style={{ color: "#000000" }}>
+                                    <DropdownItem 
+                                        key={column.uid} 
+                                        className="capitalize px-4 py-2 rounded-md text-gray-800 hover:bg-gray-200 transition-all"
+                                    >
                                         {column.name}
                                     </DropdownItem>
                                 ))}
                             </DropdownMenu>
                         </Dropdown>
+
                         <Button
-                            className="addButton"
+                            className="addButton w-full sm:w-auto flex items-center justify-between"
                             style={{ backgroundColor: 'hsl(339.92deg 91.04% 52.35%)' }}
                             variant="default"
                             size="default"
                             endContent={<PlusCircle />}
                             onClick={() => router.push("/deal")}
                         >
-                            Add New
+                            Create Deal
                         </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-default-400 text-small">Total {Deals.length} deals</span>
-                  <label className="flex items-center text-default-400 text-small gap-2">
-                      Rows per page:
-                      <div className="relative">
-                          <select
-                              className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
-                              onChange={onRowsPerPageChange}
-                          >
-                              <option value="5">5</option>
-                              <option value="10">10</option>
-                              <option value="15">15</option>
-                          </select>
-                      </div>
-                  </label>
-              </div>
+                    <span className="text-default-400 text-small">Total {Deals.length} deal</span>
+                    <label className="flex items-center text-default-400 text-small gap-2">
+                        Rows per page
+                        <div className="relative">
+                            <select
+                                className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
+                                onChange={onRowsPerPageChange}
+                            >
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                            </select>
+                        </div>
+                    </label>
+                </div>
             </div>
         );
     }, [filterValue, visibleColumns, onRowsPerPageChange, Deals.length, onSearchChange]);
@@ -540,62 +544,59 @@ const topContent = React.useMemo(() => {
     }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
     return (
-      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
-      <div className="rounded-xl border bg-card text-card-foreground shadow">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-12">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                  <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Deal Manager</h1>
-                  <Table
-                      isHeaderSticky
-                      aria-label="Leads table with custom cells, pagination and sorting"
-                      bottomContent={bottomContent}
-                      bottomContentPlacement="outside"
-                      classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
-                      topContent={topContent}
-                      topContentPlacement="outside"
-                      onSelectionChange={setSelectedKeys}
-                      onSortChange={setSortDescriptor}
-                  >
-                  <TableHeader columns={headerColumns}>
-                    {(column) => (
-                      <TableColumn
-                        key={column.uid}
-                        align={column.uid === "actions" ? "center" : "start"}
-                        allowsSorting={column.sortable}
-                      >
-                        {column.name}
-                      </TableColumn>
-                    )}
-                  </TableHeader>
-                  <TableBody emptyContent={"No deals found"} items={sortedItems}>
-                    {(item) => (
-                      <TableRow key={item._id}>
-                        {(columnKey) => (
-                          <TableCell style={{ fontSize: "12px", padding: "8px" }}>
-                            {renderCell(item, columnKey)}
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+        <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
+            <div className="rounded-xl border bg-card text-card-foreground shadow">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-12">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                            <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Deal Record</h1>
+                            <Table
+                                isHeaderSticky
+                                aria-label="Leads table with custom cells, pagination and sorting"
+                                bottomContent={bottomContent}
+                                bottomContentPlacement="outside"
+                                classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
+                                topContent={topContent}
+                                topContentPlacement="outside"
+                                onSelectionChange={setSelectedKeys}
+                                onSortChange={setSortDescriptor}
+                            >
+                                <TableHeader columns={headerColumns}>
+                                    {(column) => (
+                                        <TableColumn
+                                            key={column.uid}
+                                            align={column.uid === "actions" ? "center" : "start"}
+                                            allowsSorting={column.sortable}
+                                        >
+                                            {column.name}
+                                        </TableColumn>
+                                    )}
+                                </TableHeader>
+                                <TableBody emptyContent={"Create deal and add data"} items={sortedItems}>
+                                    {(item) => (
+                                        <TableRow key={item._id}>
+                                            {(columnKey) => (
+                                                <TableCell style={{ fontSize: "12px", padding: "8px" }}>
+                                                    {renderCell(item, columnKey)}
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          </div>
 
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                <DialogContent className="sm:max-w-[600px]">
+                <DialogContent className="sm:max-w-[700px] max-h-[80vh] sm:max-h-[700px] overflow-auto hide-scrollbar p-4">
                     <DialogHeader>
-                        <DialogTitle>Edit Deal</DialogTitle>
-                        <DialogDescription>
-                            Update the Deal details.
-                        </DialogDescription>
+                        <DialogTitle>Update Deal</DialogTitle>
                     </DialogHeader>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onEdit)} className="space-y-6">
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <FormField
                                     control={form.control}
                                     name="companyName"
@@ -614,9 +615,9 @@ const topContent = React.useMemo(() => {
                                     name="customerName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Customer Name</FormLabel>
+                                            <FormLabel>Client / Customer Name</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter customer name" {...field} />
+                                                <Input placeholder="Enter client / customer Name" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -627,12 +628,20 @@ const topContent = React.useMemo(() => {
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
-                                    name="emailAddress"
+                                    name="contactNumber"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Email Address</FormLabel>
+                                            <FormLabel>Contact Number</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter email address" {...field} />
+                                                <Input
+                                                    placeholder="Enter contact number"
+                                                    type="tel"
+                                                    {...field}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value.replace(/[^0-9]/g, '');
+                                                        field.onChange(value);
+                                                    }}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -640,18 +649,32 @@ const topContent = React.useMemo(() => {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="address"
+                                    name="emailAddress"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Address</FormLabel>
+                                            <FormLabel>Email Address</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter address" {...field} />
+                                                <Input placeholder="Enter valid email address" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                             </div>
+
+                            <FormField
+                                control={form.control}
+                                name="address"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Cpmpany Address</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter full company address" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <FormField
@@ -672,10 +695,10 @@ const topContent = React.useMemo(() => {
                                     name="amount"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Amount</FormLabel>
+                                            <FormLabel>Product Amount</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="Enter amount"
+                                                    placeholder="Enter product amount"
                                                     type="number"
                                                     {...field}
                                                     onChange={(e) => {
@@ -715,28 +738,12 @@ const topContent = React.useMemo(() => {
                                                     {...field}
                                                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                 >
+                                                    <option value="Proposal">Proposal</option>
                                                     <option value="New">New</option>
                                                     <option value="Discussion">Discussion</option>
                                                     <option value="Demo">Demo</option>
-                                                    <option value="Proposal">Proposal</option>
                                                     <option value="Decided">Decided</option>
                                                 </select>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                <FormField
-                                    control={form.control}
-                                    name="contactNumber"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Contact Number</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Enter contact number" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -750,7 +757,7 @@ const topContent = React.useMemo(() => {
                                     name="date"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Start Date</FormLabel>
+                                            <FormLabel>Deal Date</FormLabel>
                                             <Popover>
                                                 <PopoverTrigger asChild>
                                                     <FormControl>
@@ -766,7 +773,7 @@ const topContent = React.useMemo(() => {
                                                 <PopoverContent className="w-auto p-0" align="start">
                                                     <Calendar
                                                         mode="single"
-                                                        
+
                                                         onSelect={field.onChange}
                                                         initialFocus
                                                     />
@@ -782,7 +789,7 @@ const topContent = React.useMemo(() => {
                                     name="endDate"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>End Date</FormLabel>
+                                            <FormLabel>Final Date</FormLabel>
                                             <Popover>
                                                 <PopoverTrigger asChild>
                                                     <FormControl>
@@ -798,7 +805,7 @@ const topContent = React.useMemo(() => {
                                                 <PopoverContent className="w-auto p-0" align="start">
                                                     <Calendar
                                                         mode="single"
-                                                        
+
                                                         onSelect={field.onChange}
                                                         initialFocus
                                                     />
@@ -816,12 +823,13 @@ const topContent = React.useMemo(() => {
                                 name="notes"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Notes</FormLabel>
+                                        <FormLabel>Notes (Optional)</FormLabel>
                                         <FormControl>
                                             <textarea
-                                                placeholder="Enter notes"
+                                                placeholder="Enter more details here..."
                                                 {...field}
-                                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                                rows={3}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -848,4 +856,3 @@ const topContent = React.useMemo(() => {
 
     );
 }
-

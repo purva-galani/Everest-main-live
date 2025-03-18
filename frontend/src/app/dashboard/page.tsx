@@ -1544,14 +1544,15 @@ export default function Page() {
             </Breadcrumb>
           </div>
           <div className="flex items-center space-x-4 ml-auto mr-4">
-          <div  >
-                  <SearchBar/>
-              </div>
-              <div>
-                <Notification/>
-              </div>
+          <div>
+            <SearchBar/>
+          </div>
+          <div>
+            <Notification/>
+          </div>
           </div>
         </header>
+        
         <Box sx={{ width: '100%' }}>
           <h1 className="text-2xl font-semibold mb-8 mt-4" style={{ textAlign: "center" }}>Charts</h1>
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>

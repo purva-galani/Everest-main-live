@@ -15,7 +15,7 @@ import axios from "axios";
 import { format } from "date-fns"
 import { Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Pagination, Tooltip, User } from "@heroui/react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { Calendar } from "@/components/ui/calendar"
 
 interface Invoice {
@@ -75,36 +75,33 @@ const formatDate = (date: any) => {
 };
 
 const columns = [
-    { name: "COMPANY", uid: "companyName", sortable: true },
-    { name: "CUSTOMER", uid: "customerName", sortable: true },
-    { name: "CONTACT", uid: "contactNumber", sortable: true },
-    { name: "EMAIL", uid: "emailAddress", sortable: true },
-    { name: "ADDRESS", uid: "address", sortable: true },
-    { name: "GST NUMBER", uid: "gstNumber", sortable: true },
-    { name: "PRODUCT", uid: "productName", sortable: true },
-    { name: "AMOUNT", uid: "amount", sortable: true },
-    { name: "DISCOUNT", uid: "discount", sortable: true },
-    { name: "GST RATE", uid: "gstRate", sortable: true },
-    { name: "STATUS", uid: "status", sortable: true },
+    { name: "Company Name", uid: "companyName", sortable: true },
+    { name: "Client / Customer Name", uid: "customerName", sortable: true },
+    { name: "Contact Number", uid: "contactNumber", sortable: true },
+    { name: "Email Address", uid: "emailAddress", sortable: true },
+    { name: "Company Address", uid: "address", sortable: true },
+    { name: "GST Number", uid: "gstNumber", sortable: true },
+    { name: "Product Name", uid: "productName", sortable: true },
+    { name: "Product Amount", uid: "amount", sortable: true },
+    { name: "Discount", uid: "discount", sortable: true },
+    { name: "GST Rate", uid: "gstRate", sortable: true },
+    { name: "Before GST", uid: "totalWithoutGst", sortable: true },
+    { name: "After GST", uid: "totalWithGst", sortable: true },
     {
-        name: "DATE",
+        name: "Invoice Date",
         uid: "date",
         sortable: true,
-        render: (row: any) => formatDate(row.date) // Ensure only date is shown
+        render: (row: any) => formatDate(row.date)
     },
-
-    { name: "TOTAL (WITHOUT GST)", uid: "totalWithoutGst", sortable: true },
-    { name: "TOTAL (WITH GST)", uid: "totalWithGst", sortable: true },
-    { name: "PAID AMOUNT", uid: "paidAmount", sortable: true },
-    { name: "REMAINING AMOUNT", uid: "remainingAmount", sortable: true },
-    { name: "ACTION", uid: "actions", sortable: true }
+    { name: "Paid Amount", uid: "paidAmount", sortable: true },
+    { name: "Remaining Amount", uid: "remainingAmount", sortable: true },
+    { name: "Status", uid: "status", sortable: true },
+    // { name: "Action", uid: "actions", sortable: true }
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["companyName", "customerName", "contactNumber", "emailAddress", "address", "gstNumber", "productName", "amount", "discount", "gstRate", "status", "date", "endDate", "totalWithoutGst", "totalWithGst", "paidAmount", "remainingAmount", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["companyName", "customerName", "contactNumber", "emailAddress", "address", "gstNumber", "productName", "amount", "discount", "gstRate", "status", "date", "endDate", "totalWithoutGst", "totalWithGst", "paidAmount", "remainingAmount"];
 
 const formSchema = invoiceSchema;
-
-
 
 export default function InvoiceTable() {
     const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -113,7 +110,7 @@ export default function InvoiceTable() {
     const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const router = useRouter(); 
+    const router = useRouter();
 
     const fetchInvoices = async () => {
         setIsLoading(true);
@@ -125,14 +122,13 @@ export default function InvoiceTable() {
             setInvoices(invoicesData);
             setError(null);
         } catch (error) {
-            console.error("Error fetching reminders:", error);
-            setError(error instanceof Error ? error.message : "Failed to fetch reminders");
+            console.error("Error fetching invoices:", error);
+            setError(error instanceof Error ? error.message : "Failed to fetch invoices");
             setInvoices([]);
         } finally {
             setIsLoading(false);
         }
     };
-
 
     useEffect(() => {
         fetchInvoices();
@@ -263,7 +259,7 @@ export default function InvoiceTable() {
 
     // Function to handle delete button click
     const handleDeleteClick = async (invoice: Invoice) => {
-        if (!window.confirm("Are you sure you want to delete this reminder?")) {
+        if (!window.confirm("Are you sure you want to delete this invoice?")) {
             return;
         }
 
@@ -274,20 +270,20 @@ export default function InvoiceTable() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to delete reminder");
+                throw new Error(errorData.message || "Failed to delete invoice");
             }
 
             toast({
                 title: "Invoice Deleted",
-                description: "The reminder has been successfully deleted.",
+                description: "The invoice has been successfully deleted.",
             });
 
-            // Refresh the reminders list
+            // Refresh the invoices list
             fetchInvoices();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to delete reminder",
+                description: error instanceof Error ? error.message : "Failed to delete invoice",
                 variant: "destructive",
             });
         }
@@ -308,12 +304,12 @@ export default function InvoiceTable() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to update reminder");
+                throw new Error(errorData.message || "Failed to update invoice");
             }
 
             toast({
                 title: "Invoice Updated",
-                description: "The reminder has been successfully updated.",
+                description: "The invoice has been successfully updated.",
             });
 
             // Close dialog and reset form
@@ -321,12 +317,12 @@ export default function InvoiceTable() {
             setSelectedInvoice(null);
             form.reset();
 
-            // Refresh the reminders list
+            // Refresh the invoices list
             fetchInvoices();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to update reminder",
+                description: error instanceof Error ? error.message : "Failed to update invoice",
                 variant: "destructive",
             });
         } finally {
@@ -360,9 +356,9 @@ export default function InvoiceTable() {
                     </div>
                 );
             case "date":
-                return formatDate(cellValue); // Format the endDate
+                return formatDate(cellValue);
             case "endDate":
-                return formatDate(cellValue); // Format the endDate
+                return formatDate(cellValue);
             default:
                 return cellValue;
         }
@@ -401,139 +397,128 @@ export default function InvoiceTable() {
     }, []);
 
     const topContent = React.useMemo(() => {
-           return (
-               <div className="flex flex-col gap-4">
-                   <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
-                   <div className="relative w-full sm:max-w-[20%]">
-                     <Input
-                           isClearable
-                           className="w-full pr-12 sm:pr-14 pl-12" 
-                           startContent={
-                             <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
-                         }
-                           placeholder="Search by name..."
-                           value={filterValue}
-                           onChange={(e) => setFilterValue(e.target.value)}
-                           onClear={() => setFilterValue("")}
-                       />
-                   </div>
-   
-                       <div className="flex gap-3">
-                           <Dropdown>
-                               <DropdownTrigger className="flex">
-                                   <Button endContent={<ChevronDownIcon className="text-small" />} variant="default" className="px-3 py-2 text-sm sm:text-base">
-                                       Columns
-                                   </Button>
-                               </DropdownTrigger>
-                               <DropdownMenu
-                                   disallowEmptySelection
-                                   aria-label="Table Columns"
-                                   closeOnSelect={false}
-                                   selectedKeys={visibleColumns}
-                                   selectionMode="multiple"
-                                   onSelectionChange={(keys) => {
-                                       const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
-                                       setVisibleColumns(newKeys);
-                                   }}
-                                   className="min-w-[150px] sm:min-w-[200px]"
-                                   style={{ backgroundColor: "#f0f0f0", color: "#000000" }}
-                               >
-                                   {columns.map((column) => (
-                                       <DropdownItem key={column.uid} className="capitalize" style={{ color: "#000000" }}>
-                                           {column.name}
-                                       </DropdownItem>
-                                   ))}
-                               </DropdownMenu>
-                           </Dropdown>
-                           <Button
-                               className="addButton"
-                               style={{ backgroundColor: 'hsl(339.92deg 91.04% 52.35%)' }}
-                               variant="default"
-                               size="default"
-                               endContent={<PlusCircle />}
-                               onClick={() => router.push("/reminder")}
-                           >
-                               Add New
-                           </Button>
-                       </div>
-                   </div>
-                   <div className="flex justify-between items-center">
-                     <span className="text-default-400 text-small">Total {invoices.length} reminders</span>
-                     <label className="flex items-center text-default-400 text-small gap-2">
-                         Rows per page:
-                         <div className="relative">
-                             <select
-                                 className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
-                                 onChange={onRowsPerPageChange}
-                             >
-                                 <option value="5">5</option>
-                                 <option value="10">10</option>
-                                 <option value="15">15</option>
-                             </select>
-                         </div>
-                     </label>
-                 </div>
-               </div>
-           );
-       }, [filterValue, visibleColumns, onRowsPerPageChange, invoices.length, onSearchChange]);
-   
-       const bottomContent = React.useMemo(() => {
-           return (
-               <div className="py-2 px-2 flex justify-between items-center">
-                   <span className="w-[30%] text-small text-default-400"></span>
-                   <Pagination
-                       isCompact
-                       showShadow
-                       color="success"
-                       page={page}
-                       total={pages}
-                       onChange={setPage}
-                       classNames={{
-                           cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
-                           item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
-                       }}
-                   />
-                   <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
-                       <Button
-                           className="bg-[hsl(339.92deg_91.04%_52.35%)]"
-                           variant="default"
-                           size="sm"
-                           disabled={pages === 1}
-                           onClick={onPreviousPage}
-                       >
-                           Previous
-                       </Button>
-                       <Button
-                           className="bg-[hsl(339.92deg_91.04%_52.35%)]"
-                           variant="default"
-                           size="sm"
-                           onClick={onNextPage}
-                       >
-                           Next
-                       </Button>
-                   </div>
-               </div>
-           );
-       }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
-   
+        return (
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
+                    <div className="relative w-full sm:max-w-[20%]">
+                        <Input
+                            isClearable
+                            className="w-full pr-12 sm:pr-14 pl-12"
+                            startContent={
+                                <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+                            }
+                            placeholder="Search"
+                            value={filterValue}
+                            onChange={(e) => setFilterValue(e.target.value)}
+                            onClear={() => setFilterValue("")}
+                        />
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-end gap-3 w-full">
+                        <Dropdown>
+                            <DropdownTrigger className="w-full sm:w-auto">
+                                <Button
+                                    endContent={<ChevronDownIcon className="text-small" />}
+                                    variant="default"
+                                    className="px-3 py-2 text-sm sm:text-base w-full sm:w-auto flex items-center justify-between"
+                                >
+                                    Hide Columns
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                                disallowEmptySelection
+                                aria-label="Table Columns"
+                                closeOnSelect={false}
+                                selectedKeys={visibleColumns}
+                                selectionMode="multiple"
+                                onSelectionChange={(keys) => {
+                                    const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
+                                    setVisibleColumns(newKeys);
+                                }}
+                                className="min-w-[180px] sm:min-w-[220px] max-h-96 overflow-auto rounded-lg shadow-lg p-2 bg-white border border-gray-300"
+                            >
+                                {columns.map((column) => (
+                                    <DropdownItem 
+                                        key={column.uid} 
+                                        className="capitalize px-4 py-2 rounded-md text-gray-800 hover:bg-gray-200 transition-all"
+                                    >
+                                        {column.name}
+                                    </DropdownItem>
+                                ))}
+                            </DropdownMenu>
+                        </Dropdown>
+                    </div>
+                </div>
+                <div className="flex justify-between items-center">
+                    <span className="text-default-400 text-small">Total {invoices.length} reminder</span>
+                    <label className="flex items-center text-default-400 text-small gap-2">
+                        Rows per page
+                        <div className="relative">
+                            <select
+                                className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
+                                onChange={onRowsPerPageChange}
+                            >
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                            </select>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        );
+    }, [filterValue, visibleColumns, onRowsPerPageChange, invoices.length, onSearchChange]);
+
+    const bottomContent = React.useMemo(() => {
+        return (
+            <div className="py-2 px-2 flex justify-between items-center">
+                <span className="w-[30%] text-small text-default-400"></span>
+                <Pagination
+                    isCompact
+                    showShadow
+                    color="success"
+                    page={page}
+                    total={pages}
+                    onChange={setPage}
+                    classNames={{
+                        cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
+                        item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
+                    }}
+                />
+                <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
+                    <Button
+                        className="bg-[hsl(339.92deg_91.04%_52.35%)]"
+                        variant="default"
+                        size="sm"
+                        disabled={pages === 1}
+                        onClick={onPreviousPage}
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        className="bg-[hsl(339.92deg_91.04%_52.35%)]"
+                        variant="default"
+                        size="sm"
+                        onClick={onNextPage}
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+        );
+    }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+
     const { watch, setValue } = form;
     const amount = watch("amount") ?? 0;
     const discount = watch("discount") ?? 0;
     const gstRate = watch("gstRate") ?? 0;
     const paidAmount = watch("paidAmount") ?? 0;
 
-
     useEffect(() => {
-
         const { totalWithoutGst, totalWithGst, remainingAmount } = calculateGST(amount, discount, gstRate, paidAmount);
-
-
         setValue("totalWithoutGst", totalWithoutGst);
         setValue("totalWithGst", totalWithGst);
         setValue("remainingAmount", remainingAmount);
     }, [amount, discount, gstRate, paidAmount, setValue]);
-
-
 
     const calculateGST = (
         amount: number,
@@ -541,13 +526,11 @@ export default function InvoiceTable() {
         gstRate: number,
         paidAmount: number
     ) => {
-
         const discountedAmount = amount - amount * (discount / 100);
         const gstAmount = discountedAmount * (gstRate / 100);
         const totalWithoutGst = discountedAmount;
         const totalWithGst = discountedAmount + gstAmount;
         const remainingAmount = totalWithGst - paidAmount;
-
         return {
             totalWithoutGst,
             totalWithGst,
@@ -556,62 +539,59 @@ export default function InvoiceTable() {
     };
 
     return (
-      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
-      <div className="rounded-xl border bg-card text-card-foreground shadow">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-12">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                  <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Reminder Manager</h1>
-                  <Table
-                      isHeaderSticky
-                      aria-label="Leads table with custom cells, pagination and sorting"
-                      bottomContent={bottomContent}
-                      bottomContentPlacement="outside"
-                      classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
-                      topContent={topContent}
-                      topContentPlacement="outside"
-                      onSelectionChange={setSelectedKeys}
-                      onSortChange={setSortDescriptor}
-                  >
-                  <TableHeader columns={headerColumns}>
-                    {(column) => (
-                      <TableColumn
-                        key={column.uid}
-                        align={column.uid === "actions" ? "center" : "start"}
-                        allowsSorting={column.sortable}
-                      >
-                        {column.name}
-                      </TableColumn>
-                    )}
-                  </TableHeader>
-                  <TableBody emptyContent={"No reminders found"} items={sortedItems}>
-                    {(item) => (
-                      <TableRow key={item._id}>
-                        {(columnKey) => (
-                          <TableCell style={{ fontSize: "12px", padding: "8px" }}>
-                            {renderCell(item, columnKey)}
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+        <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
+            <div className="rounded-xl border bg-card text-card-foreground shadow">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-12">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                            <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Reminder Record</h1>
+                            <Table
+                                isHeaderSticky
+                                aria-label="Leads table with custom cells, pagination and sorting"
+                                bottomContent={bottomContent}
+                                bottomContentPlacement="outside"
+                                classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}
+                                topContent={topContent}
+                                topContentPlacement="outside"
+                                onSelectionChange={setSelectedKeys}
+                                onSortChange={setSortDescriptor}
+                            >
+                                <TableHeader columns={headerColumns}>
+                                    {(column) => (
+                                        <TableColumn
+                                            key={column.uid}
+                                            align={column.uid === "actions" ? "center" : "start"}
+                                            allowsSorting={column.sortable}
+                                        >
+                                            {column.name}
+                                        </TableColumn>
+                                    )}
+                                </TableHeader>
+                                <TableBody emptyContent={"No reminder available"} items={sortedItems}>
+                                    {(item) => (
+                                        <TableRow key={item._id}>
+                                            {(columnKey) => (
+                                                <TableCell style={{ fontSize: "12px", padding: "8px" }}>
+                                                    {renderCell(item, columnKey)}
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          </div>
 
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="sm:max-w-[600px]">
+                <DialogContent className="sm:max-w-[700px] max-h-[80vh] sm:max-h-[700px] overflow-auto hide-scrollbar p-4">
                     <DialogHeader>
-                        <DialogTitle>Edit Invoice</DialogTitle>
-                        <DialogDescription>
-                            Update the reminder details.
-                        </DialogDescription>
+                        <DialogTitle>Update Reminder</DialogTitle>
                     </DialogHeader>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onEdit)} className="space-y-6">
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <FormField
                                     control={form.control}
                                     name="companyName"
@@ -779,24 +759,24 @@ export default function InvoiceTable() {
                                 />
 
                                 <FormField
-                                control={form.control}
-                                name="date"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Invoice Date</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                        type="date"
-                                        value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
-                                        onChange={(e) => {
-                                            const selectedDate = e.target.value ? new Date(e.target.value) : null;
-                                            field.onChange(selectedDate);
-                                        }}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
+                                    control={form.control}
+                                    name="date"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Invoice Date</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="date"
+                                                    value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                                                    onChange={(e) => {
+                                                        const selectedDate = e.target.value ? new Date(e.target.value) : null;
+                                                        field.onChange(selectedDate);
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
                                 />
                             </div>
 
@@ -879,6 +859,7 @@ export default function InvoiceTable() {
             </Dialog>
         </div>
 
+
+
     );
 }
-

@@ -15,7 +15,7 @@ import axios from "axios";
 import { format } from "date-fns"
 import { Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Pagination, Tooltip, User } from "@heroui/react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { Calendar } from "@/components/ui/calendar"
 
 interface Contact {
@@ -27,7 +27,6 @@ interface Contact {
     address: string;
     gstNumber: string;
     description: string;
-
 }
 
 const generateUniqueId = () => {
@@ -40,14 +39,14 @@ const formatDate = (dateString: string): string => {
 };
 
 const columns = [
-    { name: "COMPANY NAME", uid: "companyName", sortable: true, width: "120px" },
-    { name: "CUSTOMER NAME", uid: "customerName", sortable: true, width: "120px" },
-    { name: "CONTACT NUMBER", uid: "contactNumber", sortable: true, width: "150px" },
-    { name: "EMAIL ADDRESS", uid: "emailAddress", sortable: true, width: "120px" },
-    { name: "ADDRESS", uid: "address", sortable: true, width: "150px" },
-    { name: "GST NUMBER", uid: "gstNumber", sortable: true, width: "100px" },
-    { name: "DESCRIPTION", uid: "description", sortable: true, width: "100px" },
-    { name: "ACTION", uid: "actions", sortable: true, width: "100px" },
+    { name: "Company Name", uid: "companyName", sortable: true, width: "120px" },
+    { name: "Client / Customer Name", uid: "customerName", sortable: true, width: "120px" },
+    { name: "Contact Number", uid: "contactNumber", sortable: true, width: "150px" },
+    { name: "Email Address", uid: "emailAddress", sortable: true, width: "120px" },
+    { name: "Company Address", uid: "address", sortable: true, width: "150px" },
+    { name: "GST Number", uid: "gstNumber", sortable: true, width: "100px" },
+    { name: "Notes", uid: "description", sortable: true, width: "100px" },
+    { name: "Action", uid: "actions", sortable: true, width: "100px" },
 
 ];
 
@@ -56,10 +55,13 @@ const INITIAL_VISIBLE_COLUMNS = ["companyName", "customerName", "contactNumber",
 const contactSchema = z.object({
     companyName: z.string().min(2, { message: "Company name is required." }),
     customerName: z.string().min(2, { message: "Customer name is required." }),
-    contactNumber: z.string().optional(),
+    contactNumber: z
+        .string()
+        .regex(/^\d*$/, { message: "Contact number must be numeric" })
+        .nonempty({ message: "Contact number is required" }),
     emailAddress: z.string().email({ message: "Invalid email address." }),
-    address: z.string().min(2, { message: "Address is required." }),
-    gstNumber: z.string().min(1, { message: "GST Number is required." }),
+    address: z.string().min(2, { message: "Company address is required." }),
+    gstNumber: z.string().min(1, { message: "GST number is required." }),
     description: z.string().optional(),
 });
 
@@ -67,7 +69,7 @@ export default function ContactTable() {
     const [contact, setContact] = useState<Contact[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [selectedKeys, setSelectedKeys] = useState<Iterable<string> | 'all' | undefined>(undefined);
-    const router = useRouter(); 
+    const router = useRouter();
 
     const fetchContacts = async () => {
         try {
@@ -96,7 +98,7 @@ export default function ContactTable() {
                 throw new Error('Invalid response format');
             }
 
-            // Ensure contactsData is an array
+            // Ensure leadsData is an array
             if (!Array.isArray(TaskData)) {
                 TaskData = [];
             }
@@ -193,6 +195,8 @@ export default function ContactTable() {
             });
         }
 
+
+
         return filteredTasks;
     }, [contact, filterValue, statusFilter]);
 
@@ -232,7 +236,7 @@ export default function ContactTable() {
         });
         setIsEditOpen(true);
     };
-    
+
 
     // Function to handle delete button click
     const handleDeleteClick = async (contact: Contact) => {
@@ -292,7 +296,7 @@ export default function ContactTable() {
             setSelectedContact(null);
             form.reset();
 
-            // Refresh the contacts list
+            // Refresh the leads list
             fetchContacts();
         } catch (error) {
             toast({
@@ -321,7 +325,7 @@ export default function ContactTable() {
         if (columnKey === "actions") {
             return (
                 <div className="relative flex items-center gap-2">
-                    <Tooltip content="Edit deal">
+                    <Tooltip content="Update">
                         <span
                             className="text-lg text-default-400 cursor-pointer active:opacity-50"
                             onClick={() => handleEditClick(contact)}
@@ -329,7 +333,7 @@ export default function ContactTable() {
                             <Edit className="h-4 w-4" />
                         </span>
                     </Tooltip>
-                    <Tooltip color="danger" content="Delete deal">
+                    <Tooltip color="danger" content="Delete">
                         <span
                             className="text-lg text-danger cursor-pointer active:opacity-50"
                             onClick={() => handleDeleteClick(contact)}
@@ -377,29 +381,33 @@ export default function ContactTable() {
         setPage(1);
     }, []);
 
-const topContent = React.useMemo(() => {
+    const topContent = React.useMemo(() => {
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row justify-between gap-3 items-end">
-                <div className="relative w-full sm:max-w-[20%]">
-                  <Input
-                        isClearable
-                        className="w-full pr-12 sm:pr-14 pl-12" // Extra padding for clear button
-                        startContent={
-                          <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
-                      }
-                        placeholder="Search by name..."
-                        value={filterValue}
-                        onChange={(e) => setFilterValue(e.target.value)}
-                        onClear={() => setFilterValue("")}
-                    />
-                </div>
+                    <div className="relative w-full sm:max-w-[20%]">
+                        <Input
+                            isClearable
+                            className="w-full pr-12 sm:pr-14 pl-12"
+                            startContent={
+                                <SearchIcon className="h-4 w-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+                            }
+                            placeholder="Search"
+                            value={filterValue}
+                            onChange={(e) => setFilterValue(e.target.value)}
+                            onClear={() => setFilterValue("")}
+                        />
+                    </div>
 
-                    <div className="flex gap-3">
+<div className="flex flex-col sm:flex-row sm:justify-end gap-3 w-full">
                         <Dropdown>
-                            <DropdownTrigger className="flex">
-                                <Button endContent={<ChevronDownIcon className="text-small" />} variant="default" className="px-3 py-2 text-sm sm:text-base">
-                                    Columns
+                            <DropdownTrigger className="w-full sm:w-auto">
+                                <Button
+                                    endContent={<ChevronDownIcon className="text-small" />}
+                                    variant="default"
+                                    className="px-3 py-2 text-sm sm:text-base w-full sm:w-auto flex items-center justify-between"
+                                >
+                                    Hide Columns
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu
@@ -412,44 +420,47 @@ const topContent = React.useMemo(() => {
                                     const newKeys = new Set<string>(Array.from(keys as Iterable<string>));
                                     setVisibleColumns(newKeys);
                                 }}
-                                className="min-w-[150px] sm:min-w-[200px]"
-                                style={{ backgroundColor: "#f0f0f0", color: "#000000" }}
+                                className="min-w-[180px] sm:min-w-[220px] max-h-96 overflow-auto rounded-lg shadow-lg p-2 bg-white border border-gray-300"
                             >
                                 {columns.map((column) => (
-                                    <DropdownItem key={column.uid} className="capitalize" style={{ color: "#000000" }}>
+                                    <DropdownItem 
+                                        key={column.uid} 
+                                        className="capitalize px-4 py-2 rounded-md text-gray-800 hover:bg-gray-200 transition-all"
+                                    >
                                         {column.name}
                                     </DropdownItem>
                                 ))}
                             </DropdownMenu>
                         </Dropdown>
+
                         <Button
-                            className="addButton"
+                            className="addButton w-full sm:w-auto flex items-center justify-between"
                             style={{ backgroundColor: 'hsl(339.92deg 91.04% 52.35%)' }}
                             variant="default"
                             size="default"
                             endContent={<PlusCircle />}
                             onClick={() => router.push("/contact")}
                         >
-                            Add New
+                            Create Contact
                         </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-default-400 text-small">Total {contact.length} contacts</span>
-                  <label className="flex items-center text-default-400 text-small gap-2">
-                      Rows per page:
-                      <div className="relative">
-                          <select
-                              className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
-                              onChange={onRowsPerPageChange}
-                          >
-                              <option value="5">5</option>
-                              <option value="10">10</option>
-                              <option value="15">15</option>
-                          </select>
-                      </div>
-                  </label>
-              </div>
+                    <span className="text-default-400 text-small">Total {contact.length} contact</span>
+                    <label className="flex items-center text-default-400 text-small gap-2">
+                        Rows per page
+                        <div className="relative">
+                            <select
+                                className="border border-gray-300 dark:border-gray-600 bg-transparent rounded-md px-3 py-1 text-default-400 text-sm cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all"
+                                onChange={onRowsPerPageChange}
+                            >
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                            </select>
+                        </div>
+                    </label>
+                </div>
             </div>
         );
     }, [filterValue, visibleColumns, onRowsPerPageChange, contact.length, onSearchChange]);
@@ -494,12 +505,12 @@ const topContent = React.useMemo(() => {
     }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
     return (
-      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
-        <div className="rounded-xl border bg-card text-card-foreground shadow">
+        <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15 max-w-screen-xl">
+            <div className="rounded-xl border bg-card text-card-foreground shadow">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-12">
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                    <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Contact Manager</h1>
+                    <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Contact Record</h1>
                     <Table
                         isHeaderSticky
                         aria-label="Leads table with custom cells, pagination and sorting"
@@ -522,7 +533,7 @@ const topContent = React.useMemo(() => {
                         </TableColumn>
                       )}
                     </TableHeader>
-                    <TableBody emptyContent={"No contacts found"} items={sortedItems}>
+                    <TableBody emptyContent={"Create contact and add data"} items={sortedItems}>
                       {(item) => (
                         <TableRow key={item._id}>
                           {(columnKey) => (
@@ -540,135 +551,135 @@ const topContent = React.useMemo(() => {
             </div>
 
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                        <DialogContent className="sm:max-w-[600px]">
-                            <DialogHeader>
-                                <DialogTitle>Edit Task</DialogTitle>
-                                <DialogDescription>
-                                    Update the task details.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onEdit)} className="space-y-6">
+                <DialogContent className="sm:max-w-[700px] max-h-[80vh] sm:max-h-[700px] overflow-auto hide-scrollbar p-4">
+                    <DialogHeader>
+                        <DialogTitle>Update Contact</DialogTitle>
+                    </DialogHeader>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit((values) => handleEditClick(values))} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="companyName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Company Name</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter company name" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="customerName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Client / Customer Name</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter client / customer Name" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        <FormField
-                                            control={form.control}
-                                            name="companyName"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Company Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter company name" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="customerName"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Customer Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter customer name" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
+                                <FormField
+                                    control={form.control}
+                                    name="contactNumber"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Contact Number</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter contact number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="emailAddress"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Email Address</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter valid email address" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        <FormField
-                                            control={form.control}
-                                            name="contactNumber"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Contact Number</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter contact number" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="emailAddress"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Email Address</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter email address" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <FormField
+                                    control={form.control}
+                                    name="address"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Company Address</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter company address" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="gstNumber"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>GST Number</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter GST number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        <FormField
-                                            control={form.control}
-                                            name="address"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Address</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter address" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="gstNumber"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>GST Number</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Enter GST number" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Notes (Optional)</FormLabel>
+                                        <FormControl>
+                                            <textarea
+                                                placeholder="Enter more details here..."
+                                                {...field}
+                                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                                rows={3}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                                    <FormField
-                                        control={form.control}
-                                        name="description"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Description</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Enter description" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-
-                                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                                        {isSubmitting ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Updating Contact...
-                                            </>
-                                        ) : (
-                                            "Update Contact"
-                                        )}
-                                    </Button>
-                                </form>
-                            </Form>
-                        </DialogContent>
-                    </Dialog>
+                            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Updating Contact...
+                                    </>
+                                ) : (
+                                    "Update Contact"
+                                )}
+                            </Button>
+                        </form>
+                    </Form>
+                </DialogContent>
+            </Dialog>
 
         </div>
 
     );
 }
-
 
