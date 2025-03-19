@@ -182,35 +182,34 @@ export default function CalendarPage() {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-            <BreadcrumbList className="flex items-center space-x-2">
-            <BreadcrumbItem className="hidden sm:block md:block">
-            <BreadcrumbLink href="/dashboard">
-                Dashboard
-            </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden sm:block md:block" />
-            <span className="hidden sm:block md:block">
-                Calendar
-                </span>
-              </BreadcrumbList>
-            </Breadcrumb>
-            <div className="flex items-center space-x-4 ml-auto mr-4">
-                <div  >
-                  <SearchBar />
-                </div>
-                <div>
-                  <Notification />
-                </div>
-              </div>
-          </div>
-        </header>
+            <AppSidebar />
+            <SidebarInset>
+                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
+                    <div className="flex items-center gap-2 px-4">
+                        <SidebarTrigger className="-ml-1" />
+                        <Separator orientation="vertical" className="mr-2 h-4"/>
+                        <Breadcrumb>
+                        <BreadcrumbList className="flex items-center space-x-2">
+
+                            <BreadcrumbItem className="hidden sm:block md:block">
+                            <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator className="hidden sm:block md:block"/>
+                            <span className="hidden sm:block md:block">
+                                Calendar
+                            </span>
+                        </BreadcrumbList>
+                        </Breadcrumb>
+                    </div>
+                    <div className="flex items-center space-x-4 ml-auto mr-4">
+                        <div  >
+                            <SearchBar />
+                        </div>
+                        <div>
+                            <Notification />
+                        </div>
+                    </div>
+                </header>
         <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15">
           <div className="flex justify-between items-center mb-4">
             <div className="flex space-x-2">

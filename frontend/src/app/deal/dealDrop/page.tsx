@@ -14,6 +14,7 @@ import { ModeToggle } from "@/components/ModeToggle"
 import SearchBar from '@/components/globalSearch';
 import Notification from '@/components/notification';
 import { Meteors } from "@/components/ui/meteors";
+import { Calendar1 } from "lucide-react";
 
 interface Lead {
   _id: string;
@@ -135,45 +136,43 @@ export default function App() {
   };
 
   return (
-    <SidebarProvider>
-    <AppSidebar />
-    <SidebarInset>
-      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <ModeToggle />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/dashboard">
-                  Dashboard
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/deal">
-                      Deal
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/deal/dealDrop">
-                    Drag & Drop
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-        <div className="flex items-center space-x-4 ml-auto mr-4">
-          <div>
-            <SearchBar/>
-          </div>
-          <div>
-            <Notification/>
-          </div>
-        </div>
-      </header>
+        <SidebarProvider>
+          <AppSidebar />
+            <SidebarInset>
+                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
+                    <div className="flex items-center gap-2 px-4">
+                        <SidebarTrigger className="-ml-1" />
+                        <Separator orientation="vertical" className="mr-2 h-4"/>
+                        <Breadcrumb>
+                        <BreadcrumbList className="flex items-center space-x-2">
+                            <BreadcrumbItem className="hidden sm:block md:block">
+                            <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator className="hidden sm:block md:block"/>
+                            <BreadcrumbItem className="hidden sm:block md:block">
+                            <BreadcrumbLink href="/deal/table">Deal</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator className="hidden sm:block md:block" />
+                            <span className="hidden sm:block md:block">
+                                Drag & Drop
+                            </span>
+                        </BreadcrumbList>
+                        </Breadcrumb>
+                    </div>
+                    <div className="flex items-center space-x-4 ml-auto mr-4">
+                        <div  >
+                            <SearchBar />
+                        </div>
+                        <a href="/calendar">
+                            <div>
+                                <Calendar1 />
+                            </div>
+                        </a>
+                        <div>
+                            <Notification />
+                        </div>
+                    </div>
+                </header>
     <div className="p-6">
       {error && <p className="text-red-500 text-center">{error}</p>}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">

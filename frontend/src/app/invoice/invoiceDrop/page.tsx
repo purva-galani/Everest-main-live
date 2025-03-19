@@ -17,10 +17,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { ModeToggle } from "@/components/ModeToggle"
+import { ModeToggle } from "@/components/ModeToggle";
 import { Meteors } from "@/components/ui/meteors";
 import SearchBar from '@/components/globalSearch';
 import Notification from '@/components/notification';
+import { Calendar1 } from "lucide-react";
 
 interface Invoice {
   _id: string;
@@ -34,7 +35,7 @@ interface Invoice {
   amount: number;
   discount: number;
   gstRate: number;
-  status: "Unpaid"| "Paid" | "Pending";
+  status: "Unpaid" | "Paid" | "Pending";
   date: string;
   totalWithoutGst: number;
   totalWithGst: number;
@@ -61,7 +62,7 @@ export default function App() {
   const [groupedInvoices, setGroupedInvoices] = useState<Record<string, Invoice[]>>({});
   const [selectedInvoice, setSelectedInvoice] = React.useState<Invoice | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  
+
   const handleInvoiceClick = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setIsModalOpen(true);
@@ -71,7 +72,7 @@ export default function App() {
     setIsModalOpen(false);
     setSelectedInvoice(null);
   };
-  
+
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
@@ -79,12 +80,12 @@ export default function App() {
         groupInvoicesByStatus(fetchedInvoices);
       } catch (error) {
         if (error instanceof Error) {
-          setError(error.message); 
+          setError(error.message);
         } else {
           setError("An unknown error occurred");
+        }
       }
     };
-  }
     fetchInvoices();
   }, []);
 
@@ -97,106 +98,104 @@ export default function App() {
     setGroupedInvoices(grouped);
   };
 
-
   const statusColors: Record<string, string> = {
-    Pending: "bg-purple-300 text-gray-800 border-2 border-purple-900 shadow-lg shadow-purple-900/50",
-    Unpaid: "bg-purple-300 text-gray-800 border-2 border-purple-900 shadow-lg shadow-purple-900/50",
-    Paid: "bg-purple-300 text-gray-800 border-2 border-purple-900 shadow-lg shadow-purple-900/50",
+    Pending: "text-gray-800 border-2 border-black",
+    Unpaid: "text-gray-800 border-2 border-black",
+    Paid: "text-gray-800 border-2 border-black",
   };
 
-  const formatDate = (dateString: string): string => {
+  const formatDate = (dateString: string | undefined | null): string => {
+    if (!dateString) return "N/A"; // Handle missing or empty date
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid Date"; // Handle incorrect format
     return date.toISOString().split("T")[0];
   };
+  
+  const handleDragStart = (e: React.DragEvent, invoice: Invoice, fromStatus: string) => {
+    e.dataTransfer.setData("invoice", JSON.stringify(invoice));
+    e.dataTransfer.setData("fromStatus", fromStatus);
+    e.dataTransfer.effectAllowed = "move";
+  };
 
-    const handleDragStart = (e: React.DragEvent, invoice: Invoice, fromStatus: string) => {
-      e.dataTransfer.setData("invoice", JSON.stringify(invoice));
-      e.dataTransfer.setData("fromStatus", fromStatus);
-      e.dataTransfer.effectAllowed = "move";
-    };
+  const handleDrop = async (e: React.DragEvent, toStatus: string) => {
+    e.preventDefault();
+    setDraggedOver(null);
+    const invoiceData = e.dataTransfer.getData("invoice");
+    const fromStatus = e.dataTransfer.getData("fromStatus");
 
-     const handleDrop = async (e: React.DragEvent, toStatus: string) => {
-        e.preventDefault();
-        setDraggedOver(null);
-        const invoiceData = e.dataTransfer.getData("invoice");
-        const fromStatus = e.dataTransfer.getData("fromStatus");
-    
-        if (!invoiceData || !fromStatus || fromStatus === toStatus) return;
-    
-        const invoice: Invoice = JSON.parse(invoiceData);
-        const updatedInvoice = { ...invoice, status: toStatus };
-    
-        setGroupedInvoices((prev) => ({
-          ...prev,
-          [fromStatus]: prev[fromStatus]?.filter((l) => l._id !== invoice._id) || [],
-          [toStatus]: [...(prev[toStatus] || []), updatedInvoice as Invoice], 
-        }));
-        
-        try {
-          const response = await fetch("http://localhost:8000/api/v1/invoice/updateInvoiceStatus", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ invoiceId: invoice._id, status: toStatus }),
-          });
-          const data = await response.json();
-          if (!data.success) throw new Error("Failed to update invoice status on server.");
-        } catch (error) {
-          console.error("Error updating status:", error);
-        }
-      };
+    if (!invoiceData || !fromStatus || fromStatus === toStatus) return;
+
+    const invoice: Invoice = JSON.parse(invoiceData);
+    const updatedInvoice = { ...invoice, status: toStatus };
+
+    setGroupedInvoices((prev) => ({
+      ...prev,
+      [fromStatus]: prev[fromStatus]?.filter((l) => l._id !== invoice._id) || [],
+      [toStatus]: [...(prev[toStatus] || []), updatedInvoice as Invoice],
+    }));
+
+    try {
+      const response = await fetch("http://localhost:8000/api/v1/invoice/updateInvoiceStatus", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoiceId: invoice._id, status: toStatus }),
+      });
+      const data = await response.json();
+      if (!data.success) throw new Error("Failed to update invoice status on server.");
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
 
   return (
     <SidebarProvider>
     <AppSidebar />
     <SidebarInset>
-      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <ModeToggle />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/dashboard">
-                  Dashboard
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/invoice">
-                    Invoice
-                  </BreadcrumbLink>                            
-                </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/invoice/invoiceDrop">
-                    Drag & Drop
-                  </BreadcrumbLink>                            
-                </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-        <div className="flex items-center space-x-4 ml-auto mr-4">
-        <div  >
-                <SearchBar/>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
+            <div className="flex items-center gap-2 px-4">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="mr-2 h-4"/>
+                <Breadcrumb>
+                <BreadcrumbList className="flex items-center space-x-2">
+                    <BreadcrumbItem className="hidden sm:block md:block">
+                    <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator className="hidden sm:block md:block"/>
+                    <BreadcrumbItem className="hidden sm:block md:block">
+                    <BreadcrumbLink href="/invoice/table">Invoice</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator className="hidden sm:block md:block" />
+                    <span className="hidden sm:block md:block">
+                        Drag and Drop
+                    </span>
+                </BreadcrumbList>
+                </Breadcrumb>
             </div>
-            <div>
-              <Notification/>
+            <div className="flex items-center space-x-4 ml-auto mr-4">
+                <div  >
+                    <SearchBar />
+                </div>
+                <a href="/calendar">
+                    <div>
+                        <Calendar1 />
+                    </div>
+                </a>
+                <div>
+                    <Notification />
+                </div>
             </div>
-        </div>
-      </header>
-
-        <div className="p-6 ">
+        </header>
+        <div className="p-6">
           {error && <p className="text-red-500 text-center">{error}</p>}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-6xl md:max-w-4xl mx-auto">
-          {Object.keys(statusColors).map((status) => {
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+            {Object.keys(statusColors).map((status) => {
               const invoiceStatus = groupedInvoices[status] || [];
               const totalAmount = invoiceStatus.reduce((sum, invoice) => sum + invoice.amount, 0);
 
               return (
                 <div
                   key={status}
-                  className={`p-4 rounded-lg  min-h-[530px] transition-all ${draggedOver === status}`}
                   onDrop={(e) => handleDrop(e, status)}
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -204,33 +203,31 @@ export default function App() {
                   }}
                   onDragLeave={() => setDraggedOver(null)}
                 >
-                  <h2 className={`text-sm font-bold mb-4 px-5 py-2 rounded-lg ${statusColors[status]}`}>{status}</h2>
-                  <div className="p-3 bg-[#FAF3DD] rounded-md shadow">
-                    <p className="text-sm font-semibold text-black">Total Invoice: {invoiceStatus.length}</p>
-                    <p className="text-sm font-semibold text-black">Total Amount: ₹{totalAmount}</p>
+                  <h2 className="text-base font-bold mb-4 p-4 bg-white border border-black rounded text-gray-800 text-center">
+                    {status}
+                  </h2>
+
+                  <div className="p-4 rounded-lg shadow-sm border border-black mb-4">
+                    <p className="text-sm font-semibold text-gray-800">Total Invoice: {invoiceStatus.length}</p>
+                    <p className="text-sm font-semibold text-gray-800">Total Amount: ₹{totalAmount}</p>
                   </div>
-                  <div
-                    className="scrollable"
-                  >
+
+                  <div className="mt-4 flex flex-col gap-3 min-h-[250px] max-h-[500px] overflow-y-auto">
                     {invoiceStatus.length === 0 ? (
-                      <p className="text-gray-500 text-center">No invoices available</p>
+                      <p className="text-center text-gray-500">No invoices available</p>
                     ) : (
                       invoiceStatus.map((invoice) => (
                         <div
                           key={invoice._id}
-                          className="card-container  mt-4"
-                          >
-                          <div
-                            className="card border border-gray-300 rounded-lg shadow-md bg-white p-3 cursor-grab active:cursor-grabbing"
-                            draggable
-                            onDragStart={(e) => handleDragStart(e, invoice, status)}
-                            onClick={() => handleInvoiceClick(invoice)}
-                          >
-                            <p>Company Name: <span>{invoice.companyName}</span></p>
-                            <p>Product: <span>{invoice.productName}</span></p>
-                            <p>Amount: <span>₹{invoice.amount}</span></p>
-                            <p>Next Date: <span>{formatDate(invoice.date)}</span></p>
-                        </div>
+                          className="p-3 border border-black rounded-lg bg-white shadow-sm cursor-grab"
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, invoice, status)}
+                          onClick={() => handleInvoiceClick(invoice)}
+                        >
+                          <p className="text-sm font-semibold text-gray-800">Company Name: {invoice.companyName}</p>
+                          <p className="text-sm font-semibold text-gray-800">Product: {invoice.productName}</p>
+                          <p className="text-sm font-semibold text-gray-800">Next Date: {formatDate(invoice.date)}</p>
+                          <p className="text-sm font-semibold text-gray-800">Amount: ₹{invoice.amount}</p>
                         </div>
                       ))
                     )}
@@ -239,26 +236,26 @@ export default function App() {
               );
             })}
           </div>
+
           {isModalOpen && selectedInvoice && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="w-full max-w-lg relative">
-                <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-blue-500 to-teal-500 transform scale-[0.80] rounded-full blur-3xl" />
-                <div className="relative shadow-xl bg-gray-900 border border-gray-800 px-6 py-8 rounded-2xl">
+              <div className="w-full max-w-md h-auto relative">
+                <div className="absolute inset-0 h-full w-full bg-gradient-to-r  rounded-full blur-lg scale-90 opacity-50" />
+                <div className="relative bg-white border border-gray-700 rounded-lg p-6 w-[800px] h-700 flex flex-col">
                   <div
-                    className="absolute top-3 right-3 h-8 w-8 rounded-full border border-gray-500 flex items-center justify-center cursor-pointer"
-                    onClick={() => {
-                      setIsModalOpen(false); 
-                    }}
+                    className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center cursor-pointer"
+                    onClick={closeModal}
                   >
-                    <MdCancel className="text-white text-2xl"/>
-                      
+                    <MdCancel className="text-gray-500 text-2xl" />
                   </div>
-                  <h1 className="font-bold text-2xl text-white mb-6 text-center">invoice Details</h1>
-                  <div className="grid grid-cols-2 gap-4 text-white">
+                  <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">Invoice Details</h1>
+                  <Separator className="my-4 border-gray-300" />
+                  <div className="grid grid-cols-2 gap-4 text-gray-700">
+                  
                     {Object.entries(selectedInvoice)
-                      .filter(([key]) => !["_id", "isActive", "createdAt", "updatedAt"].includes(key))
+                      .filter(([key]) => !["_id", "__v", "isActive", "createdAt", "updatedAt"].includes(key))
                       .map(([key, value]) => (
-                        <p key={key} className="text-sm">
+                        <p key={key} className="text-lg">
                           <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong>{" "}
                           {["date", "endDate"].includes(key) && value
                             ? new Date(value).toLocaleDateString()
@@ -266,7 +263,6 @@ export default function App() {
                         </p>
                       ))}
                   </div>
-                  <Meteors number={20} />
                 </div>
               </div>
             </div>
@@ -275,4 +271,4 @@ export default function App() {
       </SidebarInset>
     </SidebarProvider>
   );
-} 
+}
