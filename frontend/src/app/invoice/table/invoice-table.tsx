@@ -763,8 +763,8 @@ export default function InvoiceTable() {
                                                     {...field}
                                                     value={field.value}
                                                     onChange={(e) => field.onChange(Number(e.target.value))}
-                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                >
+                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+                                                    >
                                                     <option value="">Select GST Rate</option>
                                                     <option value="0">0%</option>
                                                     <option value="5">5%</option>
@@ -819,8 +819,8 @@ export default function InvoiceTable() {
                                             <FormControl>
                                                 <select
                                                     {...field}
-                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                >
+                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+                                                    >
                                                     <option value="Paid">Paid</option>
                                                     <option value="Unpaid">Unpaid</option>
                                                 </select>

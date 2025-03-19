@@ -655,7 +655,7 @@ export default function DealTable() {
                             <Trash2 className="h-4 w-4" />
                         </span>
                     </Tooltip>
-                    <Tooltip color="danger" content="Create Contact">
+                    <Tooltip color="danger" content="Add Contact">
                                             <span
                                                 className="text-lg text-danger cursor-pointer active:opacity-50"
                                                 onClick={() => handleAddContactClick(Deals)}
@@ -663,7 +663,7 @@ export default function DealTable() {
                                                 <ReceiptText className="h-4 w-4" />
                                             </span>
                                         </Tooltip>
-                                        <Tooltip color="danger" content="Create Invoice">
+                                        <Tooltip color="danger" content="Add Invoice">
                                             <span
                                                 className="text-lg text-danger cursor-pointer active:opacity-50"
                                                 onClick={() => handleAddInvoice(Deals)}
@@ -1025,8 +1025,8 @@ export default function DealTable() {
                                             <FormControl>
                                                 <select
                                                     {...field}
-                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                >
+                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+                                                    >
                                                     <option value="Proposal">Proposal</option>
                                                     <option value="New">New</option>
                                                     <option value="Discussion">Discussion</option>
@@ -1117,7 +1117,7 @@ export default function DealTable() {
                                             <textarea
                                                 placeholder="Enter more details here..."
                                                 {...field}
-                                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black resize-none"
                                                 rows={3}
                                             />
                                         </FormControl>
@@ -1142,7 +1142,7 @@ export default function DealTable() {
             </Dialog>
 
             <Dialog open={isContactFormVisible} onOpenChange={(open) => setIsContactFormVisible(open)}>
-    <DialogContent className="w-[90vw] max-w-[700px] max-h-[80vh] sm:max-h-[700px] overflow-auto hide-scrollbar p-4">
+    <DialogContent className="w-[100vw] max-w-[700px] max-h-[80vh] sm:max-h-[700px] overflow-auto hide-scrollbar p-4">
         <DialogHeader>
             <DialogTitle>Add Contact</DialogTitle>
         </DialogHeader>
@@ -1297,7 +1297,7 @@ export default function DealTable() {
                                     onChange={(e) =>
                                         setNewContact({ ...newContact, description: e.target.value })
                                     }
-                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black resize-none"
                                     rows={3}
                                 />
                             </FormControl>
@@ -1314,7 +1314,7 @@ export default function DealTable() {
                             Submitting Contact...
                         </>
                     ) : (
-                        "Update Contact"
+                        "Add Contact"
                     )}
                 </Button>
             </form>
@@ -1516,7 +1516,7 @@ export default function DealTable() {
                                                 <select
                                                     value={newInvoice.gstRate}
                                                     onChange={handleChange}
-                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
                                                 >
                                                     <option value="">Select GST Rate</option>
                                                     <option value="0">0%</option>
@@ -1574,11 +1574,11 @@ export default function DealTable() {
                                             <FormControl>
                                                 <select
                                                       value={newInvoice.status}
-                    onChange={(e) =>
-                      setNewInvoice({ ...newInvoice, status: e.target.value })
-                    }
-                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                >
+                                                        onChange={(e) =>
+                                                        setNewInvoice({ ...newInvoice, status: e.target.value })
+                                                        }
+                                                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+                                                                        >
                                                     <option value="Paid">Paid</option>
                                                     <option value="Unpaid">Unpaid</option>
                                                 </select>
@@ -1587,25 +1587,25 @@ export default function DealTable() {
                                         </FormItem>
                                     )}
                                 />
-                                            <div className="form-group">
-                  <label
-                    htmlFor="date"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    name="date"
-                    id="date"
-                    value={newInvoice.date}
-                    onChange={(e) =>
-                      setNewInvoice({ ...newInvoice, date: e.target.value })
-                    }
-                    className="w-full p-3 border border-gray-300 rounded-md text-black"
-                    required
-                  />
-                </div>
+                                <div className="form-group">
+                                <label
+                                    htmlFor="date"
+                                    className="text-sm font-medium text-black"
+                                >
+                                    Date
+                                </label>
+                                <input
+                                    type="date"
+                                    name="date"
+                                    id="date"
+                                    value={newInvoice.date}
+                                    onChange={(e) =>
+                                    setNewInvoice({ ...newInvoice, date: e.target.value })
+                                    }
+                                    className="w-full p-3 border border-gray-300 rounded-md text-black"
+                                    required
+                                />
+                                </div>
                             </div>
 
                             <Button type="submit" className="w-full" disabled={isSubmitting}>
@@ -1615,7 +1615,7 @@ export default function DealTable() {
                                         Submitting...
                                     </>
                                 ) : (
-                                    "Update Invoice"
+                                    "Add Invoice"
                                 )}
                             </Button>
                         </form>

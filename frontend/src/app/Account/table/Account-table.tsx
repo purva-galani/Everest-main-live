@@ -618,8 +618,8 @@ export default function AccountTable() {
                                             <FormControl>
                                                 <select
                                                     {...field}
-                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                >
+                                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+                                                    >
                                                     <option value="Savings">Savings</option>
                                                     <option value="Current">Current</option>
                                                     <option value="Other">Other</option>
@@ -631,7 +631,7 @@ export default function AccountTable() {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="UpiID"
+                                    name="UpiId"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>UPI ID (Optional)</FormLabel>
