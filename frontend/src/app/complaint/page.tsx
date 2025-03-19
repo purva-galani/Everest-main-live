@@ -55,11 +55,11 @@ export default function CertificatePage() {
                     </div>
                 </header>
                 <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15">
-                    <Card className="max-w-2xl mx-auto">
+                    <Card className="max-w-8xl mx-auto border-none shadow-none">
                         <CardHeader>
-                            <CardTitle className="text-3xl font-bold text-center">Complaint</CardTitle>
+                            <CardTitle className="text-3xl font-bold text-center">Create Complaint</CardTitle>
                             <CardDescription className="text-center">
-                                Manage and track your Complaint effectively.
+                                Create complaint reported by the client / customer
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

@@ -54,11 +54,11 @@ export default function CertificatePage() {
                     </div>
                 </header>
                 <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15">
-                    <Card className="max-w-2xl mx-auto">
+                    <Card className="max-w-8xl mx-auto border-none shadow-none">
                         <CardHeader>
-                            <CardTitle className="text-3xl font-bold text-center">Deal</CardTitle>
+                            <CardTitle className="text-3xl font-bold text-center">Create Deal</CardTitle>
                             <CardDescription className="text-center">
-                                Manage and track your Deal effectively.
+                                Create a new deal by your company
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

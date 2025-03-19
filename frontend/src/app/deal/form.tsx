@@ -1,49 +1,35 @@
 "use client"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+
 import * as z from "zod"
+import { cn } from "@/lib/utils"
+import { useState } from "react"
+import { format } from "date-fns"
+import { toast } from "@/hooks/use-toast"
+import { useForm } from "react-hook-form"
+import { useRouter } from "next/navigation"
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { toast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
 import { CalendarIcon, Loader2 } from "lucide-react"
-
-
-export const columns = [
-    { name: "ID", uid: "id", sortable: true },
-    { name: "NAME", uid: "name", sortable: true },
-    { name: "AGE", uid: "age", sortable: true },
-    { name: "ROLE", uid: "role", sortable: true },
-    { name: "TEAM", uid: "team" },
-    { name: "EMAIL", uid: "email" },
-    { name: "STATUS", uid: "status", sortable: true },
-    { name: "ACTIONS", uid: "actions" },
-];
-
-export const statusOptions = [
-    { name: "Active", uid: "active" },
-    { name: "Paused", uid: "paused" },
-    { name: "Vacation", uid: "vacation" },
-];
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 
 const formSchema = z.object({
-    companyName: z.string().min(2, { message: "Company name is required." }),
-    customerName: z.string().min(2, { message: "Customer name must be at least 2 characters." }),
-    contactNumber: z.string().optional(), // Optional field
+    companyName: z.string().nonempty({ message: "Company name is required" }),
+    customerName: z.string().nonempty({ message: "Customer name is required" }),
+    contactNumber: z
+        .string()
+        .regex(/^\d*$/, { message: "Contact number must be numeric" })
+        .nonempty({ message: "Contact number is required" }),
     emailAddress: z.string().email({ message: "Invalid email address" }),
-    address: z.string().min(2, { message: "Address is required." }),
-    productName: z.string().min(2, { message: "Product name is required." }),
-    amount: z.number().positive({ message: "Amount must be positive." }),
-    gstNumber: z.string().min(1, { message: "GST Number is required." }),
-    status: z.enum(["New", "Discussion", "Demo", "Proposal", "Decided"]),
-    date: z.date().optional(),
-    endDate: z.date().optional(),
+    address: z.string().nonempty({ message: "Company address is required" }),
+    productName: z.string().nonempty({ message: "Product name is required" }),
+    amount: z.number().positive({ message: "Product amount is required" }),
+    gstNumber: z.string().nonempty({ message: "GST number is required" }),
+    status: z.enum(["Proposal", "New", "Discussion", "Demo", "Decided"]),
+    date: z.date().refine((val) => !isNaN(val.getTime()), { message: "Lead Date is required" }),
+    endDate: z.date().refine((val) => !isNaN(val.getTime()), { message: "Final Date is required" }),
     notes: z.string().optional(),
     isActive: z.boolean(),
 });
@@ -73,37 +59,30 @@ export default function DealForm() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true)
         try {
-            const response = await fetch("http://localhost:8000/api/v1/deal/createDeal", {
+            const response = await fetch("http://localhost:8000/api/v1/deal/createdeal", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
             })
-
             const data = await response.json()
-
             if (!response.ok) {
                 throw new Error(data.error || "Failed to submit the lead")
             }
-
             toast({
-                title: "Lead Submitted",
-                description: `Your lead has been successfully submitted. ID: ${data.id}`,
+                title: "Deal Submitted",
+                description: `The deal has been successfully created`,
             })
-
-            // Redirect to the table page
-            router.push("/deal/table")  // Redirect to the
-            //  table page
+            router.push("/deal/table")
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "There was an error submitting the lead.",
+                description: error instanceof Error ? error.message : "There was an error creating the deal",
                 variant: "destructive",
             })
         } finally {
             setIsSubmitting(false)
         }
     }
-
 
     return (
         <Form {...form}>
@@ -127,9 +106,9 @@ export default function DealForm() {
                         name="customerName"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Customer Name</FormLabel>
+                                <FormLabel>Client / Customer Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Enter customer name" {...field} />
+                                    <Input placeholder="Enter client / customer Name" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -140,12 +119,20 @@ export default function DealForm() {
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <FormField
                         control={form.control}
-                        name="emailAddress"
+                        name="contactNumber"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Email Address</FormLabel>
+                                <FormLabel>Contact Number</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Enter email address" {...field} />
+                                    <Input
+                                        placeholder="Enter contact number"
+                                        type="tel"
+                                        {...field}
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/[^0-9]/g, '');
+                                            field.onChange(value);
+                                        }}
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -153,18 +140,32 @@ export default function DealForm() {
                     />
                     <FormField
                         control={form.control}
-                        name="address"
+                        name="emailAddress"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Address</FormLabel>
+                                <FormLabel>Email Address</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Enter address" {...field} />
+                                    <Input placeholder="Enter valid email address" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
                 </div>
+
+                <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Cpmpany Address</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Enter full company address" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <FormField
@@ -185,10 +186,10 @@ export default function DealForm() {
                         name="amount"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Amount</FormLabel>
+                                <FormLabel>Product Amount</FormLabel>
                                 <FormControl>
                                     <Input
-                                        placeholder="Enter amount"
+                                        placeholder="Enter product amount"
                                         type="number"
                                         {...field}
                                         onChange={(e) => {
@@ -226,12 +227,12 @@ export default function DealForm() {
                                 <FormControl>
                                     <select
                                         {...field}
-                                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
                                     >
+                                        <option value="Proposal">Proposal</option>
                                         <option value="New">New</option>
                                         <option value="Discussion">Discussion</option>
                                         <option value="Demo">Demo</option>
-                                        <option value="Proposal">Proposal</option>
                                         <option value="Decided">Decided</option>
                                     </select>
                                 </FormControl>
@@ -244,38 +245,22 @@ export default function DealForm() {
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <FormField
                         control={form.control}
-                        name="contactNumber"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Contact Number</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Enter contact number" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                    <FormField
-                        control={form.control}
                         name="date"
                         render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                                <FormLabel>Start Date</FormLabel>
+                            <FormItem className="flex flex-col justify-between">
+                                <FormLabel>Deal Date</FormLabel>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <FormControl>
                                             <Button
                                                 variant={"outline"}
                                                 className={cn(
-                                                    "w-[240px] pl-3 text-left font-normal",
+                                                    "w-full pl-3 text-left font-normal",
                                                     !field.value && "text-muted-foreground"
                                                 )}
                                             >
                                                 {field.value ? (
-                                                    format(field.value, "PPP")
+                                                    format(field.value, "dd-MM-yyyy")
                                                 ) : (
                                                     <span>Pick a date</span>
                                                 )}
@@ -288,9 +273,6 @@ export default function DealForm() {
                                             mode="single"
                                             selected={field.value}
                                             onSelect={field.onChange}
-                                            disabled={(date) =>
-                                                date > new Date() || date < new Date("1900-01-01")
-                                            }
                                             initialFocus
                                         />
                                     </PopoverContent>
@@ -304,8 +286,8 @@ export default function DealForm() {
                         control={form.control}
                         name="endDate"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>End Date</FormLabel>
+                            <FormItem className="flex flex-col justify-between">
+                                <FormLabel>Final Date</FormLabel>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <FormControl>
@@ -323,7 +305,6 @@ export default function DealForm() {
                                             mode="single"
                                             selected={field.value}
                                             onSelect={field.onChange}
-                                            disabled={(date) => date < new Date()}
                                             initialFocus
                                         />
                                     </PopoverContent>
@@ -339,12 +320,13 @@ export default function DealForm() {
                     name="notes"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Notes</FormLabel>
+                            <FormLabel>Notes (Optional)</FormLabel>
                             <FormControl>
                                 <textarea
-                                    placeholder="Enter notes"
+                                    placeholder="Enter more details here..."
                                     {...field}
-                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                                    rows={3}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -352,16 +334,18 @@ export default function DealForm() {
                     )}
                 />
 
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                        <>
-                            <table />
-                            Submitting...
-                        </>
-                    ) : (
-                        "Submit Lead"
-                    )}
-                </Button>
+                <div className="flex justify-center sm:justify-end">
+                    <Button type="submit" className="w-full sm:w-auto flex items-center justify-center" disabled={isSubmitting}>
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="animate-spin mr-2" />
+                                Submitting...
+                            </>
+                        ) : (
+                            "Create Deal"
+                        )}
+                    </Button>
+                </div>
             </form>
         </Form>
     )

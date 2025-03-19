@@ -1,29 +1,32 @@
 "use client";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { toast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
 
-// Define validation schema using Zod
+import * as z from "zod"
+import { useState } from "react"
+import { Loader2, Router } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
+import { useForm } from "react-hook-form"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { useRouter } from "next/navigation";
+
 const contactSchema = z.object({
   companyName: z.string().min(2, { message: "Company name is required." }),
   customerName: z.string().min(2, { message: "Customer name is required." }),
-  contactNumber: z.string().optional(),
+  contactNumber: z
+    .string()
+    .regex(/^\d*$/, { message: "Contact number must be numeric" })
+    .nonempty({ message: "Contact number is required" }),
   emailAddress: z.string().email({ message: "Invalid email address." }),
-  address: z.string().min(2, { message: "Address is required." }),
-  gstNumber: z.string().min(1, { message: "GST Number is required." }),
+  address: z.string().min(2, { message: "Company address is required." }),
+  gstNumber: z.string().min(1, { message: "GST number is required." }),
   description: z.string().optional(),
 });
 
 export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Initialize the form
+  const router = useRouter();
   const form = useForm<z.infer<typeof contactSchema>>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
@@ -45,23 +48,20 @@ export default function ContactForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to submit the contact.");
       }
-
       toast({
-        title: "Contact Created",
-        description: "Your contact has been created successfully.",
+        title: "Contact Submitted",
+        description: "The contact has been successfully created",
       });
-
-      // You can redirect or reset the form here if needed
+      router.push("/contact/table");
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "There was an error submitting the contact.",
+        description: error instanceof Error ? error.message : "There was an error creating the contact",
         variant: "destructive",
       });
     } finally {
@@ -91,9 +91,9 @@ export default function ContactForm() {
             name="customerName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Customer Name</FormLabel>
+                <FormLabel>Client / Customer Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter customer name" {...field} />
+                  <Input placeholder="Enter client / customer Name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -109,7 +109,15 @@ export default function ContactForm() {
               <FormItem>
                 <FormLabel>Contact Number</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter contact number" {...field} />
+                  <Input
+                    placeholder="Enter contact number"
+                    type="tel"
+                    {...field}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      field.onChange(value);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -122,7 +130,7 @@ export default function ContactForm() {
               <FormItem>
                 <FormLabel>Email Address</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter email address" {...field} />
+                  <Input placeholder="Enter valid email address" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -136,9 +144,9 @@ export default function ContactForm() {
             name="address"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Address</FormLabel>
+                <FormLabel>Company Address</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter address" {...field} />
+                  <Input placeholder="Enter company address" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -164,25 +172,33 @@ export default function ContactForm() {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Notes (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="Enter description" {...field} />
+                <textarea
+                  placeholder="Enter more details here..."
+                  {...field}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                  rows={3}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating Contact...
-            </>
-          ) : (
-            "Create Contact"
-          )}
-        </Button>
+        <div className="flex justify-center sm:justify-end">
+          <Button type="submit" className="w-full sm:w-auto flex items-center justify-center" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin mr-2" />
+                <table />
+                Submitting...
+              </>
+            ) : (
+              "Create Contact"
+            )}
+          </Button>
+        </div>
       </form>
     </Form>
   );

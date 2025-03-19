@@ -53,16 +53,16 @@ export default function CertificatePage() {
                     </div>
                 </div>
             </header>
-                <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15">
-                    <Card className="max-w-2xl mx-auto">
+            <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15">
+                    <Card className="max-w-8xl mx-auto border-none shadow-none">
                         <CardHeader>
-                            <CardTitle className="text-3xl font-bold text-center">Invoice Manager</CardTitle>
+                            <CardTitle className="text-3xl font-bold text-center">Create Invoice</CardTitle>
                             <CardDescription className="text-center">
-                                Manage and track your Invoice effectively.
+                                Make an invoice for a client / customer
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <InvoiceForm/>
+                            <InvoiceForm />
                         </CardContent>
                     </Card>
                 </div>
