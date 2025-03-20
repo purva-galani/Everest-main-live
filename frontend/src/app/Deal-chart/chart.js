@@ -5,11 +5,16 @@ import { Chart } from 'chart.js/auto';
 export default function CardChart() {
   const [selectedChartType, setSelectedChartType] = useState("line");
   const [chartData, setChartData] = useState({});
+  const [windowSize, setWindowSize] = useState(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }));
+
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
-
   const statuses = ["Proposal", "New", "Discussion", "Demo", "Decided"];
 
+  // Fetch Data
   useEffect(() => {
     const fetchAllData = async () => {
       try {
@@ -34,6 +39,7 @@ export default function CardChart() {
     fetchAllData();
   }, []);
 
+  // Chart Initialization
   useEffect(() => {
     if (!chartData || Object.keys(chartData).length === 0) return;
 
@@ -66,20 +72,11 @@ export default function CardChart() {
             align: "end",
             position: "bottom",
           },
-          title: {
-            display: false,
-            text: "Sales Charts",
-            color: "white",
-          },
-        },
-        interaction: {
-          mode: "index",
-          intersect: false,
         },
         scales: {
           x: {
             ticks: { color: "white" },
-            grid: { display: false, color: "rgba(33, 37, 41, 0.3)" },
+            grid: { display: false },
           },
           y: {
             ticks: { color: "white" },
@@ -94,10 +91,20 @@ export default function CardChart() {
         chartInstance.current.destroy();
       }
     };
-  }, [chartData, selectedChartType]);
+  }, [chartData, selectedChartType, windowSize]); // ✅ Re-render when window resizes
+
+  // Handle Window Resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-blueGray-700">
+    <div className="relative flex flex-col w-full mb-6 shadow-lg rounded bg-blueGray-700">
       <div className="rounded-t mb-0 px-4 py-3 bg-transparent">
         <div className="flex flex-wrap items-center justify-between">
           <div className="relative w-full max-w-full flex-grow flex-1">
@@ -108,7 +115,10 @@ export default function CardChart() {
           <div className="flex gap-4">
             <select
               value={selectedChartType}
-              onChange={(e) => setSelectedChartType(e.target.value)}
+              onChange={(e) => {
+                e.preventDefault();
+                setSelectedChartType(e.target.value);
+              }}
               className="w-32 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="line">Line Chart</option>
@@ -119,8 +129,8 @@ export default function CardChart() {
       </div>
 
       <div className="p-4 flex-auto">
-        <div className="relative" style={{ height: "500px", width: "100%" }}>
-          <canvas ref={chartRef} style={{ height: "100%", width: "100%" }}></canvas>
+        <div className="relative w-full" style={{ height: windowSize.width < 768 ? "300px" : "400px" }}>
+          <canvas ref={chartRef}></canvas>
         </div>
       </div>
     </div>
