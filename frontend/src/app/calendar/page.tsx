@@ -149,22 +149,23 @@ export default function CalendarPage() {
       days.push(
         <div
           key={day}
-          className={`p-2 border border-gray-200 ${isToday ? 'relative' : ''}`}
+          className={`p-1 xs:p-2 sm:p-3 md:p-4 lg:p-5 border border-gray-300 ${isToday ? 'relative' : ''}`}
         >
           <div className={`font-bold ${isToday ? 'flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full' : ''}`}>
             {day}
           </div>
           {dayEvents.map((event) => (
             <div
-              key={event._id}
-              className={`${calendars.find((cal) => cal.id === event.calendarId)?.color} text-white p-1 mb-1 rounded cursor-pointer`}
-              onClick={() => {
-                setSelectedEvent(event);
-                setShowEventModal(true);
-              }}
-            >
-              {event.event} {/* Changed from `title` to `event` */}
-            </div>
+            key={event._id}
+            className={`${calendars.find((cal) => cal.id === event.calendarId)?.color} text-white p-1 mb-1 rounded cursor-pointer text-sm leading-tight truncate`}
+            style={{ maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+            onClick={() => {
+              setSelectedEvent(event);
+              setShowEventModal(true);
+            }}
+          >
+            {event.event}
+          </div>          
           ))}
         </div>
       );
@@ -209,9 +210,8 @@ export default function CalendarPage() {
                         </div>
                     </div>
                 </header>
-                
-        <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15">
-          <div className="flex justify-between items-center mb-4">
+                <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15">
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
             <div className="flex space-x-2">
               <select
                 value={currentDate.getMonth()}
@@ -267,7 +267,7 @@ export default function CalendarPage() {
           </div>
           <div className="grid grid-cols-7 gap-2 mb-4">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div key={day} className="font-bold text-center">
+              <div key={day} className="font-bold text-center text-sm sm:text-base">
                 {day}
               </div>
             ))}
@@ -283,6 +283,7 @@ export default function CalendarPage() {
             />
           )}
         </div>
+
       </SidebarInset>
     </SidebarProvider>
   );
