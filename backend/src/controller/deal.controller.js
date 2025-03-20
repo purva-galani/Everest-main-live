@@ -86,7 +86,7 @@ const getLeadById = async (req, res) => {
     }
 };
 
-const updateLead = async (req, res) => {
+const updateDeal = async (req, res) => {
     const { id } = req.params;  
     const updates = req.body;   
 
@@ -94,7 +94,7 @@ const updateLead = async (req, res) => {
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid leadId"
+                message: "Invalid dealId"
             });
         }
 
@@ -105,7 +105,7 @@ const updateLead = async (req, res) => {
             });
         }
 
-        const updatedLead = await Lead.findByIdAndUpdate(
+        const updatedDeal = await Deal.findByIdAndUpdate(
             id,
             updates,
             {
@@ -114,20 +114,20 @@ const updateLead = async (req, res) => {
             }
         );
 
-        if (!updatedLead) {
+        if (!updatedDeal) {
             return res.status(404).json({
                 success: false,
-                message: "Lead not found",
+                message: "Deal not found",
             });
         }
 
         res.status(200).json({
             success: true,
-            message: "Lead updated successfully",
-            data: updatedLead
+            message: "Deal updated successfully",
+            data: updatedDeal
         });
     } catch (error) {
-        console.error("Error updating lead:", error);
+        console.error("Error updating deal:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error: " + error.message,
@@ -135,26 +135,26 @@ const updateLead = async (req, res) => {
     }
 };
 
-const deleteLead = async (req, res) => {
+const deleteDeal = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const deletedLead = await Lead.findByIdAndDelete(id);
+        const deletedDeal = await Deal.findByIdAndDelete(id);
 
-        if (!deletedLead) {
+        if (!deletedDeal) {
             return res.status(404).json({
                 success: false,
-                message: "Lead not found"
+                message: "Deal not found"
             });
         }
 
         res.status(200).json({
             success: true,
-            message: "Lead deleted successfully",
-            data: deletedLead
+            message: "Deal deleted successfully",
+            data: deletedDeal
         });
     } catch (error) {
-        console.error("Error deleting lead:", error);
+        console.error("Error deleting deal:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error: " + error.message,
@@ -331,8 +331,8 @@ module.exports = {
     createDeal,
     getAllDeals,
     getLeadById,
-    updateLead,
-    deleteLead,
+    updateDeal,
+    deleteDeal,
     getNewLeads,
     getDiscussionLeads,
     getDemoLeads,

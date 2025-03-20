@@ -122,7 +122,7 @@ const formSchema = z.object({
     amount: z.number().positive({ message: "Product amount is required" }),
     gstNumber: z.string().nonempty({ message: "GST number is required" }),
     status: z.enum(["Proposal", "New", "Discussion", "Demo", "Decided"]),
-    date: z.date().refine((val) => !isNaN(val.getTime()), { message: "Lead Date is required" }),
+    date: z.date().refine((val) => !isNaN(val.getTime()), { message: "Deal Date is required" }),
     endDate: z.date().refine((val) => !isNaN(val.getTime()), { message: "Final Date is required" }),
     notes: z.string().optional(),
     isActive: z.boolean(),
@@ -524,11 +524,11 @@ export default function DealTable() {
     }, [sortDescriptor, items]);
 
     const [isEditOpen, setIsEditOpen] = useState(false);
-    const [selectedLead, setSelectedLead] = useState<Deal | null>(null);
+    const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
 
     // Function to handle edit button click
     const handleEditClick = (Deals: Deal) => {
-        setSelectedLead(Deals);
+        setSelectedDeal(Deals);
         // Pre-fill the form with lead data
         form.reset({
             companyName: Deals.companyName,
@@ -555,7 +555,7 @@ export default function DealTable() {
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/deal/deleteLead/${Deals._id}`, {
+            const response = await fetch(`http://localhost:8000/api/v1/deal/deleteDeal/${Deals._id}`, {
                 method: "DELETE",
             });
 
@@ -569,29 +569,24 @@ export default function DealTable() {
                 description: "The deal has been successfully deleted.",
             });
 
-            // Refresh the leads list
             fetchdeal();
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to delete lead",
+                description: error instanceof Error ? error.message : "Failed to delete deal",
                 variant: "destructive",
             });
         }
     };
 
-
-
-
     const [isSubmitting, setIsSubmitting] = useState(false)
 
-
     async function onEdit(values: z.infer<typeof formSchema>) {
-        if (!selectedLead?._id) return;
+        if (!selectedDeal?._id) return;
 
         setIsSubmitting(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/deal/updateLead/${selectedLead._id}`, {
+            const response = await fetch(`http://localhost:8000/api/v1/deal/updateDeal/${selectedDeal._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
@@ -607,12 +602,10 @@ export default function DealTable() {
                 description: "The deal has been successfully updated.",
             });
 
-            // Close dialog and reset form
             setIsEditOpen(false);
-            setSelectedLead(null);
+            setSelectedDeal(null);
             form.reset();
 
-            // Refresh the leads list
             fetchdeal();
         } catch (error) {
             toast({
@@ -841,7 +834,7 @@ export default function DealTable() {
                             <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Deal Record</h1>
                             <Table
                                 isHeaderSticky
-                                aria-label="Leads table with custom cells, pagination and sorting"
+                                aria-label="Deals table with custom cells, pagination and sorting"
                                 bottomContent={bottomContent}
                                 bottomContentPlacement="outside"
                                 classNames={{ wrapper: "max-h-[382px] overflow-y-auto" }}

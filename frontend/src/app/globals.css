@@ -328,3 +328,11 @@ body {
     height: 100%;
   }
 }
+
+.event-text {
+  white-space: nowrap; /* Prevents text from wrapping */
+  overflow: hidden; /* Hides overflowing text */
+  text-overflow: ellipsis; /* Adds "..." to indicate truncated text */
+  max-width: 100%; /* Ensures it stays inside the date box */
+  display: block;
+}

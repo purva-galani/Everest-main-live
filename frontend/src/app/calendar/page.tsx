@@ -40,7 +40,6 @@ export default function CalendarPage() {
     { id: 3, name: 'Low', color: 'bg-yellow-500' },
   ];
 
-  // Fetch events from the backend
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -210,6 +209,7 @@ export default function CalendarPage() {
                         </div>
                     </div>
                 </header>
+                
         <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8 pt-15">
           <div className="flex justify-between items-center mb-4">
             <div className="flex space-x-2">
