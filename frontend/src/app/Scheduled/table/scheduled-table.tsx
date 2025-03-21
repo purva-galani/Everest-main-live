@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { Calendar } from "@/components/ui/calendar"
 
 interface ScheduledEvents {
-    id: string;
+    _id: string;
     subject: string;
     assignedUser: string;
     customer: string;
@@ -272,7 +272,7 @@ export default function ScheduledEvents() {
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/scheduledevents/deleteScheduledEvent/${scheduledEvents.id}`, {
+            const response = await fetch(`http://localhost:8000/api/v1/scheduledevents/deleteScheduledEvent/${scheduledEvents._id}`, {
                 method: "DELETE",
             });
 
@@ -299,11 +299,11 @@ export default function ScheduledEvents() {
 
     const [isSubmitting, setIsSubmitting] = useState(false)
     async function onEdit(values: z.infer<typeof eventSchema>) {
-        if (!selectedScheduledEvents?.id) return;
+        if (!selectedScheduledEvents?._id) return;
 
         setIsSubmitting(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/scheduledevents/updateScheduledEvent/${selectedScheduledEvents.id}`, {
+            const response = await fetch(`http://localhost:8000/api/v1/scheduledevents/updateScheduledEvent/${selectedScheduledEvents._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
