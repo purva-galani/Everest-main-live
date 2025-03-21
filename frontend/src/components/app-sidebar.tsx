@@ -156,7 +156,7 @@ const data = {
       url: "/document",
       icon: ScrollText,
       items: [
-        { title: "Others", url: "/flipflap" }
+        { title: "Others", url: "/document" }
       ],
     },
     {

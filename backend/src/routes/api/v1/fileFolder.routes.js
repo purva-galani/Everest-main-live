@@ -4,6 +4,7 @@ const path = require('path');
 const fileController = require('../../../controller/fileFolder.controller');
 const router = express.Router();
 
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, '../../../uploads'));
@@ -14,7 +15,14 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+
 router.post('/upload', upload.single('file'), fileController.createFile);
+
+
 router.get('/files', fileController.getFiles);
+
+
+router.delete('/files/:id', fileController.deleteFile);
+
 
 module.exports = router;

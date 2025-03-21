@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 type File = {
   id: string;
@@ -17,6 +17,10 @@ const GoogleDriveClone = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [downloadStatus, setDownloadStatus] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'file' | 'photo'>('all');
+
+  // Ref for modal to detect click outside of it
+  const modalRef = useRef<HTMLDivElement>(null);
+  const modalBackdropRef = useRef<HTMLDivElement>(null); // Ref for modal backdrop
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -95,10 +99,7 @@ const GoogleDriveClone = () => {
       .then(data => {
         if (data.success) {
           console.log('File deleted successfully');
-          // Remove the deleted file from the state to reflect the change in the UI
           setFiles(prevFiles => prevFiles.filter(file => file.id !== fileId));
-          
-          // Only close the modal after successful deletion
           setSelectedFile(null); // Close the modal after deletion
         } else {
           console.log('Failed to delete file');
@@ -108,9 +109,6 @@ const GoogleDriveClone = () => {
         console.error('Error deleting file:', error);
       });
   };
-  
-
-
 
   const handleFileClick = (item: File) => {
     setSelectedFile(item);
@@ -130,41 +128,43 @@ const GoogleDriveClone = () => {
     setTimeout(() => setDownloadStatus(null), 2000);
   };
 
+  // Close the modal if clicked outside the modal content
+  const handleClickOutside = (e: React.MouseEvent) => {
+    if (modalBackdropRef.current && !modalRef.current?.contains(e.target as Node)) {
+      setSelectedFile(null); // Close the modal if clicked outside
+    }
+  };
+
   return (
-    <div className="google-drive-clone flex h-screen">
-      <div className="sidebar w-64 p-4 bg-gray-800 text-white overflow-x-auto">
+<div className="google-drive-clone flex flex-col md:flex-row h-[90vh] bg-gray-100 border border-gray-300 shadow-[0_4px_10px_rgba(0,0,0,0.4)] p-4">
+{/* Sidebar */}
+      <div className="sidebar w-full md:w-64 p-4 bg-white border-r border-gray-200">
         <input
           type="text"
           placeholder="Search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="bg-gray-600 text-white p-2 rounded-md w-full mb-4"
+          className="bg-gray-50 text-gray-900 p-2 rounded-md w-full mb-4 border border-gray-300"
         />
-        <button
-          onClick={() => setCurrentFolderId(null)}
-          className="text-white py-2 px-4 rounded-md mb-4 hover:bg-gray-700 w-full text-left"
-        >
-          &#8592; My Drive
-        </button>
-        <h3 className="text-lg font-semibold mb-2">Files</h3>
+        <h3 className="text-lg font-semibold mb-2 text-gray-800">Files</h3>
 
         {/* Filter Buttons */}
-        <div className="filter-buttons mb-4">
+        <div className="filter-buttons mb-4 flex space-x-2">
           <button
             onClick={() => setFilter('all')}
-            className={`filter-btn ${filter === 'all' ? 'bg-blue-500' : 'bg-gray-700'} py-2 px-4 rounded-md`}
+            className={`filter-btn ${filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} py-1 px-3 rounded-md text-sm`}
           >
             All
           </button>
           <button
             onClick={() => setFilter('file')}
-            className={`filter-btn ${filter === 'file' ? 'bg-blue-500' : 'bg-gray-700'} py-2 px-4 rounded-md ml-2`}
+            className={`filter-btn ${filter === 'file' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} py-1 px-3 rounded-md text-sm`}
           >
             Files
           </button>
           <button
             onClick={() => setFilter('photo')}
-            className={`filter-btn ${filter === 'photo' ? 'bg-blue-500' : 'bg-gray-700'} py-2 px-4 rounded-md ml-2`}
+            className={`filter-btn ${filter === 'photo' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} py-1 px-3 rounded-md text-sm`}
           >
             Photos
           </button>
@@ -176,7 +176,7 @@ const GoogleDriveClone = () => {
             <div key={folder.id} className="relative">
               <button
                 onClick={() => handleFolderClick(Number(folder.id))}
-                className="text-white py-2 px-4 rounded-md mb-2 w-full text-left hover:bg-gray-700"
+                className="text-gray-700 py-2 px-4 rounded-md mb-2 w-full text-left hover:bg-gray-100"
               >
                 📁 {folder.name}
               </button>
@@ -191,121 +191,122 @@ const GoogleDriveClone = () => {
         />
         <button
           onClick={() => document.getElementById('fileInput')?.click()}
-          className="bg-blue-500 text-white py-2 px-4 rounded-md w-full mt-4 hover:bg-blue-700"
+          className="bg-blue-500 text-white py-2 px-4 rounded-md w-full mt-4 hover:bg-blue-600"
         >
           Upload File
         </button>
       </div>
 
       {/* Main Content */}
-      <div className="main-content flex-1 p-6 bg-gray-900">
-        <div className="files flex flex-wrap gap-4 overflow-y-auto max-h-[calc(100vh-120px)] scrollbar-hide">
+      <div className="main-content flex-1 p-6 bg-gray-60 overflow-y-auto scrollbar-hide">
+        <div className="files grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredFoldersAndFiles.map((item: File) =>
             item.type === 'folder' ? (
               <div
                 key={item.id}
                 onClick={() => handleFolderClick(Number(item.id))}
-                className="folder w-36 p-4 mb-4 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600"
+                className="folder p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md"
               >
-                <h3 className="text-white">{item.name}</h3>
+                <h3 className="text-gray-900">{item.name}</h3>
               </div>
             ) : (
               <div
                 key={item.id}
                 onClick={() => handleFileClick(item)}
-                className="file w-36 p-4 mb-4 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600"
+                className="file p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md"
               >
                 {item.fileType === 'image' ? (
                   <div className="flex flex-col items-center">
                     <img
                       src={`http://localhost:8000/uploads/${item.fileUrl}`}
                       alt={item.name}
-                      className="w-32 h-32 object-cover mb-2"
+                      className="w-32 h-32 object-cover mb-2 rounded-md"
                     />
-                    <p className="text-white text-center">{item.name}</p>
+                    <p className="text-gray-900 text-center max-w-full overflow-hidden text-ellipsis">
+                      {item.name}
+                    </p>
                   </div>
                 ) : item.fileType === 'video' ? (
                   <video
                     src={`http://localhost:8000/uploads/${item.fileUrl}`}
-                    className="w-32 h-32 object-cover mb-2"
+                    className="w-32 h-32 object-cover mb-2 rounded-md"
                     controls
                   >
                     Your browser does not support the video tag.
                   </video>
                 ) : (
-                  <div className="text-white text-center mb-2">
+                  <div className="text-gray-900 text-center">
                     <p>📄</p>
-                    <h3>{item.name}</h3>
+                    <p className="text-gray-900 text-center max-w-full overflow-hidden text-ellipsis">
+                      {item.name}
+                    </p>
                   </div>
                 )}
-
-
               </div>
             )
           )}
         </div>
       </div>
 
+      {/* Modal */}
       {selectedFile && (
-  <div className="modal fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center">
-    <div className="modal-content bg-white p-6 rounded-lg w-3/4 max-w-4xl">
-      <button
-        onClick={handleModalClose}
-        className="text-black font-bold text-xl absolute top-0 right-0 p-4"
-        style={{
-          cursor: 'pointer',
-          color: 'red',
-        }}
-      >
-        ×
-      </button>
-
-      {/* Download Button */}
-      <button
-        onClick={() => handleDownload(selectedFile)}
-        className="bg-blue-500 text-white py-2 px-4 rounded-md mt-4 hover:bg-blue-700"
-      >
-        Download
-      </button>
-
-      <button
-        onClick={() => handleDelete(selectedFile.id)} // Pass the file's ID here
-        className="bg-red-500 text-white py-2 px-4 rounded-md mt-2 hover:bg-red-700"
-      >
-        Delete
-      </button>
-
-      {downloadStatus && (
-        <div className="text-green-500 mt-2">{downloadStatus}</div>
-      )}
-
-      {selectedFile.fileType === 'image' ? (
-        <img
-          src={`http://localhost:8000/uploads/${selectedFile.fileUrl}`}
-          alt={selectedFile.name}
-          className="w-full h-auto"
-        />
-      ) : selectedFile.fileType === 'video' ? (
-        <video
-          src={`http://localhost:8000/uploads/${selectedFile.fileUrl}`}
-          className="w-full h-auto"
-          controls
+        <div
+          className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4"
+          ref={modalBackdropRef}
+          onClick={handleClickOutside}
         >
-          Your browser does not support the video tag.
-        </video>
-      ) : (
-        <div className="text-black text-center mb-2">
-          <p>📄</p>
-          <h3>{selectedFile?.name}</h3>
+          <div
+            className="modal-content bg-white p-6 rounded-lg w-full sm:w-3/4 max-w-md shadow-lg"
+            ref={modalRef}
+          >
+            {/* File Preview */}
+            <div className="mb-4">
+              {selectedFile.fileType === "image" ? (
+                <img
+                  src={`http://localhost:8000/uploads/${selectedFile.fileUrl}`}
+                  alt={selectedFile.name}
+                  className="w-full h-auto rounded-md"
+                />
+              ) : selectedFile.fileType === "video" ? (
+                <video
+                  src={`http://localhost:8000/uploads/${selectedFile.fileUrl}`}
+                  className="w-full h-auto rounded-md"
+                  controls
+                >
+                  Your browser does not support the video tag.
+                </video>
+              ) : (
+                <div className="text-black text-center mb-2">
+                  <p>📄</p>
+                  <h3 className="truncate">{selectedFile?.name}</h3>
+                </div>
+              )}
+            </div>
+
+            {/* Buttons Section */}
+            <div className="flex justify-between">
+              <button
+                onClick={() => handleDownload(selectedFile)}
+                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200 mr-2"
+              >
+                Download
+              </button>
+
+              <button
+                onClick={() => handleDelete(selectedFile.id)}
+                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition duration-200"
+              >
+                Delete
+              </button>
+            </div>
+
+            {/* Download Status */}
+            {downloadStatus && <div className="text-green-500 mt-2">{downloadStatus}</div>}
+          </div>
         </div>
       )}
-    </div>
-  </div>
-)}
-
     </div>
   );
 };
 
 export default GoogleDriveClone;
-
