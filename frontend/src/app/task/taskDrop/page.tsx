@@ -184,13 +184,12 @@ export default function App() {
         <div className="p-6 ">
           {error && <p className="text-red-500 text-center">{error}</p>}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-6xl md:max-w-4xl mx-auto">
-          {Object.keys(statusColors).map((status) => {
+            {Object.keys(statusColors).map((status) => {
               const taskStatus = groupedTasks[status] || [];
 
               return (
                 <div
                   key={status}
-                  className={`p-4 rounded-lg  min-h-[530px] transition-all ${draggedOver === status}`}
                   onDrop={(e) => handleDrop(e, status)}
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -198,30 +197,24 @@ export default function App() {
                   }}
                   onDragLeave={() => setDraggedOver(null)}
                 >
-                  <h2 className={`text-sm font-bold mb-4 px-5 py-2 rounded-lg ${statusColors[status]}`}>{status}</h2>
-                  <div className="p-3 bg-[#FAF3DD]   rounded-md shadow">
-                    <p className="text-sm font-semibold text-gray-500">Total Task: {taskStatus.length}</p>
+                  <h2 className="text-base font-bold mb-4 p-4 bg-white border border-black rounded text-gray-800 text-center">{status}</h2>
+                  <div className="p-4 rounded-lg shadow-sm border border-black mb-4">
+                    <p className="text-sm font-semibold text-gray-800">Total Task: {taskStatus.length}</p>
                   </div>
                   <div
-                    className="scrollable"
+                    className="mt-4 flex flex-col gap-3 min-h-[250px] max-h-[500px] overflow-y-auto"
                   >
                     {taskStatus.length === 0 ? (
-                      <p className="text-gray-500 text-center">No tasks available</p>
+                      <p className="text-center text-gray-500">No tasks available</p>
                     ) : (
                       taskStatus.map((task) => (
                         <div
                           key={task._id}
-                          className="card-container  mt-4"
-                          >
-                            <div
-                              className="card border border-gray-300 rounded-lg shadow-md bg-white p-3 cursor-grab active:cursor-grabbing"
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, task, status)}
-                              onClick={() => handleTaskClick(task)}
+                          className="p-3 border border-black rounded-lg bg-white shadow-sm cursor-grab" draggable
+                          onDragStart={(e) => handleDragStart(e, task, status)}
+                          onClick={() => handleTaskClick(task)}
                         >
-                            <p>Subject: <span>{task.subject}</span></p>
-  
-                        </div>
+                          <p className="text-sm font-semibold text-black">Subject: <span>{task.subject}</span></p>
                         </div>
                       ))
                     )}
@@ -232,36 +225,34 @@ export default function App() {
           </div>
           {isModalOpen && selectedTask && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="w-full max-w-lg relative">
-                <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-blue-500 to-teal-500 transform scale-[0.80] rounded-full blur-3xl" />
-
-                <div className="relative shadow-xl bg-gray-900 border border-gray-800 px-6 py-8 rounded-2xl">
+              <div className="w-full max-w-md h-auto relative">
+                <div className="absolute inset-0 h-full w-full bg-gradient-to-r  rounded-full blur-lg scale-90 opacity-50" />
+                <div className="relative bg-white border border-gray-700 rounded-lg p-6 w-[800px] h-700 flex flex-col">
+                  {/* Close Button */}
                   <div
-                    className="absolute top-3 right-3 h-8 w-8 rounded-full border border-gray-500 flex items-center justify-center cursor-pointer"
-                    onClick={() => {
-                      setIsModalOpen(false); 
-                    }}
+                    className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center cursor-pointer"
+                    onClick={closeModal}
                   >
-                    <MdCancel className="text-white text-2xl"/>
-                      
+                    <MdCancel className="text-gray-500 text-2xl" />
                   </div>
 
-                  <h1 className="font-bold text-2xl text-white mb-6 text-center">Lead Details</h1>
-
-                  <div className="grid grid-cols-2 gap-4 text-white">
+                  {/* Modal Header */}
+                  <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">Invoice Details</h1>
+                  <Separator className="my-4 border-gray-300" />
+                  {/* Invoice Details */}
+                  <div className="grid grid-cols-2 gap-6 text-gray-700 overflow-y-auto">
                     {Object.entries(selectedTask)
-                      .filter(([key]) => !["_id", "isActive", "createdAt", "updatedAt"].includes(key))
+                      .filter(([key]) => !["_id", "__v", "isActive", "createdAt", "updatedAt"].includes(key)) // Exclude unwanted fields
                       .map(([key, value]) => (
-                        <p key={key} className="text-sm">
+                        <p key={key} className="text-lg">
                           <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong>{" "}
-                          {["date", "endDate"].includes(key) && value
-                            ? new Date(value).toLocaleDateString()
+                          {["dueDate", "lastReminderDate", "taskDate"].includes(key) && value
+                            ? new Date(value).toLocaleDateString("en-GB") // ✅ Shows only date (DD/MM/YYYY)
                             : value || "N/A"}
                         </p>
                       ))}
                   </div>
 
-                  <Meteors number={20} />
                 </div>
               </div>
             </div>

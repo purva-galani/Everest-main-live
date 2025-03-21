@@ -247,10 +247,8 @@ export default function ScheduledEvents() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [selectedScheduledEvents, setSelectedScheduledEvents] = useState<ScheduledEvents | null>(null);
 
-    // Function to handle edit button click
     const handleEditClick = (scheduledEvents: ScheduledEvents) => {
         setSelectedScheduledEvents(scheduledEvents);
-        // Pre-fill the form with lead data
         form.reset({
             id: scheduledEvents.id,
             subject: scheduledEvents.subject,
@@ -268,13 +266,10 @@ export default function ScheduledEvents() {
         setIsEditOpen(true);
     };
 
-
-    // Function to handle delete button click
     const handleDeleteClick = async (scheduledEvents: ScheduledEvents) => {
         if (!window.confirm("Are you sure you want to delete this scheduled?")) {
             return;
         }
-
 
         try {
             const response = await fetch(`http://localhost:8000/api/v1/scheduledevents/deleteScheduledEvent/${scheduledEvents.id}`, {
