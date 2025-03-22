@@ -49,15 +49,15 @@ export const invoiceSchema = z.object({
     address: z.string().optional(),
     gstNumber: z.string().optional(),
     productName: z.string().nonempty({ message: "Product name is required" }),
-    amount: z.number().positive({ message: "Product amount is required" }),
-    discount: z.number().optional(),
-    gstRate: z.number().optional(),
+    amount: z.coerce.number().positive({ message: "Product amount is required" }),
+    discount: z.coerce.number().optional(),
+    gstRate: z.coerce.number().optional(),
     status: z.enum(["Paid", "Unpaid"]),
-    date: z.date().refine((val) => !isNaN(val.getTime()), { message: "Invoice Date is required" }),
-    paidAmount: z.string().optional(),
-    remainingAmount: z.number().optional(),
-    totalWithoutGst: z.number().optional(),
-    totalWithGst: z.number().optional(),
+    date: z.coerce.date({ message: "Invoice Date is required" }),
+    paidAmount: z.coerce.number().optional(),
+    remainingAmount: z.coerce.number().optional(),
+    totalWithoutGst: z.coerce.number().optional(),
+    totalWithGst: z.coerce.number().optional(),
 });
 
 const generateUniqueId = () => {

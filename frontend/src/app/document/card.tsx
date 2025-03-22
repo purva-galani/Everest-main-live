@@ -17,11 +17,31 @@ const GoogleDriveClone = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [downloadStatus, setDownloadStatus] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'file' | 'photo'>('all');
-
-  // Ref for modal to detect click outside of it
   const modalRef = useRef<HTMLDivElement>(null);
-  const modalBackdropRef = useRef<HTMLDivElement>(null); // Ref for modal backdrop
+  const modalBackdropRef = useRef<HTMLDivElement>(null); 
 
+  const getFileImage = (fileName: string) => {
+    const extension = fileName.split(".").pop()?.toLowerCase(); // Extract file extension
+  
+    switch (extension) {
+      case "pdf":
+        return "/file-icons/pdf.png";
+      case "doc":
+      case "docx":
+        return "/file-icons/word.png";
+      case "xls":
+      case "xlsx":
+        return "/file-icons/excel.png";
+      case "ppt":
+      case "pptx":
+        return "/file-icons/ppt.png";
+      case "txt":
+        return "/file-icons/text.png";
+      default:
+        return "/file-icons/file.png"; 
+    }
+  };
+  
   useEffect(() => {
     const fetchFiles = async () => {
       try {
@@ -211,38 +231,42 @@ const GoogleDriveClone = () => {
               </div>
             ) : (
               <div
-                key={item.id}
-                onClick={() => handleFileClick(item)}
-                className="file p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md"
-              >
-                {item.fileType === 'image' ? (
-                  <div className="flex flex-col items-center">
-                    <img
-                      src={`http://localhost:8000/uploads/${item.fileUrl}`}
-                      alt={item.name}
-                      className="w-32 h-32 object-cover mb-2 rounded-md"
-                    />
-                    <p className="text-gray-900 text-center max-w-full overflow-hidden text-ellipsis">
-                      {item.name}
-                    </p>
-                  </div>
-                ) : item.fileType === 'video' ? (
-                  <video
+              key={item.id}
+              onClick={() => handleFileClick(item)}
+              className="file p-4 bg-white rounded-lg shadow-md cursor-pointer hover:shadow-lg items-center justify-center text-gray-900 text-center max-w-full overflow-hidden text-ellipsis "
+            >
+              {item.fileType === 'image' ? (
+                <div className="flex flex-col items-center">
+                  <img
                     src={`http://localhost:8000/uploads/${item.fileUrl}`}
+                    alt={item.name}
                     className="w-32 h-32 object-cover mb-2 rounded-md"
-                    controls
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (
-                  <div className="text-gray-900 text-center">
-                    <p>📄</p>
-                    <p className="text-gray-900 text-center max-w-full overflow-hidden text-ellipsis">
-                      {item.name}
-                    </p>
-                  </div>
-                )}
-              </div>
+                  />
+                  <p className="text-gray-900 text-center max-w-full overflow-hidden text-ellipsis">
+                    {item.name}
+                  </p>
+                </div>
+              ) : item.fileType === 'video' ? (
+                <video
+                  src={`http://localhost:8000/uploads/${item.fileUrl}`}
+                  className="w-32 h-32 object-cover mb-2 rounded-md"
+                  controls
+                >
+                  Your browser does not support the video tag.
+                </video>
+              ) : (
+                <div className="flex flex-col items-center">
+                  <img
+                    src={getFileImage(item.name)}
+                    alt={item.name}
+                    className="w-20 h-20 object-contain mb-2" // Adjust size as needed
+                  />
+                  <p className="text-gray-900 text-center max-w-full overflow-hidden text-ellipsis mt-2">
+                    {item.name}
+                  </p>
+                </div>
+              )}
+            </div>
             )
           )}
         </div>
@@ -265,19 +289,23 @@ const GoogleDriveClone = () => {
                 <img
                   src={`http://localhost:8000/uploads/${selectedFile.fileUrl}`}
                   alt={selectedFile.name}
-                  className="w-full h-auto rounded-md"
-                />
+                  className="w-full max-h-[80vh] object-contain rounded-md"
+                  />
               ) : selectedFile.fileType === "video" ? (
                 <video
                   src={`http://localhost:8000/uploads/${selectedFile.fileUrl}`}
-                  className="w-full h-auto rounded-md"
+                  className="w-full max-h-[80vh] object-contain rounded-md"
                   controls
                 >
                   Your browser does not support the video tag.
                 </video>
               ) : (
-                <div className="text-black text-center mb-2">
-                  <p>📄</p>
+                <div className="text-black text-center mb-2 flex flex-col items-center">
+                  <img
+                    src={getFileImage(selectedFile?.name)}
+                    alt={selectedFile?.name}
+                    className="w-20 h-20 object-contain mb-2" // Adjust size as needed
+                  />
                   <h3 className="truncate">{selectedFile?.name}</h3>
                 </div>
               )}

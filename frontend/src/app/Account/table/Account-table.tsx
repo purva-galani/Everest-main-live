@@ -21,7 +21,7 @@ interface Account {
     accountNumber: string;
     accountType: string;
     IFSCCode: string;
-    UpiID: string;
+    UpiId: string;
 }
 
 const generateUniqueId = () => {
@@ -40,11 +40,11 @@ const columns = [
     { name: "Bank Account Holder Name", uid: "accountHolderName", sortable: true, width: "120px" },
     { name: "Bank Account Number", uid: "accountNumber", sortable: true, width: "120px" },
     { name: "Account Type", uid: "accountType", sortable: true, width: "120px" },
-    { name: "UPI ID", uid: "UpiID", sortable: true, width: "100px" },
+    { name: "UPI ID", uid: "UpiId", sortable: true, width: "100px" },
     { name: "Action", uid: "actions", sortable: true, width: "100px" },
 
 ];
-const INITIAL_VISIBLE_COLUMNS = ["accountHolderName", "accountNumber", "bankName", "accountType", "IFSCCode", "UpiID", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["accountHolderName", "accountNumber", "bankName", "accountType", "IFSCCode", "UpiId", "actions"];
 
 const accountSchema = z.object({
     bankName: z.string().min(2, { message: "Bank name is required." }),
@@ -157,7 +157,7 @@ export default function AccountTable() {
             accountNumber: "",
             accountType: "Current",
             IFSCCode: "",
-            UpiID: ""
+            UpiId: ""
         },
     })
 
@@ -179,7 +179,7 @@ export default function AccountTable() {
                     bankName: account.bankName,
                     accountType: account.accountType,
                     IFSCCode: account.IFSCCode,
-                    UpiID: account.UpiID
+                    UpiId: account.UpiId
                 };
 
                 return Object.values(searchableFields).some(value =>
@@ -224,7 +224,7 @@ export default function AccountTable() {
             bankName: account.bankName,
             accountType: account.accountType,
             IFSCCode: account.IFSCCode,
-            UpiID: account.UpiID
+            UpiId: account.UpiId
         });
         setIsEditOpen(true);
     };
