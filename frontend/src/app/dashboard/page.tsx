@@ -9,9 +9,6 @@ import SearchBar from '@/components/globalSearch';
 import Notification from '@/components/notification';
 import { Selection } from "@nextui-org/react";
 import { Separator } from "@/components/ui/separator";
-import { SortDescriptor } from "@nextui-org/react"
-import { Calendar1 } from "lucide-react"
-
 import {
   SidebarInset,
   SidebarProvider,
@@ -23,7 +20,6 @@ import {
   BarChart,
   CartesianGrid, LabelList, Pie, PieChart, RadialBar, RadialBarChart, Rectangle, XAxis
 } from "recharts"
-
 import {
   Box,
   FormControl,
@@ -35,7 +31,7 @@ import {
   styled,
 } from "@mui/material";
 import { Button, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Chip, Tooltip, ChipProps, Input } from "@heroui/react"
-import { Pencil, Trash2, Search } from "lucide-react";
+import { Pencil, Trash2, Search, Calendar1, Calendar, Filter, Plus } from "lucide-react";
 
 const chartConfig = {
   visitors: {
@@ -68,15 +64,15 @@ const chartConfigInvoice = {
     label: "Invoice",
   },
   Pending: {
-    label: "New",
+    label: "Pending",
     color: "hsl(var(--chart-2))",
   },
   Unpaid: {
-    label: "Demo",
+    label: "Unpaid",
     color: "hsl(var(--chart-3))",
   },
   Paid: {
-    label: "Discussion",
+    label: "Paid",
     color: "hsl(var(--chart-4))",
   },
 
@@ -109,7 +105,7 @@ interface Lead {
   companyName: string;
   customerName: string;
   contactNumber: string;
-  emailAddress: string;
+  assigneduser: string;
   address: string;
   productName: string;
   amount: string;
@@ -120,6 +116,7 @@ interface Lead {
   notes: string;
   isActive: string;
 }
+
 interface Invoice {
   _id: string;
   companyName: string;
@@ -132,7 +129,28 @@ interface Invoice {
   amount: number;
   discount: number;
   gstRate: number;
-  status: string;
+  status: "Paid" | "Unpaid" | "Pending"; 
+  date: Date;
+  endDate: Date;
+  totalWithoutGst: number;
+  totalWithGst: number;
+  paidAmount: number;
+  remainingAmount: number;
+}
+
+interface Reminder {
+  _id: string;
+  companyName: string;
+  customerName: string;
+  contactNumber: string;
+  emailAddress: string;
+  address: string;
+  gstNumber: string;
+  productName: string;
+  amount: number;
+  discount: number;
+  gstRate: number;
+  status: "Paid" | "Unpaid" | "Pending"; 
   date: Date;
   endDate: Date;
   totalWithoutGst: number;
@@ -171,6 +189,19 @@ interface Task {
   isActive: boolean;
 }
 
+interface Schedule {
+  subject: string;
+  assignedUser: string;
+  customer: string;
+  location: string;
+  status: "Scheduled" | "Completed" | "Cancelled" | "Postpone";
+  eventType: "call" | "Call" | "Meeting" | "meeting" | "Demo" | "demo" | "Follow-Up" | "follow-up"
+  priority: "Low" | "low" | "Medium" | "medium" | "High" | "high";
+  date: string;
+  recurrence: "one-time" | "Daily" | "Weekly" | "Monthly" | "Yearly";
+  description: string;
+}
+
 interface CategorizedLeads {
   [key: string]: Lead[];
 }
@@ -187,49 +218,62 @@ interface CategorizedTasks {
   [key: string]: Task[];
 }
 
-const columns = [
-  { name: "COMPANY", uid: "companyName", sortable: true },
-  { name: "CUSTOMER", uid: "customerName", sortable: true },
-  { name: "CONTACT", uid: "contactNumber", sortable: true },
-  { name: "EMAIL", uid: "emailAddress", sortable: true },
-  { name: "ADDRESS", uid: "address", sortable: true },
-  { name: "PRODUCT", uid: "productName", sortable: true },
-  { name: "AMOUNT", uid: "amount", sortable: true },
-  { name: "GST", uid: "gstNumber", sortable: true },
-  { name: "STATUS", uid: "status", sortable: true },
-  { name: "DATE", uid: "date", sortable: true },
-  { name: "END DATE", uid: "endDate", sortable: true },
-  { name: "ACTION", uid: "actions", sortable: true }
-];
+interface CategorizedReminder {
+  [key: string]: Reminder[];
+}
 
-const columnsInvoice = [
-  { name: "COMPANY", uid: "companyName", sortable: true },
-  { name: "CUSTOMER", uid: "customerName", sortable: true },
-  { name: "EMAIL", uid: "emailAddress", sortable: true },
-  { name: "PRODUCT", uid: "productName", sortable: true },
+interface CategorizedScheduled {
+  [key: string]: Schedule[];
+}
+
+const columns = [
+  { name: "Company Name", uid: "companyName", sortable: true },
+  { name: "Product Name", uid: "productName", sortable: true },
+  { name: "Product Amount", uid: "amount", sortable: true },
+  { name: "Status", uid: "status", sortable: true },
 ];
 
 const columnsDeal = [
-  { name: "COMPANY", uid: "companyName", sortable: true },
-  { name: "CUSTOMER", uid: "customerName", sortable: true },
-  { name: "EMAIL", uid: "emailAddress", sortable: true },
-  { name: "PRODUCT", uid: "productName", sortable: true },
+  { name: "Company Name", uid: "companyName", sortable: true },
+  { name: "Product Name", uid: "productName", sortable: true },
+  { name: "Product Amount", uid: "amount", sortable: true },
+  { name: "Status", uid: "status", sortable: true },
+];
+
+const columnsInvoice = [
+  { name: "Company Name", uid: "companyName", sortable: true },
+  { name: "Product Name", uid: "productName", sortable: true },
+  { name: "Product Amount", uid: "amount", sortable: true },
+  { name: "Status", uid: "status", sortable: true },
+];
+
+const columnsReminder = [
+  { name: "Company Name", uid: "companyName", sortable: true },
+  { name: "Product Name", uid: "productName", sortable: true },
+  { name: "Paid Amount", uid: "paidAmount", sortable: true },
+  { name: "Remiaining Amount", uid: "remainingAmount", sortable: true },
 ];
 
 const columnsTask = [
-  { name: "SUBJECT", uid: "subject", sortable: true },
-  { name: "RELETED TO", uid: "relatedTo", sortable: true },
-  { name: "CUSTOMER", uid: "name", sortable: true },
-  { name: "STATUS", uid: "status", sortable: true },
-]
+  { name: "Subject", uid: "subject", sortable: true },
+  { name: "Name", uid: "name", sortable: true },
+  { name: "Task Date", uid: "taskDate", sortable: true },
+  { name: "Due Date", uid: "dueDate", sortable: true },
+];
+
+const columnsSchedule = [
+  { name: "Subject", uid: "subject", sortable: true },
+  { name: "Location", uid: "location", sortable: true },
+  { name: "Member", uid: "assignedUser", sortable: true },
+  { name: "Date", uid: "date", sortable: true },
+];
 
 const INITIAL_VISIBLE_COLUMNS = ["companyName", "customerName", "emailAddress", "productName"];
-
 const INITIAL_VISIBLE_COLUMNS_INVOICE = ["companyName", "customerName", "emailAddress", "productName"];
-
 const INITIAL_VISIBLE_COLUMNS_DEAL = ["companyName", "customerName", "emailAddress", "productName"];
-
 const INITIAL_VISIBLE_COLUMNS_TASK = ["subject", "relatedTo", "name", "status"];
+const INITIAL_VISIBLE_COLUMNS_REMINDER = ["companyName", "customerName", "emailAddress", "status"];
+const INITIAL_VISIBLE_COLUMNS_SCHEDULE = ["subject", "customerName", "location", "status"];
 
 const chartData = {
   Proposal: "#2a9d90",
@@ -276,41 +320,68 @@ export default function Page() {
   const [selectedChart, setSelectedChart] = useState("Pie Chart");
   const [selectedChartInvoice, setSelectedChartInvoice] = useState("Pie Chart");
   const [selectedChartDeal, setSelectedChartDeal] = useState("Pie Chart");
+
   const [filterValue, setFilterValue] = useState("");
   const [filterValueInvoice, setFilterValueInvoice] = useState("");
   const [filterValueDeal, setFilterValueDeal] = useState("");
   const [filterValueTask, setFilterValueTask] = useState("");
+  const [filterValueReminder, setFilterValueReminder] = useState("");
+  const [filterValueSchedule, setFilterValueSchedule] = useState("");
+
   const [statusFilter, setStatusFilter] = useState("all");
   const [categorizedLeads, setCategorizedLeads] = useState<CategorizedLeads>({});
   const [categorizedInvoices, setCategorizedInvoices] = useState<CategorizedInvoices>({});
   const [categorizedDeals, setCategorizedDeals] = useState<CategorizedDeals>({});
   const [categorizedTasks, setCategorizedTasks] = useState<CategorizedTasks>({});
+  const [categorizedReminder, setCategorizedReminder] = useState<CategorizedReminder>({});
+  const [CategorizedScheduled, setCategorizedSchedule] = useState<CategorizedScheduled>({});
   const [loading, setLoading] = useState(true);
+
   const [page, setPage] = useState(1);
   const [pageInvoice, setPageInvoice] = useState(1);
   const [pageDeal, setPageDeal] = useState(1);
   const [pageTask, setPageTask] = useState(1);
+  const [pageReminder, setPageReminder] = useState(1);
+  const [pageSchedule, setPageSchedule] = useState(1);
+
   const [leads, setLeads] = useState<Lead[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [reminder, setReminder] = useState<Reminder[]>([]);
+  const [schedule, setSchedule] = useState<Schedule[]>([]);
+
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const hasSearchFilter = Boolean(filterValue);
   const hasSearchFilterInvoice = Boolean(filterValueInvoice);
   const hasSearchFilterDeal = Boolean(filterValueDeal);
   const hasSearchFilterTask = Boolean(filterValueTask);
+  const hasSearchFilterReminder = Boolean(filterValueReminder);
+  const hasSearchFilterSchedule = Boolean(filterValueSchedule);
+
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set());
   const [selectedKeysInvoice, setSelectedKeysInvoice] = useState(new Set([]));
   const [selectedKeysDeal, setSelectedKeysDeal] = useState(new Set([]));
   const [selectedKeysTask, setSelectedKeysTask] = useState(new Set([]));
+  const [selectedKeysReminder, setSelectedKeysReminder] = useState(new Set([]));
+  const [selectedKeysSchedule, setSelectedKeysSchedule] = useState(new Set([]));
+
   const [visibleColumns, setVisibleColumns] = useState(new Set(INITIAL_VISIBLE_COLUMNS));
   const [visibleColumnsInvoice, setVisibleColumnsInvoice] = useState(new Set(INITIAL_VISIBLE_COLUMNS_INVOICE));
   const [visibleColumnsDeal, setVisibleColumnsDeal] = useState(new Set(INITIAL_VISIBLE_COLUMNS_DEAL));
   const [visibleColumnsTask, setVisibleColumnsTask] = useState(new Set(INITIAL_VISIBLE_COLUMNS_TASK));
+  const [visibleColumnsReminder, setVisibleColumnsReminder] = useState(new Set(INITIAL_VISIBLE_COLUMNS_REMINDER));
+  const [visibleColumnsSchedule, setVisibleColumnsSchedule] = useState(new Set(INITIAL_VISIBLE_COLUMNS_SCHEDULE));
+
   const [sortDescriptor, setSortDescriptor] = useState({
     column: "companyName",
     direction: "ascending",
   });
+
+  const [sortDescriptorInvoice, setSortDescriptorInvoice] = useState ({
+    column: "companyName",
+    direction: "ascending",
+  })
 
   const [sortDescriptorDeal, setSortDescriptorDeal] = useState({
     column: "companyName",
@@ -322,8 +393,19 @@ export default function Page() {
     direction: "ascending",
   });
 
+  const [sortDescriptorReminder, setSortDescriptorReminder] = useState({
+    column: "status",
+    direction: "ascending",
+  })
+
+  const [sortDescriptorSchedule, setSortDescriptorSchedule] = useState({
+    column: "status",
+    direction: "ascending",
+  })
+  
   const filteredItems = React.useMemo(() => {
     let filteredLeads = [...leads];
+
 
     if (hasSearchFilter) {
       filteredLeads = filteredLeads.filter((lead) => {
@@ -439,18 +521,74 @@ export default function Page() {
     return filteredTasks;
   }, [tasks, filterValueTask, statusFilter]);
 
+  const filteredItemsReminder = React.useMemo(() => {
+    let filteredReminder = [...reminder];
+
+
+    if (hasSearchFilter) {
+      filteredReminder = filteredReminder.filter((reminder) => {
+        const searchableFields = {
+          companyName: reminder.companyName,
+          customerName: reminder.customerName,
+          emailAddress: reminder.emailAddress,
+          productName: reminder.productName,
+          status: reminder.status
+        };
+
+        return Object.values(searchableFields).some(value =>
+          String(value || '').toLowerCase().includes(filterValueReminder.toLowerCase())
+        );
+      });
+    }
+
+    if (statusFilter !== "all") {
+      filteredReminder = filteredReminder.filter((reminder) =>
+        statusFilter === reminder.status
+      );
+    }
+
+    return filteredReminder;
+  }, [leads, filterValueReminder, statusFilter]);
+
+  const filteredItemsSchedule = React.useMemo(() => {
+    let filteredSchedule = [...schedule];
+
+    if (hasSearchFilter) {
+      filteredSchedule = filteredSchedule.filter((schedule) => {
+        const searchableFields = {
+          Subject: schedule.subject,
+          customer: schedule.customer,
+          assignedUser: schedule.assignedUser,
+          location: schedule.location,
+          status: schedule.status
+        };
+
+        return Object.values(searchableFields).some(value =>
+          String(value || '').toLowerCase().includes(filterValueSchedule.toLowerCase())
+        );
+      });
+    }
+
+    if (statusFilter !== "all") {
+      filteredSchedule = filteredSchedule.filter((schedule) =>
+        statusFilter === schedule.status
+      );
+    }
+
+    return filteredSchedule;
+  }, [schedule, filterValueSchedule, statusFilter]);
+
   const headerColumns = React.useMemo(() => {
     if (visibleColumns.size === columns.length) return columns; 
     return columns.filter((column) => visibleColumns.has(column.uid));
   }, [visibleColumns]);
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
-
   const pagesInvoice = Math.ceil(invoices.length / rowsPerPage);
-
   const pagesDeal = Math.ceil(deals.length / rowsPerPage);
-
   const pagesTask = Math.ceil(tasks.length / rowsPerPage);
+  const pagesReminder = Math.ceil(reminder.length / rowsPerPage);
+  const pagesSchedule = Math.ceil(schedule.length / rowsPerPage);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -480,6 +618,20 @@ export default function Page() {
     return filteredItemsTask.slice(start, end);
   }, [pageTask, filteredItemsTask, rowsPerPage]);
 
+  const itemsReminder = React.useMemo(() => {
+    const start = (pageReminder - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return filteredItemsReminder.slice(start, end);
+  }, [pageTask, filteredItemsReminder, rowsPerPage]);
+
+  const itemsSchedule = React.useMemo(() => {
+    const start = (pageSchedule - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return filteredItemsSchedule.slice(start, end);
+  }, [pageSchedule, filteredItemsSchedule, rowsPerPage]);
+
   const sortedItems = React.useMemo(() => {
     return [...items].sort((a, b) => {
       const first = a[sortDescriptor.column as keyof Lead];
@@ -489,6 +641,16 @@ export default function Page() {
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
   }, [sortDescriptor, items]);
+
+  const sortedInvoice = React.useMemo(() => {
+    return [...itemsInvoice].sort((a, b) => {
+      const first = a[sortDescriptorInvoice.column as keyof Invoice];
+      const second = b[sortDescriptorInvoice.column as keyof Invoice];
+      const cmp = first < second ? -1 : first > second ? 1 : 0;
+
+      return sortDescriptorInvoice.direction === "descending" ? -cmp : cmp;
+    });
+  }, [sortDescriptorInvoice, itemsInvoice]);
 
   const sortedDeals = React.useMemo(() => {
     return [...itemsDeal].sort((a, b) => {
@@ -510,6 +672,26 @@ export default function Page() {
     });
   }, [sortDescriptorTask, itemsTask]);
 
+  const sortedReminder = React.useMemo(() => {
+    return [...itemsReminder].sort((a, b) => {
+      const first = a[sortDescriptorReminder.column as keyof Reminder];
+      const second = b[sortDescriptorReminder.column as keyof Reminder];
+      const cmp = first < second ? -1 : first > second ? 1 : 0;
+
+      return sortDescriptorReminder.direction === "descending" ? -cmp : cmp;
+    });
+  }, [sortDescriptorReminder, itemsReminder]);
+
+  const sortedSchedule = React.useMemo(() => {
+    return [...itemsSchedule].sort((a, b) => {
+      const first = a[sortDescriptorSchedule.column as keyof Schedule];
+      const second = b[sortDescriptorSchedule.column as keyof Schedule];
+      const cmp = first < second ? -1 : first > second ? 1 : 0;
+
+      return sortDescriptorSchedule.direction === "descending" ? -cmp : cmp;
+    });
+  }, [sortDescriptorSchedule, itemsSchedule]);
+
   useEffect(() => {
     const fetchLeads = async () => {
       try {
@@ -522,7 +704,6 @@ export default function Page() {
         }
 
         setLeads(result.data);
-
         const categorized = result.data.reduce((acc: CategorizedLeads, lead: Lead) => {
           if (!acc[lead.status]) {
             acc[lead.status] = [];
@@ -552,14 +733,18 @@ export default function Page() {
           console.error('Invalid data format received:', result);
           return;
         }
+
         setInvoices(result.data);
-        const categorized = result.data.reduce((acc: CategorizedInvoices, invoice: Invoice) => {
+
+        const categorized = result.data.reduce((acc: Record<string, Invoice[]>, invoice: Invoice) => {
+          if (!invoice.status) return acc; 
           if (!acc[invoice.status]) {
             acc[invoice.status] = [];
           }
           acc[invoice.status].push(invoice);
           return acc;
-        }, {} as CategorizedInvoices);
+        }, {});
+        console.log("Categorized Invoices:", categorizedInvoices);
 
         setCategorizedInvoices(categorized);
       } catch (error) {
@@ -571,7 +756,8 @@ export default function Page() {
 
     fetchInvoices();
   }, []);
-  
+
+  //Deal
   useEffect(() => {
     const fetchDeals = async () => {
       try {
@@ -604,6 +790,7 @@ export default function Page() {
     fetchDeals();
   }, []);
 
+  //Task
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -634,6 +821,67 @@ export default function Page() {
     fetchTasks();
   }, []);
 
+  //Reminder
+  useEffect(() => {
+    const fetchReminder = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/invoice/getUnpaidInvoices');
+        const result = await response.json();
+
+        if (!result || !Array.isArray(result.data)) {
+          console.error('Invalid data format received:', result);
+          return;
+        }
+
+        setReminder(result.data);
+
+        const categorized = result.data.reduce((acc: CategorizedReminder, reminder: Reminder) => {
+          if (!acc[reminder.status]) {
+            acc[reminder.status] = [];
+          }
+          acc[reminder.status].push(reminder);
+          return acc;
+        }, {} as CategorizedReminder);
+
+        setCategorizedReminder(categorized);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    fetchReminder();
+  }, []);
+
+  //Schedule
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/scheduledEvents/getAllScheduledEvents');
+        const result = await response.json();
+
+        if (!result || !Array.isArray(result.data)) {
+          console.error('Invalid data format received:', result);
+          return;
+        }
+
+        setSchedule(result.data);
+
+        const categorized = result.data.reduce((acc: CategorizedScheduled, schedule: Schedule) => {
+          if (!acc[schedule.status]) {
+            acc[schedule.status] = [];
+          }
+          acc[schedule.status].push(schedule);
+          return acc;
+        }, {} as CategorizedScheduled);
+
+        setCategorizedSchedule(categorized);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    fetchSchedule();
+  }, []);
 
   const onNextPage = React.useCallback(() => {
     if (page < pages) {
@@ -647,6 +895,72 @@ export default function Page() {
     }
   }, [page]);
 
+//Invoice  Page
+const onNextPageInvoice = React.useCallback(() => {
+  if (pageInvoice < pagesInvoice) {
+    setPageInvoice(pageInvoice + 1);
+  }
+}, [pageInvoice, pagesInvoice]);
+
+const onPreviousPageInvoice = React.useCallback(() => {
+  if (pageInvoice > 1) {
+    setPageInvoice(pageInvoice - 1);
+  }
+}, [pageInvoice]);
+
+//Deal Page
+const onNextPageDeal = React.useCallback(() => {
+if (pageDeal < pagesDeal) {
+  setPageDeal(pageDeal + 1);
+}
+}, [pageDeal, pagesDeal]);
+
+const onPreviousPageDeal = React.useCallback(() => {
+if (pageDeal > 1) {
+  setPageDeal(pageDeal - 1);
+}
+}, [pageDeal]);
+
+//Taskk Page
+const onNextPageTask = React.useCallback(() => {
+if (pageTask < pagesTask) {
+  setPageTask(pageTask + 1);
+}
+}, [pageTask, pagesTask]);
+
+const onPreviousPageTask = React.useCallback(() => {
+if (pageTask > 1) {
+  setPageTask(pageTask - 1);
+}
+}, [pageTask]);
+
+//Reminder Page
+const onNextPageReminder = React.useCallback(() => {
+if (pageReminder < pagesReminder) {
+  setPageReminder(pageReminder + 1);
+}
+}, [pageReminder, pagesReminder]);
+
+const onPreviousPageReminder = React.useCallback(() => {
+if (pageReminder > 1) {
+  setPageReminder(pageReminder - 1);
+}
+}, [pageReminder]);
+
+//Schedule Page
+const onNextPageSchedule = React.useCallback(() => {
+if (pageSchedule < pagesSchedule) {
+  setPageSchedule(pageSchedule + 1);
+}
+}, [pageSchedule, pagesSchedule]);
+
+const onPreviousPageSchedule = React.useCallback(() => {
+if (pageSchedule > 1) {
+  setPageSchedule(pageSchedule - 1);
+}
+}, [pageSchedule]);
+
+  //Lead Chart
   const dynamicChartData = useMemo(() => {
     return Object.entries(categorizedLeads).map(([status, leads]) => ({
       browser: status,
@@ -654,7 +968,8 @@ export default function Page() {
       fill: chartData[status] || "#ccc",
     }));
   }, [categorizedLeads]);
-  
+
+  //Invoice Chart
   const dynamicChartDataInvoice = useMemo(() => {
     return Object.entries(categorizedInvoices).map(([status, invoices]) => ({
       browser: status,
@@ -662,7 +977,8 @@ export default function Page() {
       fill: chartDataInvoice[status] || "#ccc",
     }));
   }, [categorizedInvoices]);
-  
+
+  //Deal
   const dynamicChartDataDeal = useMemo(() => {
     return Object.entries(categorizedDeals).map(([status, deals]) => ({
       browser: status,
@@ -671,6 +987,7 @@ export default function Page() {
     }));
   }, [categorizedDeals]);
 
+  //Lead
   const renderChartLead = () => {
     const { width, height } = getChartDimensions();
 
@@ -691,7 +1008,7 @@ export default function Page() {
       return (
         <Card>
           <CardHeader className="items-center">
-            <CardTitle>Leads Chart</CardTitle>
+            <CardTitle>Lead</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
@@ -725,7 +1042,7 @@ export default function Page() {
       return (
         <Card>
           <CardHeader className="items-center">
-            <CardTitle>Pie Chart - Leads</CardTitle>
+            <CardTitle>Lead</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
@@ -762,7 +1079,7 @@ export default function Page() {
       return (
         <Card className="flex flex-col">
           <CardHeader className="items-center pb-0">
-            <CardTitle>Radial Chart - Lead</CardTitle>
+            <CardTitle>Lead</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
@@ -807,7 +1124,7 @@ export default function Page() {
       return (
         <Card>
           <CardHeader>
-            <CardTitle>Lead Bar Chart</CardTitle>
+            <CardTitle>Lead</CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig}>
@@ -851,6 +1168,7 @@ export default function Page() {
     }
   };
 
+  //Invoice
   const renderChartInvoice = () => {
     const { width, height } = getChartDimensions();
 
@@ -871,7 +1189,7 @@ export default function Page() {
       return (
         <Card>
           <CardHeader className="items-center">
-            <CardTitle>Invoice Chart</CardTitle>
+            <CardTitle>Invoice</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
@@ -905,7 +1223,7 @@ export default function Page() {
       return (
         <Card>
           <CardHeader className="items-center">
-            <CardTitle>Pie Chart - Invoice</CardTitle>
+            <CardTitle>Invoice</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
@@ -942,7 +1260,7 @@ export default function Page() {
       return (
         <Card className="flex flex-col">
           <CardHeader className="items-center pb-0">
-            <CardTitle>Radial Chart - Invoice</CardTitle>
+            <CardTitle>Invoice</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
@@ -987,7 +1305,7 @@ export default function Page() {
       return (
         <Card>
           <CardHeader>
-            <CardTitle>Invoice Bar Chart</CardTitle>
+            <CardTitle>Invoice</CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfigInvoice}>
@@ -1031,6 +1349,7 @@ export default function Page() {
     }
   };
 
+  //Deal
   const renderChartDeal = () => {
     const { width, height } = getChartDimensions();
 
@@ -1051,7 +1370,7 @@ export default function Page() {
       return (
         <Card>
           <CardHeader className="items-center">
-            <CardTitle>Deals Chart</CardTitle>
+            <CardTitle>Deal</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
@@ -1085,7 +1404,7 @@ export default function Page() {
       return (
         <Card>
           <CardHeader className="items-center">
-            <CardTitle>Pie Chart - Deals</CardTitle>
+            <CardTitle>Deal</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
@@ -1122,7 +1441,7 @@ export default function Page() {
       return (
         <Card className="flex flex-col">
           <CardHeader className="items-center pb-0">
-            <CardTitle>Radial Chart - Deal</CardTitle>
+            <CardTitle>Deal</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
@@ -1162,15 +1481,17 @@ export default function Page() {
         </Card>
       );
     }
-
     if (selectedChartDeal === "Bar Chart") {
       return (
         <Card>
           <CardHeader>
-            <CardTitle>Deal Bar Chart</CardTitle>
+            <CardTitle>Deal</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfigDeal}>
+            <ChartContainer
+              config={chartConfigDeal}
+              style={{ padding: "10px", borderRadius: "8px" }}
+            >
               <BarChart width={width} height={height} data={dynamicChartDataDeal}>
                 <CartesianGrid vertical={false} />
                 <XAxis
@@ -1178,13 +1499,19 @@ export default function Page() {
                   tickLine={false}
                   tickMargin={10}
                   axisLine={false}
+                  tick={{ fill: "white" }} 
                   tickFormatter={(value) =>
                     chartConfigDeal[value as keyof typeof chartConfigDeal]?.label
                   }
                 />
                 <ChartTooltip
                   cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
+                  content={
+                    <ChartTooltipContent
+                      hideLabel
+                      style={{ color: "white", border: "1px solid white" }}
+                    />
+                  }
                 />
                 <Bar
                   dataKey="visitors"
@@ -1209,12 +1536,14 @@ export default function Page() {
         </Card>
       );
     }
+
   };
 
+  //lead
   const bottomContent = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">
+        <span className="w-[30%] text-small text-default-400 ">
           {selectedKeys === "all"
             ? "All items selected"
             : `${selectedKeys.size} of ${filteredItems.length} selected`}
@@ -1233,10 +1562,10 @@ export default function Page() {
         />
 
         <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
-          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] rounded-lg" isDisabled={pages === 1} size="sm" variant="flat" onPress={onPreviousPage}>
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pages === 1} size="sm" variant="flat" onPress={onPreviousPage}>
             Previous
           </Button>
-          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] rounded-lg" isDisabled={pages === 1} size="sm" variant="flat" onPress={onNextPage}>
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pages === 1} size="sm" variant="flat" onPress={onNextPage}>
             Next
           </Button>
         </div>
@@ -1244,6 +1573,7 @@ export default function Page() {
     );
   }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
+  //Invoice
   const bottomContentInvoice = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
@@ -1266,10 +1596,10 @@ export default function Page() {
         />
 
         <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
-          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] rounded-lg" isDisabled={pagesInvoice === 1} size="sm" variant="flat" onPress={onPreviousPage}>
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pagesInvoice === 1} size="sm" variant="flat" onPress={onPreviousPageInvoice}>
             Previous
           </Button>
-          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] rounded-lg" isDisabled={pagesInvoice === 1} size="sm" variant="flat" onPress={onNextPage}>
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pagesInvoice === 1} size="sm" variant="flat" onPress={onNextPageInvoice}>
             Next
           </Button>
         </div>
@@ -1277,6 +1607,7 @@ export default function Page() {
     );
   }, [selectedKeysInvoice, itemsInvoice.length, pageInvoice, pagesInvoice, hasSearchFilterInvoice]);
 
+  //Deal
   const bottomContentDeal = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
@@ -1299,10 +1630,10 @@ export default function Page() {
         />
 
         <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
-          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] rounded-lg" isDisabled={pagesDeal === 1} size="sm" variant="flat" onPress={onPreviousPage}>
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pagesDeal === 1} size="sm" variant="flat" onPress={onPreviousPageDeal}>
             Previous
           </Button>
-          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] rounded-lg" isDisabled={pagesDeal === 1} size="sm" variant="flat" onPress={onNextPage}>
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pagesDeal === 1} size="sm" variant="flat" onPress={onNextPageDeal}>
             Next
           </Button>
         </div>
@@ -1310,6 +1641,7 @@ export default function Page() {
     );
   }, [selectedKeysDeal, deals.length, pageDeal, pagesDeal, hasSearchFilterDeal]);
 
+  //Task
   const bottomContentTask = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
@@ -1332,16 +1664,84 @@ export default function Page() {
         />
 
         <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
-          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] rounded-lg" isDisabled={pagesTask === 1} size="sm" variant="flat" onPress={onPreviousPage}>
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pagesTask === 1} size="sm" variant="flat" onPress={onPreviousPageTask}>
             Previous
           </Button>
-          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] rounded-lg" isDisabled={pagesTask === 1} size="sm" variant="flat" onPress={onNextPage}>
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pagesTask === 1} size="sm" variant="flat" onPress={onNextPageTask}>
             Next
           </Button>
         </div>
       </div>
     );
   }, [selectedKeysTask, tasks.length, pageTask, pagesTask, hasSearchFilterTask]);
+
+  //Reminder
+  const bottomContentReminder = React.useMemo(() => {
+    return (
+      <div className="py-2 px-2 flex justify-between items-center">
+        <span className="w-[30%] text-small text-default-400">
+          {selectedKeysReminder === "all"
+            ? "All items selected"
+            : `${selectedKeysReminder.size} of ${filteredItemsReminder.length} selected`}
+        </span>
+        <Pagination
+          isCompact
+          showShadow
+          color="success"
+          page={pageReminder}
+          total={pagesReminder}
+          onChange={setPageReminder}
+          classNames={{
+            cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
+            item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
+          }}
+        />
+
+        <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pagesReminder === 1} size="sm" variant="flat" onPress={onPreviousPageReminder}>
+            Previous
+          </Button>
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pagesReminder === 1} size="sm" variant="flat" onPress={onNextPageReminder}>
+            Next
+          </Button>
+        </div>
+      </div>
+    );
+  }, [selectedKeysReminder, reminder.length, pageReminder, pagesReminder, hasSearchFilterReminder]);
+
+  //Schedule
+  const bottomContentSchedule = React.useMemo(() => {
+    return (
+      <div className="py-2 px-2 flex justify-between items-center">
+        <span className="w-[30%] text-small text-default-400">
+          {selectedKeysSchedule === "all"
+            ? "All items selected"
+            : `${selectedKeysSchedule.size} of ${filteredItemsSchedule.length} selected`}
+        </span>
+        <Pagination
+          isCompact
+          showShadow
+          color="success"
+          page={pageSchedule}
+          total={pagesSchedule}
+          onChange={setPageSchedule}
+          classNames={{
+            cursor: "bg-[hsl(339.92deg_91.04%_52.35%)] shadow-md",
+            item: "data-[active=true]:bg-[hsl(339.92deg_91.04%_52.35%)] data-[active=true]:text-white rounded-lg",
+          }}
+        />
+
+        <div className="rounded-lg bg-default-100 hover:bg-default-200 hidden sm:flex w-[30%] justify-end gap-2">
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pagesSchedule === 1} size="sm" variant="flat" onPress={onPreviousPageSchedule}>
+            Previous
+          </Button>
+          <Button className="bg-[hsl(339.92deg_91.04%_52.35%)] text-white rounded-lg" isDisabled={pagesSchedule === 1} size="sm" variant="flat" onPress={onNextPageSchedule}>
+            Next
+          </Button>
+        </div>
+      </div>
+    );
+  }, [selectedKeysSchedule, schedule.length, pageSchedule, pagesSchedule, hasSearchFilterSchedule]);
 
   const renderCell = React.useCallback((lead: Lead, columnKey: React.Key) => {
     const cellValue = lead[columnKey as keyof Lead];
@@ -1362,7 +1762,6 @@ export default function Page() {
         return (
           <Chip
             className="capitalize"
-            color={statusColorMap[lead.status]}
             size="sm"
             variant="flat"
           >
@@ -1407,7 +1806,6 @@ export default function Page() {
         return (
           <Chip
             className="capitalize"
-            color={statusColorMap[invoice.status]}
             size="sm"
             variant="flat"
           >
@@ -1453,7 +1851,6 @@ export default function Page() {
         return (
           <Chip
             className="capitalize"
-            color={statusColorMap[deal.status]}
             size="sm"
             variant="flat"
           >
@@ -1487,24 +1884,8 @@ export default function Page() {
       case "subject":
       case "relatedTo":
       case "name":
-      case "assigned":
-      case "taskDate":
-      case "dueDate":
       case "status":
-      case "priority":
-      case "isActive":
         return cellValue;
-      case "status":
-        return (
-          <Chip
-            className="capitalize"
-            color={statusColorMap[task.status]}
-            size="sm"
-            variant="flat"
-          >
-            {cellValue}
-          </Chip>
-        );
       case "actions":
         return (
           <div className="relative flex items-center gap-2">
@@ -1520,137 +1901,242 @@ export default function Page() {
             </Tooltip>
           </div>
         );
+        case "taskDate":
+        case "dueDate": {
+          if (!cellValue) return "N/A"; 
+
+          const date = new Date(cellValue);
+          if (isNaN(date.getTime())) return "Invalid Date"; 
+
+          // Format date as dd-mm-yyyy
+          const day = String(date.getDate()).padStart(2, "0");
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const year = date.getFullYear();
+
+          return `${day}-${month}-${year}`;
+        }
+
       default:
         return cellValue;
     }
   }, []);
 
+  const renderCellReminder = React.useCallback((reminder: Reminder, columnKey: React.Key) => {
+    const cellValue = reminder[columnKey as keyof Reminder];
+
+    switch (columnKey) {
+      case "companyName":
+      case "customerName":
+      case "emailAddress":
+      case "status":
+        return cellValue;
+      case "actions":
+        return (
+          <div className="relative flex items-center gap-2">
+            <Tooltip content="Edit reminder">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <Pencil size={20} />
+              </span>
+            </Tooltip>
+            <Tooltip color="danger" content="Delete reminder">
+              <span className="text-lg text-danger cursorPointer active:opacity-50">
+                <Trash2 size={20} />
+              </span>
+            </Tooltip>
+          </div>
+        );
+      default:
+        return cellValue;
+    }
+  }, []);
+
+  const renderCellSchedule = React.useCallback((schedule: Schedule, columnKey: React.Key) => {
+    const cellValue = schedule[columnKey as keyof Schedule];
+
+    switch (columnKey) {
+      case "subject":
+      case "customer":
+      case "assignedUser":
+      case "location":
+      case "eventType":
+      case "priority":
+      case "recurrence":
+      case "description":
+        return cellValue;
+      case "status":
+        return (
+          <Chip
+            className="capitalize"
+            size="sm"
+            variant="flat"
+          >
+            {cellValue}
+          </Chip>
+        );
+      case "actions":
+        return (
+          <div className="relative flex items-center gap-2">
+            <Tooltip content="Edit schedule">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <Pencil size={20} />
+              </span>
+            </Tooltip>
+            <Tooltip color="danger" content="Delete schedule">
+              <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                <Trash2 size={20} />
+              </span>
+            </Tooltip>
+          </div>
+        );
+        case "date":{
+          if (!cellValue) return "N/A"; 
+        
+          const date = new Date(cellValue);
+          if (isNaN(date.getTime())) return "Invalid Date"; 
+        
+          const day = String(date.getDate()).padStart(2, "0");
+          const month = String(date.getMonth() + 1).padStart(2, "0"); 
+          const year = date.getFullYear();
+        
+          return `${day}-${month}-${year}`;
+        }
+    }
+  }, []);
+
   return (
-<SidebarProvider>
+    <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
-              <div className="flex items-center gap-2 px-4">
-                  <SidebarTrigger className="-ml-1" />
-                  <ModeToggle/>
-                  <Separator orientation="vertical" className="mr-2 h-4"/>
-                  <Breadcrumb>
-                  <BreadcrumbList className="flex items-center space-x-2">
-                      <BreadcrumbItem className="hidden sm:block md:block">
-                      <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                      </BreadcrumbItem>
-                  </BreadcrumbList>
-                  </Breadcrumb>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <ModeToggle />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <span>
+                    Dashboard
+                  </span>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+          <div className="flex items-center space-x-4 ml-auto mr-4">
+            <div  >
+              <SearchBar />
+            </div>
+            <a href="/calendar">
+              <div>
+                <Calendar1 />
               </div>
-              <div className="flex items-center space-x-4 ml-auto mr-4">
-                  <div  >
-                      <SearchBar />
-                  </div>
-                  <a href="/calendar">
-                      <div>
-                          <Calendar1 />
-                      </div>
-                  </a>
-                  <div>
-                      <Notification />
-                  </div>
-              </div>
-          </header>
-        
-        <Box sx={{ width: '100%' }}>
-          <h1 className="text-2xl font-semibold mb-8 mt-4" style={{ textAlign: "center" }}>Charts</h1>
-          <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+            </a>
+            <div>
+              <Notification />
+            </div>
+          </div>
+        </header>
+        <Box sx={{ width: '100%', maxWidth: '100%' }} className="mx-auto min-w-[360px]">
+        <h1 className="text-amber-500 font-bold mb-8 mt-4 text-xl text-center">S P R I E R S</h1>
+        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} className="w-full max-w-[360px] md:max-w-full mx-auto">
 
-            <Grid item xs={12} md={6} lg={4}>
-              <Item>
-                <div>
-                  <FormControl fullWidth>
-                    <InputLabel id="chart-select-label">Select Chart</InputLabel>
+          {/* Chart Sections */}
+          {/* Lead Analytics Chart */}
+          <Grid item xs={12} md={6} lg={4} className="pb-4">
+            <Item className="bg-white shadow-lg rounded-xl p-4 sm:p-6 transition-all duration-300 hover:shadow-xl">
+              <div className="flex flex-col h-full">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold text-gray-800">Lead Analytics</h2>
+                  <FormControl className="min-w-[120px]" size="small">
                     <Select
-                      labelId="chart-select-label"
                       value={selectedChart}
                       onChange={(e) => setSelectedChart(e.target.value)}
-                      label="Select Chart"
+                      className="text-sm"
                     >
                       <MenuItem value="Pie Chart">Pie Chart</MenuItem>
                       <MenuItem value="Radial Chart">Radial Chart</MenuItem>
                       <MenuItem value="Bar Chart">Bar Chart</MenuItem>
                     </Select>
                   </FormControl>
-
-                  <div className="mt-4">{renderChartLead()}</div>
                 </div>
-              </Item>
-            </Grid>
+                <div className="flex-1 min-h-[300px]">{renderChartLead()}</div>
+              </div>
+            </Item>
+          </Grid>
 
-            <Grid item xs={12} md={6} lg={4}>
-              <Item>
-                <div>
-                  <FormControl fullWidth>
-                    <InputLabel id="chart-select-label">Select Chart</InputLabel>
+          {/* Invoice Chart */}
+          <Grid item xs={12} md={6} lg={4} className="pb-4">
+            <Item className="bg-white shadow-lg rounded-xl p-4 sm:p-6 transition-all duration-300 hover:shadow-xl">
+              <div className="flex flex-col h-full">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold text-gray-800">Invoice Analytics</h2>
+                  <FormControl className="min-w-[120px]" size="small">
                     <Select
-                      labelId="chart-select-label"
                       value={selectedChartInvoice}
                       onChange={(e) => setSelectedChartInvoice(e.target.value)}
-                      label="Select Chart"
+                      className="text-sm"
                     >
                       <MenuItem value="Pie Chart">Pie Chart</MenuItem>
                       <MenuItem value="Radial Chart">Radial Chart</MenuItem>
                       <MenuItem value="Bar Chart">Bar Chart</MenuItem>
                     </Select>
                   </FormControl>
-
-                  <div className="mt-4">{renderChartInvoice()}</div>
                 </div>
-              </Item>
-            </Grid>
+                <div className="flex-1 min-h-[300px]">{renderChartInvoice()}</div>
+              </div>
+            </Item>
+          </Grid>
 
-            <Grid item xs={12} md={6} lg={4}>
-              <Item>
-                <div>
-                  <FormControl fullWidth>
-                    <InputLabel id="chart-select-label">Select Chart</InputLabel>
+          {/* Deal Chart */}
+          <Grid item xs={12} md={6} lg={4} className="pb-4">
+            <Item className="bg-white shadow-lg rounded-xl p-4 sm:p-6 transition-all duration-300 hover:shadow-xl">
+              <div className="flex flex-col h-full">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold text-gray-800">Deal Analytics</h2>
+                  <FormControl className="min-w-[120px]" size="small">
                     <Select
-                      labelId="chart-select-label"
                       value={selectedChartDeal}
                       onChange={(e) => setSelectedChartDeal(e.target.value)}
-                      label="Select Chart"
+                      className="text-sm"
                     >
                       <MenuItem value="Pie Chart">Pie Chart</MenuItem>
                       <MenuItem value="Radial Chart">Radial Chart</MenuItem>
                       <MenuItem value="Bar Chart">Bar Chart</MenuItem>
                     </Select>
                   </FormControl>
-
-                  <div className="mt-4">{renderChartDeal()}</div>
                 </div>
-              </Item>
-            </Grid>
+                <div className="flex-1 min-h-[300px]">{renderChartDeal()}</div>
+              </div>
+            </Item>
+          </Grid>
 
-            <Grid item xs={12} lg={6}>
-              <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Lead Table</h1>
-              <Item>
-                <div className="flex justify-between items-center gap-3">
-                  <Input
-                    isClearable
-                    className="w-full sm:max-w-[44%]"
-                    placeholder="Search by name, email, product..."
-                    startContent={<Search size={20} />}
-                    value={filterValue}
-                    onClear={() => setFilterValue("")}
-                    onValueChange={setFilterValue}
-                  />
-                </div>
+
+          {/* Lead Record Section */}
+          <Grid item xs={12} md={6} lg={6} className="w-full max-w-[360px] md:max-w-full pb-4">
+            <Item className="bg-white shadow-lg rounded-xl p-6">
+              <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Lead Record</h1>
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+                <Input
+                  isClearable
+                  className="w-full focus:ring-1 focus:ring-blue-500 focus:outline-none rounded-lg px-4 py-2 transition duration-200"
+                  placeholder="Search"
+                  startContent={<Search size={20} className="text-gray-500" />}
+                  value={filterValue}
+                  onClear={() => setFilterValue("")}
+                  onValueChange={setFilterValue}
+                />
+              </div>
+              <div className="w-full">
                 <Table
                   isHeaderSticky
                   aria-label="Leads table with custom cells, pagination and sorting"
                   bottomContent={bottomContent}
                   bottomContentPlacement="outside"
                   classNames={{
-                    wrapper: "max-h-[382px]",
+                    wrapper: "w-full rounded-lg shadow-sm max-h-[300px] overflow-y-auto scrollbar-hide",
                   }}
                   selectedKeys={selectedKeys}
-                  selectionMode="multiple"
+                  selectionMode="none"
                   sortDescriptor={sortDescriptor}
                   onSelectionChange={setSelectedKeys}
                   onSortChange={setSortDescriptor}
@@ -1661,47 +2147,53 @@ export default function Page() {
                         key={column.uid}
                         align={column.uid === "actions" ? "center" : "start"}
                         allowsSorting={column.sortable}
+                        className="text-gray-700 font-semibold bg-gray-50 px-2 py-4"
                       >
                         {column.name}
                       </TableColumn>
                     )}
                   </TableHeader>
-                  <TableBody emptyContent={"No leads found"} items={sortedItems}>
+                  <TableBody emptyContent={"No lead available"} items={sortedItems}>
                     {(item) => (
-                      <TableRow key={item._id}>
-                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                      <TableRow key={item._id} className="hover:bg-gray-50 transition duration-200">
+                        {(columnKey) => (<TableCell className="px-4 py-3 text-gray-700">{renderCell(item, columnKey)}</TableCell>)}
                       </TableRow>
                     )}
                   </TableBody>
                 </Table>
-              </Item>
-            </Grid>
+              </div>
+            </Item>
+          </Grid>
 
-            <Grid item xs={12} sm={6} md={6} lg={6}>
-              <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Invoice Table</h1>
-              <Item>
-                <div className="flex justify-between items-center gap-3">
+          <Grid item xs={12} md={6} lg={6} className="w-full max-w-[360px] md:max-w-full pb-4">
+              <Item className="bg-white shadow-lg rounded-xl p-6">
+              <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Invoice Record</h1>
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
                   <Input
                     isClearable
-                    className="w-full sm:max-w-[44%]"
-                    placeholder="Search by name, email, product..."
-                    startContent={<Search size={20} />}
+                    className="w-full focus:ring-1 focus:ring-blue-500 focus:outline-none rounded-lg px-4 py-2 transition duration-200"
+                    placeholder="Search"
+                    startContent={<Search size={20} className="text-gray-500" />}
                     value={filterValueInvoice}
                     onClear={() => setFilterValueInvoice("")}
                     onValueChange={setFilterValueInvoice}
                   />
                 </div>
+                <div className="w-full">
                 <Table
                   isHeaderSticky
                   aria-label="Invoices table with custom cells, pagination and sorting"
                   bottomContent={bottomContentInvoice}
                   bottomContentPlacement="outside"
                   classNames={{
-                    wrapper: "max-h-[382px]",
+                    wrapper: "w-full rounded-lg shadow-sm max-h-[300px] overflow-y-auto scrollbar-hide",
                   }}
                   selectedKeys={selectedKeysInvoice}
-                  selectionMode="multiple"
+                  selectionMode="none"
+                  sortDescriptor={sortDescriptorInvoice}
+                  onSortChange={setSortDescriptorInvoice}
                   topContentPlacement="outside"
+                  
                 >
                   <TableHeader columns={columnsInvoice}>
                     {(column) => (
@@ -1709,46 +2201,49 @@ export default function Page() {
                         key={column.uid}
                         align={column.uid === "actions" ? "center" : "start"}
                         allowsSorting={column.sortable}
+                        className="text-gray-700 font-semibold bg-gray-50 px-2 py-4"
                       >
                         {column.name}
                       </TableColumn>
                     )}
                   </TableHeader>
-                  <TableBody emptyContent={"No invoices found"} items={itemsInvoice}>
+                  <TableBody emptyContent={"No invoice available"} items={sortedInvoice}>
                     {(item) => (
-                      <TableRow key={item._id}>
-                        {(columnKey) => <TableCell>{renderCellInvoice(item, columnKey)}</TableCell>}
+                      <TableRow key={item._id} className="hover:bg-gray-50 transition duration-200">
+                        {(columnKey) => (<TableCell className="px-4 py-3 text-gray-700">{renderCellInvoice(item, columnKey)}</TableCell>)}
                       </TableRow>
                     )}
                   </TableBody>
                 </Table>
+                </div>
               </Item>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={6} lg={6}>
-              <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Deal Table</h1>
-              <Item>
-                <div className="flex justify-between items-center gap-3">
+            <Grid item xs={12} md={6} lg={6} className="w-full max-w-[360px] md:max-w-full pb-4">
+              <Item className="bg-white shadow-lg rounded-xl p-6">
+              <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Deal Record</h1>
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
                   <Input
                     isClearable
-                    className="w-full sm:max-w-[44%]"
-                    placeholder="Search by name, email, product..."
-                    startContent={<Search size={20} />}
+                    className="w-full focus:ring-1 focus:ring-blue-500 focus:outline-none rounded-lg px-4 py-2 transition duration-200"
+                    placeholder="Search"
+                    startContent={<Search size={20} className="text-gray-500" />}
                     value={filterValueDeal}
                     onClear={() => setFilterValueDeal("")}
                     onValueChange={setFilterValueDeal}
                   />
                 </div>
+                <div className="w-full">
                 <Table
                   isHeaderSticky
                   aria-label="Deals table with custom cells, pagination and sorting"
                   bottomContent={bottomContentDeal}
                   bottomContentPlacement="outside"
                   classNames={{
-                    wrapper: "max-h-[382px]",
+                    wrapper: "w-full rounded-lg shadow-sm max-h-[300px] overflow-y-auto scrollbar-hide",
                   }}
                   selectedKeys={selectedKeysDeal}
-                  selectionMode="multiple"
+                  selectionMode="none"
                   sortDescriptor={sortDescriptorDeal}
                   onSortChange={setSortDescriptorDeal}
                   topContentPlacement="outside"
@@ -1759,46 +2254,101 @@ export default function Page() {
                         key={column.uid}
                         align={column.uid === "actions" ? "center" : "start"}
                         allowsSorting={column.sortable}
+                        className="text-gray-700 font-semibold bg-gray-50 px-2 py-4"
                       >
                         {column.name}
                       </TableColumn>
                     )}
                   </TableHeader>
-                  <TableBody emptyContent={"No deals found"} items={sortedDeals}>
+                  <TableBody emptyContent={"No deal available"} items={sortedDeals}>
                     {(item) => (
-                      <TableRow key={item._id}>
-                        {(columnKey) => <TableCell>{renderCellDeal(item, columnKey)}</TableCell>}
+                      <TableRow key={item._id} className="hover:bg-gray-50 transition duration-200">
+                        {(columnKey) => (<TableCell className="px-4 py-3 text-gray-700">{renderCellDeal(item, columnKey)}</TableCell>)}
                       </TableRow>
                     )}
                   </TableBody>
                 </Table>
+                </div>
               </Item>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={6} lg={6}>
-              <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Task Table</h1>
-              <Item>
-                <div className="flex justify-between items-center gap-3">
+            <Grid item xs={12} md={6} lg={6} className="w-full max-w-[360px] md:max-w-full pb-4">
+              <Item className="bg-white shadow-lg rounded-xl p-6">
+              <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Reminder Record</h1>
+                <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
                   <Input
                     isClearable
-                    className="w-full sm:max-w-[44%]"
-                    placeholder="Search by name, email, product..."
-                    startContent={<Search size={20} />}
+                    className="w-full focus:ring-1 focus:ring-blue-500 focus:outline-none rounded-lg px-4 py-2 transition duration-200"
+                    placeholder="Search"
+                    startContent={<Search size={20} className="text-gray-500" />}
+                    value={filterValueReminder}
+                    onClear={() => setFilterValueReminder("")}
+                    onValueChange={setFilterValueReminder}
+                  />
+                </div>
+                <div className="w-full">
+                  <Table
+                    isHeaderSticky
+                    aria-label="Invoices table with custom cells, pagination and sorting"
+                    bottomContent={bottomContentReminder}
+                    bottomContentPlacement="outside"
+                    classNames={{
+                      wrapper: "w-full rounded-lg shadow-sm max-h-[300px] overflow-y-auto scrollbar-hide",
+                    }}
+                    selectedKeys={selectedKeysReminder}
+                    selectionMode="none"
+                    sortDescriptor={sortDescriptorReminder}
+                    topContentPlacement="outside"
+                  >
+                    <TableHeader columns={columnsReminder}>
+                      {(column) => (
+                        <TableColumn
+                          key={column.uid}
+                          align={column.uid === "actions" ? "center" : "start"}
+                          allowsSorting={column.sortable}
+                          className="text-gray-700 font-semibold bg-gray-50 px-2 py-4"
+                        >
+                          {column.name}
+                        </TableColumn>
+                      )}
+                    </TableHeader>
+                    <TableBody emptyContent={"No reminder available"} items={itemsReminder}>
+                      {(item) => (
+                        <TableRow key={item._id} className="hover:bg-gray-50 transition duration-200">
+                          {(columnKey) => (<TableCell className="px-4 py-3 text-gray-700">{renderCellReminder(item, columnKey)}</TableCell>)}
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                  </div>
+              </Item>
+            </Grid>
+
+            <Grid item xs={12} md={6} lg={6} className="w-full max-w-[360px] md:max-w-full pb-4">
+              <Item className="bg-white shadow-lg rounded-xl p-6">
+              <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Task Record</h1>
+                <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+                  <Input
+                    isClearable
+                    className="w-full focus:ring-1 focus:ring-blue-500 focus:outline-none rounded-lg px-4 py-2 transition duration-200"
+                    placeholder="Search"
+                    startContent={<Search size={20} className="text-gray-500" />}
                     value={filterValueTask}
                     onClear={() => setFilterValueTask("")}
                     onValueChange={setFilterValueTask}
                   />
                 </div>
+                <div className="w-full">
                 <Table
                   isHeaderSticky
                   aria-label="Tasks table with custom cells, pagination and sorting"
                   bottomContent={bottomContentTask}
                   bottomContentPlacement="outside"
                   classNames={{
-                    wrapper: "max-h-[382px]",
+                    wrapper: "w-full rounded-lg shadow-sm max-h-[300px] overflow-y-auto scrollbar-hide",
                   }}
                   selectedKeys={selectedKeysTask}
-                  selectionMode="multiple"
+                  selectionMode="none"
                   sortDescriptor={sortDescriptorTask}
                   onSelectionChange={setSelectedKeysTask}
                   onSortChange={setSortDescriptorTask}
@@ -1809,101 +2359,88 @@ export default function Page() {
                         key={column.uid}
                         align={column.uid === "actions" ? "center" : "start"}
                         allowsSorting={column.sortable}
-                      >
+                        className="text-gray-700 font-semibold bg-gray-50 px-2 py-4"                        >
                         {column.name}
                       </TableColumn>
                     )}
                   </TableHeader>
-                  <TableBody emptyContent={"No tasks found"} items={sortedTasks}>
+                  <TableBody emptyContent={"No task available"} items={sortedTasks}>
                     {(item) => (
-                      <TableRow key={item._id}>
-                        {(columnKey) => <TableCell>{renderCellTask(item, columnKey)}</TableCell>}
+                      <TableRow key={item._id} className="hover:bg-gray-50 transition duration-200">
+                        {(columnKey) => (
+                          <TableCell className="px-4 py-3 text-gray-700">{renderCellTask(item, columnKey)}</TableCell>)}
                       </TableRow>
                     )}
                   </TableBody>
                 </Table>
+                </div>
               </Item>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={6} lg={6}>
-              <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Remainder Table</h1>
-              <Item>
-                <Item>
+            <Grid item xs={12} md={6} lg={6} className="w-full max-w-[360px] md:max-w-full pb-4">
+              <Item className="bg-white shadow-lg rounded-xl p-6">
+                <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Event or Meeting Record</h1>
+
+                <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+                  <Input
+                    isClearable
+                    className="w-full focus:ring-1 focus:ring-blue-500 focus:outline-none rounded-lg px-4 py-2 transition duration-200"
+                    placeholder="Search"
+                    startContent={<Search size={20} className="text-gray-500" />}
+                    value={filterValueSchedule}
+                    onClear={() => setFilterValueSchedule("")}
+                    onValueChange={setFilterValueSchedule}
+                  />
+                </div>
+
+                {/* Table Wrapper with Scroll */}
+                <div className="w-full">
                   <Table
                     isHeaderSticky
-                    aria-label="Invoices table with custom cells, pagination and sorting"
-                    bottomContent={bottomContent}
+                    aria-label="Schedule table with custom cells, pagination and sorting"
+                    bottomContent={bottomContentSchedule}
                     bottomContentPlacement="outside"
                     classNames={{
-                      wrapper: "max-h-[382px]",
+                      wrapper: "w-full rounded-lg shadow-sm max-h-[300px] overflow-y-auto scrollbar-hide", 
                     }}
-                    selectedKeys={selectedKeys}
-                    selectionMode="multiple"
-                    topContentPlacement="outside"
+                    selectedKeys={selectedKeysSchedule}
+                    selectionMode="none"
+                    sortDescriptor={sortDescriptorSchedule}
+                    onSelectionChange={setSelectedKeysSchedule}
+                    onSortChange={setSortDescriptorSchedule}
                   >
-                    <TableHeader columns={headerColumns}>
+                    <TableHeader columns={columnsSchedule}>
                       {(column) => (
                         <TableColumn
                           key={column.uid}
                           align={column.uid === "actions" ? "center" : "start"}
                           allowsSorting={column.sortable}
-                        >
+                          className="text-gray-700 font-semibold bg-gray-50 px-2 py-4"                        
+                          >
                           {column.name}
                         </TableColumn>
                       )}
                     </TableHeader>
-                    <TableBody emptyContent={"No invoices found"} items={sortedItems}>
+
+                    <TableBody emptyContent={"No event or meeting available"} items={sortedSchedule}>
                       {(item) => (
-                        <TableRow key={item._id}>
-                          {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                        <TableRow key={item._id} className="hover:bg-gray-50 transition duration-200">
+                          {(columnKey) => (
+                            <TableCell className="px-4 py-3 text-gray-700">{renderCellSchedule(item, columnKey)}</TableCell>
+                          )}
                         </TableRow>
                       )}
                     </TableBody>
+
                   </Table>
-                </Item>
+                </div>
+
               </Item>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={6} lg={6}>
-              <h1 className="text-2xl font-semibold mb-4 mt-4" style={{ textAlign: "center" }}>Scedule Table</h1>
-              <Item>
-                <Item>
-                  <Table
-                    isHeaderSticky
-                    aria-label="Invoices table with custom cells, pagination and sorting"
-                    bottomContent={bottomContent}
-                    bottomContentPlacement="outside"
-                    classNames={{
-                      wrapper: "max-h-[382px]",
-                    }}
-                    selectedKeys={selectedKeys}
-                    selectionMode="multiple"
-                    topContentPlacement="outside"
-                  >
-                    <TableHeader columns={headerColumns}>
-                      {(column) => (
-                        <TableColumn
-                          key={column.uid}
-                          align={column.uid === "actions" ? "center" : "start"}
-                          allowsSorting={column.sortable}
-                        >
-                          {column.name}
-                        </TableColumn>
-                      )}
-                    </TableHeader>
-                    <TableBody emptyContent={"No invoices found"} items={sortedItems}>
-                      {(item) => (
-                        <TableRow key={item._id}>
-                          {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </Item>
-              </Item>
-            </Grid>
-          </Grid>
-        </Box>
+        </Grid>
+      </Box>
+
       </SidebarInset>
     </SidebarProvider>
   )

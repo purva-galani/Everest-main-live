@@ -712,7 +712,7 @@ export default function LeadTable() {
                             onClear={() => setFilterValue("")}
                         />
                     </div>
-  <div className="flex flex-col sm:flex-row sm:justify-end gap-3 w-full">
+                    <div className="flex flex-col sm:flex-row sm:justify-end gap-3 w-full">
                           <Dropdown>
                               <DropdownTrigger className="w-full sm:w-auto">
                                   <Button

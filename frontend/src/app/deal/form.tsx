@@ -57,30 +57,41 @@ export default function DealForm() {
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        setIsSubmitting(true)
+        setIsSubmitting(true);
         try {
-            const response = await fetch("http://localhost:8000/api/v1/deal/createdeal", {
+            const response = await fetch("http://localhost:8000/api/v1/deal/createDeal", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
-            })
-            const data = await response.json()
+            });
+            const data = await response.json();
+    
             if (!response.ok) {
-                throw new Error(data.error || "Failed to submit the lead")
+                if (response.status === 400 && data.message === "This deal already exists.") {
+                    toast({
+                        title: "Warning",
+                        description: "A deal with these details already exists.",
+                        variant: "destructive",
+                    });
+                } else {
+                    throw new Error(data.error || "Failed to submit the deal.");
+                }
+                return;
             }
+    
             toast({
                 title: "Deal Submitted",
                 description: `The deal has been successfully created`,
-            })
-            router.push("/deal/table")
+            });
+            router.push("/deal/table");
         } catch (error) {
             toast({
                 title: "Error",
                 description: error instanceof Error ? error.message : "There was an error creating the deal",
                 variant: "destructive",
-            })
+            });
         } finally {
-            setIsSubmitting(false)
+            setIsSubmitting(false);
         }
     }
 
